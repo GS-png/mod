@@ -12,10 +12,31 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="README.md" />
-    <None Include="mod.json" />
-    <None Include="Resources\**\*" />
+    <None Include="README.md" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="mod.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Resources\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+
+  <Target Name="BuildModPackage" AfterTargets="Build">
+    <PropertyGroup>
+      <ModPackageDir>$(ProjectDir)dist\EraOfWheel\</ModPackageDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ModResourceFiles Include="Resources\**\*" />
+    </ItemGroup>
+
+    <MakeDir Directories="$(ModPackageDir)" />
+
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ModPackageDir)" />
+    <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(ModPackageDir)" Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
+    <Copy SourceFiles="$(ProjectDir)mod.json" DestinationFolder="$(ModPackageDir)" Condition="Exists('$(ProjectDir)mod.json')" />
+
+    <Copy
+      SourceFiles="@(ModResourceFiles)"
+      DestinationFiles="@(ModResourceFiles->'$(ModPackageDir)Resources\%(RecursiveDir)%(Filename)%(Extension)')"
+      SkipUnchangedFiles="true" />
+  </Target>
 
   <ItemGroup>
     <Reference Include="NeoModLoader">

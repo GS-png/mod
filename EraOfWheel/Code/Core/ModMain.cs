@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using NeoModLoader.api;
 using UnityEngine;
 
@@ -8,6 +9,8 @@ namespace EraOfWheel.Core
     public class ModMain : MonoBehaviour, IMod
     {
         public static ModMain Instance { get; private set; }
+
+        private static string _bootstrapLogPath;
         
         private ModDeclare _declare;
         private GameObject _gameObject;
@@ -56,8 +59,8 @@ namespace EraOfWheel.Core
             }
             catch (Exception ex)
             {
-                Log($"MOD初始化失败: {ex.Message}", LogLevel.Error);
-                throw;
+                Log($"MOD初始化失败: {ex}", LogLevel.Error);
+                _isInitialized = false;
             }
         }
 
@@ -142,8 +145,45 @@ namespace EraOfWheel.Core
                 LogLevel.Debug => "[DEBUG]",
                 _ => "[INFO]"
             };
-            
-            Debug.Log($"{prefix} [EraOfWheel] {message}");
+
+            var formatted = $"{prefix} [EraOfWheel] {message}";
+            TryWriteBootstrapLog(formatted);
+
+            switch (level)
+            {
+                case LogLevel.Error:
+                    Debug.LogError(formatted);
+                    break;
+                case LogLevel.Warning:
+                    Debug.LogWarning(formatted);
+                    break;
+                default:
+                    Debug.Log(formatted);
+                    break;
+            }
+        }
+
+        private static void TryWriteBootstrapLog(string line)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(_bootstrapLogPath))
+                {
+                    var modPath = Path.GetDirectoryName(typeof(ModMain).Assembly.Location);
+                    _bootstrapLogPath = Path.Combine(modPath ?? string.Empty, "logs", "bootstrap.log");
+                }
+
+                var dir = Path.GetDirectoryName(_bootstrapLogPath);
+                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
+
+                File.AppendAllText(_bootstrapLogPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {line}\n");
+            }
+            catch
+            {
+            }
         }
 
         public enum LogLevel
