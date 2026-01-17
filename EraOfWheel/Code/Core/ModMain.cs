@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using NeoModLoader.api;
+using NeoModLoader.services;
 using EraOfWheel.Core.Config;
 using EraOfWheel.Core.Data;
 using EraOfWheel.Cycle;
@@ -11,39 +13,40 @@ using EraOfWheel.UI.Panels;
 
 namespace EraOfWheel.Core
 {
-    public class ModMain : MonoBehaviour
+    public class ModMain : MonoBehaviour, IMod
     {
         public static ModMain Instance { get; private set; }
         
         private const string ModVersion = "0.1.0";
         private const string ModName = "Era of Wheel";
         
+        private ModDeclare _declare;
+        private GameObject _gameObject;
         private List<IModSystem> _systems = new List<IModSystem>();
         private bool _isInitialized = false;
         private int _lastWorldYear = -1;
 
-        public static void Init()
-        {
-            if (Instance != null) return;
-            
-            var go = new GameObject("EraOfWheelMod");
-            Instance = go.AddComponent<ModMain>();
-            DontDestroyOnLoad(go);
-            
-            Logger.Info("ModMain", $"{ModName} v{ModVersion} loading...");
-        }
+        public ModDeclare GetDeclaration() => _declare;
+        public GameObject GetGameObject() => _gameObject;
+        public string GetUrl() => "https://github.com/EraOfWheel/WorldBoxMod";
 
-        private void Awake()
+        public void OnLoad(ModDeclare pModDecl, GameObject pGameObject)
         {
+            Instance = this;
+            _declare = pModDecl;
+            _gameObject = pGameObject;
+            
+            LogService.LogInfo($"[{ModName}]: v{ModVersion} loading...");
+            
             try
             {
                 InitializeSystems();
                 _isInitialized = true;
-                Logger.Info("ModMain", $"{ModName} v{ModVersion} initialized successfully!");
+                LogService.LogInfo($"[{ModName}]: v{ModVersion} initialized successfully!");
             }
             catch (Exception ex)
             {
-                Logger.Error("ModMain", "Failed to initialize mod", ex);
+                LogService.LogError($"[{ModName}]: Failed to initialize - {ex.Message}");
                 _isInitialized = false;
             }
         }

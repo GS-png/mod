@@ -1,5 +1,5 @@
 using System;
-using UnityEngine;
+using NeoModLoader.services;
 
 namespace EraOfWheel.Core
 {
@@ -13,7 +13,7 @@ namespace EraOfWheel.Core
 
     public static class Logger
     {
-        private const string ModPrefix = "[EraOfWheel]";
+        private const string ModPrefix = "EraOfWheel";
         private static LogLevel _minLevel = LogLevel.Info;
 
         public static void SetMinLevel(LogLevel level)
@@ -58,19 +58,21 @@ namespace EraOfWheel.Core
         {
             if (level < _minLevel) return;
 
-            var formattedMessage = $"{ModPrefix}[{system}] {message}";
+            var formattedMessage = $"[{ModPrefix}][{system}] {message}";
 
             switch (level)
             {
                 case LogLevel.Debug:
+                    LogService.LogInfo(formattedMessage);
+                    break;
                 case LogLevel.Info:
-                    UnityEngine.Debug.Log(formattedMessage);
+                    LogService.LogInfo(formattedMessage);
                     break;
                 case LogLevel.Warn:
-                    UnityEngine.Debug.LogWarning(formattedMessage);
+                    LogService.LogWarning(formattedMessage);
                     break;
                 case LogLevel.Error:
-                    UnityEngine.Debug.LogError(formattedMessage);
+                    LogService.LogError(formattedMessage);
                     break;
             }
         }
