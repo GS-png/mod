@@ -1,0 +1,17 @@
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+**/bin/
+**/obj/
+
+*.log
+
+EraOfWheel/logs/
+EraOfWheel/saves/
+EraOfWheel/legacy.json
+
+_bmad-output/

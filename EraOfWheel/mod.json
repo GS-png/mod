@@ -1,0 +1,10 @@
+{
+  "name": "EraOfWheel",
+  "author": "吴旭",
+  "version": "0.1.0",
+  "description": "纪元之轮：魔王轮回 - WorldBox AI协作叙事MOD",
+  "GUID": "com.wuxu.eraofwheel",
+  "Dependencies": [],
+  "OptionalDependencies": [],
+  "IncompatibleWith": []
+}

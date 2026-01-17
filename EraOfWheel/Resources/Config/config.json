@@ -1,0 +1,19 @@
+{
+  "version": "1.0.0",
+  "debug_mode": false,
+  "llm": {
+    "api_key": "",
+    "model": "gpt-4",
+    "timeout_seconds": 30,
+    "max_retries": 3
+  },
+  "gameplay": {
+    "cycle_speed_multiplier": 1.0,
+    "enable_legacy_system": true,
+    "max_demon_lords": 10
+  },
+  "ui": {
+    "show_tutorial": true,
+    "notification_duration": 5
+  }
+}
