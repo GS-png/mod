@@ -9,6 +9,7 @@
     <Nullable>disable</Nullable>
     <LangVersion>11</LangVersion>
     <OutputType>Library</OutputType>
+    <RefsDir>$(ProjectDir)Refs\</RefsDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,27 +39,37 @@
       SkipUnchangedFiles="true" />
   </Target>
 
+  <Target Name="ValidateExternalReferences" BeforeTargets="Build">
+    <Error Condition="!Exists('$(RefsDir)NeoModLoader.dll')" Text="Missing reference: EraOfWheel/Refs/NeoModLoader.dll" />
+    <Error Condition="!Exists('$(RefsDir)Assembly-CSharp-Publicized.dll')" Text="Missing reference: EraOfWheel/Refs/Assembly-CSharp-Publicized.dll" />
+    <Error Condition="!Exists('$(RefsDir)UnityEngine.dll')" Text="Missing reference: EraOfWheel/Refs/UnityEngine.dll" />
+    <Error Condition="!Exists('$(RefsDir)UnityEngine.CoreModule.dll')" Text="Missing reference: EraOfWheel/Refs/UnityEngine.CoreModule.dll" />
+    <Error Condition="!Exists('$(RefsDir)UnityEngine.UI.dll')" Text="Missing reference: EraOfWheel/Refs/UnityEngine.UI.dll" />
+    <Error Condition="!Exists('$(RefsDir)UnityEngine.TextRenderingModule.dll')" Text="Missing reference: EraOfWheel/Refs/UnityEngine.TextRenderingModule.dll" />
+    <Error Condition="!Exists('$(RefsDir)UnityEngine.UnityWebRequestModule.dll')" Text="Missing reference: EraOfWheel/Refs/UnityEngine.UnityWebRequestModule.dll" />
+  </Target>
+
   <ItemGroup>
     <Reference Include="NeoModLoader">
-      <HintPath>..\..\worldbox_Data\StreamingAssets\mods\NeoModLoader.dll</HintPath>
+      <HintPath>$(RefsDir)NeoModLoader.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\worldbox_Data\StreamingAssets\mods\NML\Assembly-CSharp-Publicized.dll</HintPath>
+      <HintPath>$(RefsDir)Assembly-CSharp-Publicized.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>..\..\worldbox_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>$(RefsDir)UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\worldbox_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>$(RefsDir)UnityEngine.CoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\worldbox_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>$(RefsDir)UnityEngine.UI.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>..\..\worldbox_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      <HintPath>$(RefsDir)UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UnityWebRequestModule">
-      <HintPath>..\..\worldbox_Data\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
+      <HintPath>$(RefsDir)UnityEngine.UnityWebRequestModule.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>
