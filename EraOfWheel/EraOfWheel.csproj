@@ -44,9 +44,14 @@
     <Error Condition="!Exists('$(RefsDir)Assembly-CSharp-Publicized.dll')" Text="Missing reference: EraOfWheel/Refs/Assembly-CSharp-Publicized.dll" />
     <Error Condition="!Exists('$(RefsDir)UnityEngine.dll')" Text="Missing reference: EraOfWheel/Refs/UnityEngine.dll" />
     <Error Condition="!Exists('$(RefsDir)UnityEngine.CoreModule.dll')" Text="Missing reference: EraOfWheel/Refs/UnityEngine.CoreModule.dll" />
+    <Error Condition="!Exists('$(RefsDir)UnityEngine.UIModule.dll')" Text="Missing reference: EraOfWheel/Refs/UnityEngine.UIModule.dll" />
     <Error Condition="!Exists('$(RefsDir)UnityEngine.UI.dll')" Text="Missing reference: EraOfWheel/Refs/UnityEngine.UI.dll" />
     <Error Condition="!Exists('$(RefsDir)UnityEngine.TextRenderingModule.dll')" Text="Missing reference: EraOfWheel/Refs/UnityEngine.TextRenderingModule.dll" />
     <Error Condition="!Exists('$(RefsDir)UnityEngine.UnityWebRequestModule.dll')" Text="Missing reference: EraOfWheel/Refs/UnityEngine.UnityWebRequestModule.dll" />
+  </Target>
+
+  <Target Name="ValidateExternalReferencesEarly" BeforeTargets="ResolveReferences;CoreCompile">
+    <CallTarget Targets="ValidateExternalReferences" />
   </Target>
 
   <ItemGroup>
@@ -61,6 +66,9 @@
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(RefsDir)UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(RefsDir)UnityEngine.UIModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>$(RefsDir)UnityEngine.UI.dll</HintPath>
