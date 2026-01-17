@@ -5,6 +5,7 @@ using EraOfWheel.Core;
 using EraOfWheel.Core.Config;
 using EraOfWheel.Cycle;
 using EraOfWheel.DemonLords;
+using Logger = EraOfWheel.Core.Logger;
 
 namespace EraOfWheel.UI.Panels
 {

@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using EraOfWheel.Core;
 using EraOfWheel.Core.Config;
+using Logger = EraOfWheel.Core.Logger;
 
 namespace EraOfWheel.UI
 {

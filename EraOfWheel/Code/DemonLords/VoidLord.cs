@@ -77,16 +77,22 @@ namespace EraOfWheel.DemonLords
                 var units = World.world?.units;
                 if (units == null) return;
 
+                var demonTile = DemonActor?.currentTile;
+                if (demonTile == null) return;
+
                 foreach (var unit in units)
                 {
                     if (unit == null || unit == DemonActor) continue;
                     if (unit.hasTrait("dlm_demon_faction")) continue;
                     
-                    float distance = CalculateDistance(DemonActor.currentPosition, unit.currentPosition);
+                    var unitTile = unit?.currentTile;
+                    if (unitTile == null) continue;
+                    
+                    float distance = CalculateDistance(demonTile, unitTile);
                     if (distance <= _voidDomainRadius)
                     {
                         float damage = unit.data.health * (_voidDomainDamagePercent / 100f);
-                        unit.getHit(damage, pType: AttackType.Other);
+                        unit.getHit(damage);
                     }
                 }
             }

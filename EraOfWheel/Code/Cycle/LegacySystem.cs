@@ -4,6 +4,7 @@ using EraOfWheel.Core;
 using EraOfWheel.Core.Config;
 using EraOfWheel.Core.Events;
 using EraOfWheel.Core.Data;
+using ModSaveManager = EraOfWheel.Core.Data.SaveManager;
 
 namespace EraOfWheel.Cycle
 {
@@ -62,7 +63,7 @@ namespace EraOfWheel.Cycle
 
         private void LoadLegacies()
         {
-            var saveData = SaveManager.Instance?.Data?.legacy;
+            var saveData = ModSaveManager.Instance?.Data?.legacy;
             if (saveData == null) return;
             
             // Load from save data - simplified for MVP

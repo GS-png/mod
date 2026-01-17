@@ -13,7 +13,6 @@ namespace EraOfWheel.DemonLords
         public override string Description => "掌控疾病与腐朽的魔王，她的爱意表现为致命的瘟疫";
         public override int UnlockCycle => 1;
 
-        private PlagueMother _config;
         private float _infectionSpreadChance;
         private int _incubationYears;
         private int _toxicFogDurationYears;
@@ -81,13 +80,16 @@ namespace EraOfWheel.DemonLords
                 foreach (var unit in units)
                 {
                     if (unit == null) continue;
+                    
+                    string unitId = GetUnitId(unit);
+                    if (string.IsNullOrEmpty(unitId)) continue;
                     if (unit.hasTrait("dlm_demon_faction")) continue;
-                    if (_infectedUnits.Contains(unit.data.id)) continue;
+                    if (_infectedUnits.Contains(unitId)) continue;
                     
                     bool nearInfected = IsNearInfectedUnit(unit);
                     if (nearInfected && UnityEngine.Random.value < _infectionSpreadChance)
                     {
-                        newInfections.Add(unit.data.id);
+                        newInfections.Add(unitId);
                         unit.addTrait("plague_infected");
                     }
                 }
@@ -104,6 +106,18 @@ namespace EraOfWheel.DemonLords
             }
         }
 
+        private string GetUnitId(Actor unit)
+        {
+            try
+            {
+                return unit?.data?.actorID.ToString() ?? "";
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
         private bool IsNearInfectedUnit(Actor unit)
         {
             try
@@ -111,12 +125,21 @@ namespace EraOfWheel.DemonLords
                 var units = World.world?.units;
                 if (units == null) return false;
 
+                var unitTile = unit?.currentTile;
+                if (unitTile == null) return false;
+
                 foreach (var other in units)
                 {
                     if (other == null || other == unit) continue;
-                    if (!_infectedUnits.Contains(other.data.id)) continue;
                     
-                    float distance = CalculateDistance(unit.currentPosition, other.currentPosition);
+                    string otherId = GetUnitId(other);
+                    if (string.IsNullOrEmpty(otherId)) continue;
+                    if (!_infectedUnits.Contains(otherId)) continue;
+                    
+                    var otherTile = other?.currentTile;
+                    if (otherTile == null) continue;
+                    
+                    float distance = CalculateDistance(unitTile, otherTile);
                     if (distance <= 50)
                     {
                         return true;
@@ -133,7 +156,6 @@ namespace EraOfWheel.DemonLords
 
         private void ProcessIncubation(int currentYear)
         {
-            // Simplified: infected units take damage over time
             try
             {
                 var units = World.world?.units;
@@ -142,10 +164,13 @@ namespace EraOfWheel.DemonLords
                 foreach (var unit in units)
                 {
                     if (unit == null) continue;
-                    if (!_infectedUnits.Contains(unit.data.id)) continue;
+                    
+                    string unitId = GetUnitId(unit);
+                    if (string.IsNullOrEmpty(unitId)) continue;
+                    if (!_infectedUnits.Contains(unitId)) continue;
                     
                     float damage = unit.data.health * 0.05f;
-                    unit.getHit(damage, pType: AttackType.Other);
+                    unit.getHit(damage);
                     
                     if (unit.data.health <= 0)
                     {
@@ -165,11 +190,11 @@ namespace EraOfWheel.DemonLords
             
             try
             {
-                var cities = World.world?.cities;
-                if (cities == null || cities.Count == 0) return;
+                var cityList = World.world?.cities?.getSimpleList();
+                if (cityList == null || cityList.Count == 0) return;
 
-                int targetIndex = UnityEngine.Random.Range(0, cities.Count);
-                var targetCity = cities[targetIndex];
+                int targetIndex = UnityEngine.Random.Range(0, cityList.Count);
+                var targetCity = cityList[targetIndex];
                 
                 if (targetCity != null)
                 {
@@ -190,9 +215,13 @@ namespace EraOfWheel.DemonLords
             foreach (var unit in city.units)
             {
                 if (unit == null) continue;
+                
+                string unitId = GetUnitId(unit);
+                if (string.IsNullOrEmpty(unitId)) continue;
+                
                 if (UnityEngine.Random.value < 0.5f)
                 {
-                    _infectedUnits.Add(unit.data.id);
+                    _infectedUnits.Add(unitId);
                     unit.addTrait("plague_infected");
                     _totalInfected++;
                 }
@@ -211,7 +240,6 @@ namespace EraOfWheel.DemonLords
         private void SummonPlagueLord()
         {
             Logger.Info($"DemonLord.{Id}", "Plague Lord summoned from the accumulated suffering!");
-            // Note: Full implementation would spawn a mini-boss
         }
 
         private float CalculateDistance(WorldTile a, WorldTile b)

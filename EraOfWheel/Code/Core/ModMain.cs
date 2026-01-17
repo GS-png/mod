@@ -6,6 +6,7 @@ using NeoModLoader.services;
 using EraOfWheel.Core.Config;
 using EraOfWheel.Core.Data;
 using EraOfWheel.Cycle;
+using ModSaveManager = EraOfWheel.Core.Data.SaveManager;
 using EraOfWheel.DemonLords;
 using EraOfWheel.DemonLords.Legion;
 using EraOfWheel.UI;
@@ -56,7 +57,7 @@ namespace EraOfWheel.Core
             // Order matters - dependencies first
             RegisterSystem(new EventBus());
             RegisterSystem(new ConfigManager());
-            RegisterSystem(new SaveManager());
+            RegisterSystem(new ModSaveManager());
             RegisterSystem(new CycleManager());
             RegisterSystem(new DemonLordManager());
             RegisterSystem(new LegionManager());
@@ -80,7 +81,7 @@ namespace EraOfWheel.Core
             }
             
             // Load save after all systems initialized
-            SaveManager.Instance?.LoadFromWorld();
+            ModSaveManager.Instance?.LoadFromWorld();
         }
 
         private void RegisterSystem(IModSystem system)
@@ -118,7 +119,7 @@ namespace EraOfWheel.Core
         {
             try
             {
-                return (int)(World.world?.worldLaws?.world_era?.years ?? 0);
+                return (int)(World.world?.mapStats?.year ?? 0);
             }
             catch
             {

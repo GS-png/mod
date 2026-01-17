@@ -3,6 +3,7 @@ using EraOfWheel.Core;
 using EraOfWheel.Core.Config;
 using EraOfWheel.Core.Events;
 using EraOfWheel.Core.Data;
+using ModSaveManager = EraOfWheel.Core.Data.SaveManager;
 
 namespace EraOfWheel.Cycle
 {
@@ -34,7 +35,7 @@ namespace EraOfWheel.Cycle
 
         private void LoadState()
         {
-            var saveData = SaveManager.Instance?.Data;
+            var saveData = ModSaveManager.Instance?.Data;
             if (saveData != null)
             {
                 State.CycleCount = saveData.current_cycle;
@@ -211,8 +212,8 @@ namespace EraOfWheel.Cycle
             
             State.TransitionTo(CyclePhase.Sealed);
             
-            SaveManager.Instance?.UpdateCycleData(State.CycleCount, State.CurrentPhase.ToString());
-            SaveManager.Instance?.SaveToWorld();
+            ModSaveManager.Instance?.UpdateCycleData(State.CycleCount, State.CurrentPhase.ToString());
+            ModSaveManager.Instance?.SaveToWorld();
         }
 
         public void ForceRestartCycle()
@@ -223,7 +224,7 @@ namespace EraOfWheel.Cycle
             
             Logger.Info(SystemName, $"Cycle restarted with {keepRatio * 100}% legacy retention");
             
-            SaveManager.Instance?.UpdateCycleData(State.CycleCount, State.CurrentPhase.ToString());
+            ModSaveManager.Instance?.UpdateCycleData(State.CycleCount, State.CurrentPhase.ToString());
         }
 
         public float CalculateDemonPowerMultiplier()
@@ -264,7 +265,7 @@ namespace EraOfWheel.Cycle
 
         public void Dispose()
         {
-            SaveManager.Instance?.UpdateCycleData(State.CycleCount, State.CurrentPhase.ToString());
+            ModSaveManager.Instance?.UpdateCycleData(State.CycleCount, State.CurrentPhase.ToString());
             
             IsInitialized = false;
             Instance = null;

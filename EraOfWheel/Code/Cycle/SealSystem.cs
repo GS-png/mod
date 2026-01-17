@@ -152,19 +152,20 @@ namespace EraOfWheel.Cycle
         {
             try
             {
-                var cities = World.world?.cities;
-                if (cities == null || cities.Count == 0) return 0f;
+                var cityList = World.world?.cities?.getSimpleList();
+                if (cityList == null || cityList.Count == 0) return 0f;
                 
                 int demonCities = 0;
-                foreach (var city in cities)
+                foreach (var city in cityList)
                 {
-                    if (city?.kingdom?.data?.id?.Contains("demon") == true)
+                    var kingdomId = city?.kingdom?.data?.id.ToString() ?? "";
+                    if (kingdomId.Contains("demon"))
                     {
                         demonCities++;
                     }
                 }
                 
-                return (float)demonCities / cities.Count;
+                return (float)demonCities / cityList.Count;
             }
             catch
             {
@@ -176,13 +177,15 @@ namespace EraOfWheel.Cycle
         {
             try
             {
-                var kingdoms = World.world?.kingdoms;
-                if (kingdoms == null) return 0;
+                var kingdomList = World.world?.kingdoms?.getSimpleList();
+                if (kingdomList == null) return 0;
                 
                 int count = 0;
-                foreach (var kingdom in kingdoms)
+                foreach (var kingdom in kingdomList)
                 {
-                    if (kingdom?.cities?.Count > 0 && !kingdom.data.id.Contains("demon"))
+                    var kingdomCities = kingdom?.cities?.getSimpleList();
+                    var kingdomId = kingdom?.data?.id.ToString() ?? "";
+                    if (kingdomCities != null && kingdomCities.Count > 0 && !kingdomId.Contains("demon"))
                     {
                         count++;
                     }
