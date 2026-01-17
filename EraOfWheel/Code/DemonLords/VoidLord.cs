@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 using EraOfWheel.Core;
 using EraOfWheel.Core.Config;
 
@@ -77,22 +78,22 @@ namespace EraOfWheel.DemonLords
                 var units = World.world?.units;
                 if (units == null) return;
 
-                var demonTile = DemonActor?.currentTile;
-                if (demonTile == null) return;
+                var demonPos = DemonActor?.currentPosition;
+                if (demonPos == null) return;
 
                 foreach (var unit in units)
                 {
                     if (unit == null || unit == DemonActor) continue;
                     if (unit.hasTrait("dlm_demon_faction")) continue;
                     
-                    var unitTile = unit?.currentTile;
-                    if (unitTile == null) continue;
+                    var unitPos = unit?.currentPosition;
+                    if (unitPos == null) continue;
                     
-                    float distance = CalculateDistance(demonTile, unitTile);
+                    float distance = Vector2.Distance(demonPos.Value, unitPos.Value);
                     if (distance <= _voidDomainRadius)
                     {
                         float damage = unit.data.health * (_voidDomainDamagePercent / 100f);
-                        unit.getHit(damage);
+                        unit.getHit(damage, true, AttackType.Other, null, true, false, false);
                     }
                 }
             }

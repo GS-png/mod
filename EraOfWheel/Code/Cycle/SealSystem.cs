@@ -152,12 +152,14 @@ namespace EraOfWheel.Cycle
         {
             try
             {
-                var cityList = World.world?.cities?.getSimpleList();
-                if (cityList == null || cityList.Count == 0) return 0f;
+                var cities = World.world?.cities;
+                if (cities == null || cities.Count == 0) return 0f;
                 
                 int demonCities = 0;
-                foreach (var city in cityList)
+                int totalCities = 0;
+                foreach (var city in cities)
                 {
+                    totalCities++;
                     var kingdomId = city?.kingdom?.data?.id.ToString() ?? "";
                     if (kingdomId.Contains("demon"))
                     {
@@ -165,7 +167,7 @@ namespace EraOfWheel.Cycle
                     }
                 }
                 
-                return (float)demonCities / cityList.Count;
+                return totalCities > 0 ? (float)demonCities / totalCities : 0f;
             }
             catch
             {
@@ -177,15 +179,19 @@ namespace EraOfWheel.Cycle
         {
             try
             {
-                var kingdomList = World.world?.kingdoms?.getSimpleList();
-                if (kingdomList == null) return 0;
+                var kingdoms = World.world?.kingdoms;
+                if (kingdoms == null) return 0;
                 
                 int count = 0;
-                foreach (var kingdom in kingdomList)
+                foreach (var kingdom in kingdoms)
                 {
-                    var kingdomCities = kingdom?.cities?.getSimpleList();
                     var kingdomId = kingdom?.data?.id.ToString() ?? "";
-                    if (kingdomCities != null && kingdomCities.Count > 0 && !kingdomId.Contains("demon"))
+                    int cityCount = 0;
+                    if (kingdom?.cities != null)
+                    {
+                        foreach (var c in kingdom.cities) cityCount++;
+                    }
+                    if (cityCount > 0 && !kingdomId.Contains("demon"))
                     {
                         count++;
                     }

@@ -119,7 +119,23 @@ namespace EraOfWheel.Core
         {
             try
             {
-                return (int)(World.world?.mapStats?.year ?? 0);
+                // 尝试多种方式获取年份
+                if (World.world == null) return 0;
+                
+                // 方法1: 通过世界数据获取
+                var worldData = World.world.worldLaws;
+                if (worldData != null)
+                {
+                    // 使用反射获取年份，避免API不兼容
+                    var yearField = worldData.GetType().GetField("year") ?? 
+                                   worldData.GetType().GetField("years");
+                    if (yearField != null)
+                    {
+                        return Convert.ToInt32(yearField.GetValue(worldData));
+                    }
+                }
+                
+                return 0;
             }
             catch
             {

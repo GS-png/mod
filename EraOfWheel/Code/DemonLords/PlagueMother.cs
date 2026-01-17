@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 using EraOfWheel.Core;
 using EraOfWheel.Core.Config;
 
@@ -110,7 +111,7 @@ namespace EraOfWheel.DemonLords
         {
             try
             {
-                return unit?.data?.actorID.ToString() ?? "";
+                return unit?.data?.id.ToString() ?? "";
             }
             catch
             {
@@ -125,8 +126,8 @@ namespace EraOfWheel.DemonLords
                 var units = World.world?.units;
                 if (units == null) return false;
 
-                var unitTile = unit?.currentTile;
-                if (unitTile == null) return false;
+                var unitPos = unit?.currentPosition;
+                if (unitPos == null) return false;
 
                 foreach (var other in units)
                 {
@@ -136,10 +137,10 @@ namespace EraOfWheel.DemonLords
                     if (string.IsNullOrEmpty(otherId)) continue;
                     if (!_infectedUnits.Contains(otherId)) continue;
                     
-                    var otherTile = other?.currentTile;
-                    if (otherTile == null) continue;
+                    var otherPos = other?.currentPosition;
+                    if (otherPos == null) continue;
                     
-                    float distance = CalculateDistance(unitTile, otherTile);
+                    float distance = Vector2.Distance(unitPos.Value, otherPos.Value);
                     if (distance <= 50)
                     {
                         return true;
@@ -170,7 +171,7 @@ namespace EraOfWheel.DemonLords
                     if (!_infectedUnits.Contains(unitId)) continue;
                     
                     float damage = unit.data.health * 0.05f;
-                    unit.getHit(damage);
+                    unit.getHit(damage, true, AttackType.Other, null, true, false, false);
                     
                     if (unit.data.health <= 0)
                     {
@@ -190,11 +191,17 @@ namespace EraOfWheel.DemonLords
             
             try
             {
-                var cityList = World.world?.cities?.getSimpleList();
-                if (cityList == null || cityList.Count == 0) return;
+                var cities = World.world?.cities;
+                if (cities == null || cities.Count == 0) return;
 
-                int targetIndex = UnityEngine.Random.Range(0, cityList.Count);
-                var targetCity = cityList[targetIndex];
+                int targetIndex = UnityEngine.Random.Range(0, cities.Count);
+                City targetCity = null;
+                int i = 0;
+                foreach (var c in cities)
+                {
+                    if (i == targetIndex) { targetCity = c; break; }
+                    i++;
+                }
                 
                 if (targetCity != null)
                 {
