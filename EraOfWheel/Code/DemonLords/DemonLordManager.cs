@@ -64,6 +64,22 @@ namespace EraOfWheel.DemonLords
                 case CyclePhase.Awakening:
                     _activeDemonLord?.TransitionState(DemonState.Awakening);
                     break;
+                case CyclePhase.Invasion:
+                    _activeDemonLord?.TransitionState(DemonState.Invasion);
+                    break;
+                case CyclePhase.Peak:
+                    _activeDemonLord?.TransitionState(DemonState.Peak);
+                    break;
+                case CyclePhase.Weakening:
+                    _activeDemonLord?.TransitionState(DemonState.Weakening);
+                    break;
+                case CyclePhase.Resealed:
+                    _activeDemonLord?.TransitionState(DemonState.Resealed);
+                    break;
+                case CyclePhase.Sealed:
+                    // 新周目开始后允许重新选择
+                    _activeDemonLord = null;
+                    break;
             }
         }
 

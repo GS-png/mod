@@ -154,12 +154,80 @@ namespace EraOfWheel.DemonLords
 
         protected virtual void SpawnDemonActor()
         {
-            Logger.Info($"DemonLord.{Id}", $"Spawning demon actor (placeholder)");
+            try
+            {
+                var units = World.world?.units;
+                if (units == null)
+                {
+                    Logger.Warn($"DemonLord.{Id}", "Cannot spawn demon actor: World units not available");
+                    return;
+                }
+
+                Actor selected = null;
+                int seen = 0;
+                foreach (var u in units)
+                {
+                    if (u == null) continue;
+                    seen++;
+                    if (UnityEngine.Random.Range(0, seen) == 0)
+                    {
+                        selected = u;
+                    }
+                }
+
+                if (selected == null)
+                {
+                    Logger.Warn($"DemonLord.{Id}", "Cannot spawn demon actor: no units found");
+                    return;
+                }
+
+                DemonActor = selected;
+                TryAddTrait(DemonActor, "dlm_demon_faction");
+
+                Logger.Info($"DemonLord.{Id}", $"Demon actor selected: {Name}");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"DemonLord.{Id}", "Error spawning demon actor", ex);
+            }
         }
 
         protected virtual void RemoveDemonActor()
         {
+            TryRemoveTrait(DemonActor, "dlm_demon_faction");
             DemonActor = null;
+        }
+
+        protected void TryAddTrait(Actor actor, string traitId)
+        {
+            if (actor == null || string.IsNullOrEmpty(traitId)) return;
+            try
+            {
+                var method = actor.GetType().GetMethod("addTrait");
+                if (method != null)
+                {
+                    method.Invoke(actor, new object[] { traitId });
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        protected void TryRemoveTrait(Actor actor, string traitId)
+        {
+            if (actor == null || string.IsNullOrEmpty(traitId)) return;
+            try
+            {
+                var method = actor.GetType().GetMethod("removeTrait") ?? actor.GetType().GetMethod("remove_trait");
+                if (method != null)
+                {
+                    method.Invoke(actor, new object[] { traitId });
+                }
+            }
+            catch
+            {
+            }
         }
 
         protected virtual void ResetForNextCycle()
