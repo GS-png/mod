@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using UnityEngine;
+using Logger = EraOfWheel.Core.Logger;
 
 namespace EraOfWheel.Core.Config
 {

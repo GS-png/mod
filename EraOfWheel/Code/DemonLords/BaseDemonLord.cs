@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using UnityEngine;
 using EraOfWheel.Core;
+using Logger = EraOfWheel.Core.Logger;
 using EraOfWheel.Core.Events;
 using EraOfWheel.Cycle;
 
