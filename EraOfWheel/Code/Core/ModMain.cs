@@ -5,6 +5,7 @@ using NeoModLoader.api;
 using NeoModLoader.services;
 using EraOfWheel.Core.Config;
 using EraOfWheel.Core.Data;
+using System.Reflection;
 using EraOfWheel.Cycle;
 using ModSaveManager = EraOfWheel.Core.Data.SaveManager;
 using EraOfWheel.DemonLords;
@@ -119,27 +120,71 @@ namespace EraOfWheel.Core
         {
             try
             {
-                // 尝试多种方式获取年份
-                if (World.world == null) return 0;
-                
-                // 方法1: 通过世界数据获取
-                var worldData = World.world.worldLaws;
-                if (worldData != null)
-                {
-                    // 使用反射获取年份，避免API不兼容
-                    var yearField = worldData.GetType().GetField("year") ?? 
-                                   worldData.GetType().GetField("years");
-                    if (yearField != null)
-                    {
-                        return Convert.ToInt32(yearField.GetValue(worldData));
-                    }
-                }
-                
+                var worldObj = World.world;
+                if (worldObj == null) return 0;
+
+                int year;
+                if (TryReadYear(worldObj, out year)) return year;
+
+                var mapStatsObj = GetMemberValue(worldObj, "mapStats");
+                if (TryReadYear(mapStatsObj, out year)) return year;
+
+                var worldLawsObj = GetMemberValue(worldObj, "worldLaws");
+                if (TryReadYear(worldLawsObj, out year)) return year;
+
+                var eraObj = GetMemberValue(worldLawsObj, "world_era") ?? GetMemberValue(worldLawsObj, "worldEra");
+                if (TryReadYear(eraObj, out year)) return year;
+
                 return 0;
             }
             catch
             {
                 return 0;
+            }
+        }
+
+        private static bool TryReadYear(object obj, out int year)
+        {
+            year = 0;
+            if (obj == null) return false;
+
+            var value = GetMemberValue(obj, "year") ?? GetMemberValue(obj, "years") ?? GetMemberValue(obj, "current_year");
+            if (value == null) return false;
+
+            try
+            {
+                year = Convert.ToInt32(value);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static object GetMemberValue(object obj, string name)
+        {
+            if (obj == null || string.IsNullOrEmpty(name)) return null;
+
+            try
+            {
+                var t = obj.GetType();
+                const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
+
+                var field = t.GetField(name, flags);
+                if (field != null) return field.GetValue(obj);
+
+                var prop = t.GetProperty(name, flags);
+                if (prop != null) return prop.GetValue(obj, null);
+
+                var method = t.GetMethod(name, flags, null, Type.EmptyTypes, null);
+                if (method != null) return method.Invoke(obj, null);
+
+                return null;
+            }
+            catch
+            {
+                return null;
             }
         }
 

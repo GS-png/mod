@@ -128,7 +128,12 @@ namespace EraOfWheel.Cycle
         {
             try
             {
-                return World.world?.units?.Count ?? 0;
+                var units = World.world?.units;
+                if (units == null) return 0;
+
+                int count = 0;
+                foreach (var u in units) count++;
+                return count;
             }
             catch
             {
@@ -140,7 +145,12 @@ namespace EraOfWheel.Cycle
         {
             try
             {
-                return World.world?.cities?.Count ?? 0;
+                var cities = World.world?.cities;
+                if (cities == null) return 0;
+
+                int count = 0;
+                foreach (var c in cities) count++;
+                return count;
             }
             catch
             {

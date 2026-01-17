@@ -153,7 +153,7 @@ namespace EraOfWheel.Cycle
             try
             {
                 var cities = World.world?.cities;
-                if (cities == null || cities.Count == 0) return 0f;
+                if (cities == null) return 0f;
                 
                 int demonCities = 0;
                 int totalCities = 0;
