@@ -10,6 +10,17 @@ using Logger = EraOfWheel.Core.Logger;
 
 namespace EraOfWheel.UI
 {
+    public class EraOfWheelGuiBehaviour : MonoBehaviour
+    {
+        public UIManager Manager;
+
+        private void OnGUI()
+        {
+            if (Manager == null) return;
+            Manager.RenderGui();
+        }
+    }
+
     public class UIManager : IModSystem
     {
         public static UIManager Instance { get; private set; }
@@ -255,17 +266,6 @@ namespace EraOfWheel.UI
                 {
                     GUILayout.Label($"[{n.Type}] {n.Title}: {n.Message}");
                 }
-            }
-        }
-
-        private class EraOfWheelGuiBehaviour : MonoBehaviour
-        {
-            public UIManager Manager;
-
-            private void OnGUI()
-            {
-                if (Manager == null) return;
-                Manager.RenderGui();
             }
         }
 
