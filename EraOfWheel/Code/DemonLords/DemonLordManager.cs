@@ -77,7 +77,6 @@ namespace EraOfWheel.DemonLords
                     _activeDemonLord?.TransitionState(DemonState.Resealed);
                     break;
                 case CyclePhase.Sealed:
-                    // 新周目开始后允许重新选择
                     _activeDemonLord = null;
                     break;
             }
@@ -100,11 +99,47 @@ namespace EraOfWheel.DemonLords
                 Logger.Warn(SystemName, "No eligible demon lords for this cycle!");
                 return;
             }
-            
+
+            var preferredId = CycleManager.Instance?.State?.ActiveDemonLordId;
+            if (!string.IsNullOrEmpty(preferredId) && _demonLords.TryGetValue(preferredId, out var preferred))
+            {
+                for (int i = 0; i < eligible.Count; i++)
+                {
+                    if (eligible[i].Id == preferred.Id)
+                    {
+                        _activeDemonLord = preferred;
+                        Logger.Info(SystemName, $"Selected demon lord (preferred) for cycle {cycleCount}: {_activeDemonLord.Name}");
+                        return;
+                    }
+                }
+            }
+
             int index = UnityEngine.Random.Range(0, eligible.Count);
             _activeDemonLord = eligible[index];
-            
+            if (CycleManager.Instance?.State != null)
+            {
+                CycleManager.Instance.State.ActiveDemonLordId = _activeDemonLord.Id;
+            }
             Logger.Info(SystemName, $"Selected demon lord for cycle {cycleCount}: {_activeDemonLord.Name}");
+        }
+
+        public bool SetActiveDemonLord(string demonId)
+        {
+            if (string.IsNullOrEmpty(demonId)) return false;
+            if (!_demonLords.TryGetValue(demonId, out var demon)) return false;
+            if (!demon.IsEnabled) return false;
+
+            int currentCycle = CycleManager.Instance?.State?.CycleCount ?? 1;
+            if (!demon.IsUnlocked(currentCycle)) return false;
+
+            _activeDemonLord = demon;
+            if (CycleManager.Instance?.State != null)
+            {
+                CycleManager.Instance.State.ActiveDemonLordId = demonId;
+            }
+
+            Logger.Info(SystemName, $"Active demon lord set manually: {demon.Name}");
+            return true;
         }
 
         private void OnCycleCompleted(CycleCompletedEvent e)

@@ -264,8 +264,35 @@ namespace EraOfWheel.UI.Panels
                 return;
             }
             
+            if (DemonLordManager.Instance == null)
+            {
+                Logger.Warn(SystemName, "DemonLordManager not ready");
+                return;
+            }
+
+            if (!DemonLordManager.Instance.SetActiveDemonLord(demonId))
+            {
+                Logger.Warn(SystemName, $"Failed to set active demon: {demonId}");
+                return;
+            }
+
             Logger.Info(SystemName, $"Force awakening demon: {demon.Name}");
-            demon.TransitionState(DemonState.Omen);
+
+            var cycle = CycleManager.Instance;
+            if (cycle?.State == null) return;
+
+            if (cycle.State.CurrentPhase == CyclePhase.Sealed)
+            {
+                cycle.TransitionToPhase(CyclePhase.Omen);
+            }
+            if (cycle.State.CurrentPhase == CyclePhase.Omen)
+            {
+                cycle.TransitionToPhase(CyclePhase.Awakening);
+            }
+            if (cycle.State.CurrentPhase == CyclePhase.Awakening)
+            {
+                cycle.TransitionToPhase(CyclePhase.Invasion);
+            }
         }
 
         public void ToggleEnabled(string demonId)
