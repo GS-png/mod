@@ -1,27 +1,38 @@
-# 纪元之轮：魔王轮回
+# 纪元之轮：魔王轮回 (Era Wheel - Demon Lord Reincarnation Cycle)
 
-WorldBox AI协作叙事MOD
+将WorldBox变为一个自我演化的史诗叙事引擎，通过AI驱动的动态剧情系统，让每次游戏都产生独特的文明兴衰史诗。
+
+## 核心特性
+
+- **轮回系统**：世界经历发展→预兆→苏醒→入侵→封印→重建的史诗循环
+- **10大魔王**：每个魔王拥有独特机制，按轮回次数逐步解锁
+- **纪元遗产**：跨轮回永久强化，文明与魔王都会记住教训
+- **AI叙事**：可选LLM集成 + 200+后备事件，保证离线可玩
+- **失败保护**：不会死档，总有重启/恢复路径
 
 ## 安装
 
-1. 确保已安装 [NeoModLoader](https://github.com/WorldBoxOpenMods/NeoModLoader)
-2. 将 `EraOfWheel` 文件夹复制到 WorldBox 的 Mods 目录
-3. 启动游戏
-
-## 功能
-
-- **轮回系统** - 纪元阶段循环，遗产继承
-- **魔王系统** - 10个独特魔王，双向进化
-- **AI叙事** - LLM驱动的动态事件生成
+1. 确保已安装 NeoModLoader
+2. 将 `EraOfWheel` 文件夹放入 `Mods` 目录
+3. 启动游戏，在MOD管理器中启用
 
 ## 配置
 
-编辑 `Resources/Config/config.json` 配置API密钥和游戏参数。
+编辑 `Resources/Config/config.json` 可调整：
+- 轮回触发条件
+- 魔王强度倍率
+- 封印规则
+- LLM设置（可选）
 
 ## 版本
 
-- 0.1.0 - 初始版本
+- **v0.1.0** - MVP版本：2魔王 + 基础轮回 + 击杀封印
 
-## 作者
+## 兼容性
 
-吴旭
+- 目标游戏版本：WorldBox 0.51.2+
+- 依赖：NeoModLoader
+
+## 许可
+
+MIT License

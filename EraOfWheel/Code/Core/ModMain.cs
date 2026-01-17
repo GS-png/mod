@@ -1,197 +1,206 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using NeoModLoader.api;
 using UnityEngine;
+using EraOfWheel.Core.Config;
+using EraOfWheel.Core.Data;
+using EraOfWheel.Cycle;
+using EraOfWheel.DemonLords;
+using EraOfWheel.DemonLords.Legion;
+using EraOfWheel.UI;
+using EraOfWheel.UI.Panels;
 
 namespace EraOfWheel.Core
 {
-    public class ModMain : MonoBehaviour, IMod
+    public class ModMain : MonoBehaviour
     {
         public static ModMain Instance { get; private set; }
-
-        private static string _bootstrapLogPath;
         
-        private ModDeclare _declare;
-        private GameObject _gameObject;
+        private const string ModVersion = "0.1.0";
+        private const string ModName = "Era of Wheel";
         
-        private readonly List<IDisposable> _disposables = new List<IDisposable>();
+        private List<IModSystem> _systems = new List<IModSystem>();
         private bool _isInitialized = false;
+        private int _lastWorldYear = -1;
 
-        public ModDeclare GetDeclaration() => _declare;
-
-        public GameObject GetGameObject() => _gameObject;
-
-        public string GetUrl() => string.Empty;
-
-        public void OnLoad(ModDeclare pModDecl, GameObject pGameObject)
+        public static void Init()
         {
-            _declare = pModDecl;
-            _gameObject = pGameObject;
-            OnModLoad();
-        }
-
-        public void OnUnload()
-        {
-            OnModUnload();
-        }
-
-        public void OnModLoad()
-        {
-            if (_isInitialized)
-            {
-                Log("MOD already initialized, skipping...", LogLevel.Warning);
-                return;
-            }
-
-            Instance = this;
+            if (Instance != null) return;
             
-            Log("=== 纪元之轮：魔王轮回 ===");
-            Log("MOD版本: 0.1.0");
-            Log("作者: 吴旭");
-            Log("正在初始化...");
+            var go = new GameObject("EraOfWheelMod");
+            Instance = go.AddComponent<ModMain>();
+            DontDestroyOnLoad(go);
+            
+            Logger.Info("ModMain", $"{ModName} v{ModVersion} loading...");
+        }
 
+        private void Awake()
+        {
             try
             {
                 InitializeSystems();
                 _isInitialized = true;
-                Log("MOD初始化完成！");
+                Logger.Info("ModMain", $"{ModName} v{ModVersion} initialized successfully!");
             }
             catch (Exception ex)
             {
-                Log($"MOD初始化失败: {ex}", LogLevel.Error);
+                Logger.Error("ModMain", "Failed to initialize mod", ex);
                 _isInitialized = false;
-            }
-        }
-
-        public void OnModUnload()
-        {
-            Log("正在卸载MOD...");
-
-            try
-            {
-                CleanupResources();
-                _isInitialized = false;
-                Instance = null;
-                Log("MOD卸载完成");
-            }
-            catch (Exception ex)
-            {
-                Log($"MOD卸载时发生错误: {ex.Message}", LogLevel.Error);
             }
         }
 
         private void InitializeSystems()
         {
-            // Story 1.2: EventBus
-            var eventBus = new EventBus();
-            eventBus.Initialize();
-            RegisterDisposable(eventBus);
+            // Order matters - dependencies first
+            RegisterSystem(new EventBus());
+            RegisterSystem(new ConfigManager());
+            RegisterSystem(new SaveManager());
+            RegisterSystem(new CycleManager());
+            RegisterSystem(new DemonLordManager());
+            RegisterSystem(new LegionManager());
+            RegisterSystem(new SealSystem());
+            RegisterSystem(new LegacySystem());
+            RegisterSystem(new NotificationSystem());
+            RegisterSystem(new OverviewPanel());
+            RegisterSystem(new DemonPanel());
+            RegisterSystem(new UIManager());
             
-            // Story 1.3: ConfigManager
-            var configManager = new Config.ConfigManager();
-            configManager.Initialize();
-            RegisterDisposable(configManager);
-            
-            // 发布初始化完成事件
-            EventBus.Instance.Publish(new Events.ModInitializedEvent("0.1.0"));
-            
-            // Story 1.4: SaveManager
-            var saveManager = new Data.SaveManager();
-            saveManager.Initialize();
-            RegisterDisposable(saveManager);
-            
-            // Story 1.5: Logger
-            var logger = new Logger();
-            logger.Initialize();
-            RegisterDisposable(logger);
-            
-            // Story 1.6: ErrorHandler
-            var errorHandler = new ErrorHandler();
-            errorHandler.Initialize();
-            RegisterDisposable(errorHandler);
-        }
-
-        private void CleanupResources()
-        {
-            foreach (var disposable in _disposables)
+            foreach (var system in _systems)
             {
                 try
                 {
-                    disposable?.Dispose();
+                    system.Initialize();
                 }
                 catch (Exception ex)
                 {
-                    Log($"资源清理失败: {ex.Message}", LogLevel.Warning);
+                    Logger.Error("ModMain", $"Failed to initialize {system.SystemName}", ex);
                 }
             }
-            _disposables.Clear();
+            
+            // Load save after all systems initialized
+            SaveManager.Instance?.LoadFromWorld();
         }
 
-        public void RegisterDisposable(IDisposable disposable)
+        private void RegisterSystem(IModSystem system)
         {
-            if (disposable != null)
+            _systems.Add(system);
+        }
+
+        private void Update()
+        {
+            if (!_isInitialized) return;
+            
+            try
             {
-                _disposables.Add(disposable);
+                int currentYear = GetCurrentWorldYear();
+                
+                // Year-based updates
+                if (currentYear != _lastWorldYear)
+                {
+                    _lastWorldYear = currentYear;
+                    OnYearChanged(currentYear);
+                }
+                
+                // Frame updates
+                EventBus.Instance?.ProcessQueue();
+                UIManager.Instance?.Update();
+                NotificationSystem.Instance?.Update(Time.deltaTime);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("ModMain", "Error in Update", ex);
             }
         }
 
-        public static void Log(string message, LogLevel level = LogLevel.Info)
-        {
-            string prefix = level switch
-            {
-                LogLevel.Error => "[ERROR]",
-                LogLevel.Warning => "[WARN]",
-                LogLevel.Debug => "[DEBUG]",
-                _ => "[INFO]"
-            };
-
-            var formatted = $"{prefix} [EraOfWheel] {message}";
-            TryWriteBootstrapLog(formatted);
-
-            switch (level)
-            {
-                case LogLevel.Error:
-                    Debug.LogError(formatted);
-                    break;
-                case LogLevel.Warning:
-                    Debug.LogWarning(formatted);
-                    break;
-                default:
-                    Debug.Log(formatted);
-                    break;
-            }
-        }
-
-        private static void TryWriteBootstrapLog(string line)
+        private int GetCurrentWorldYear()
         {
             try
             {
-                if (string.IsNullOrEmpty(_bootstrapLogPath))
-                {
-                    var modPath = Path.GetDirectoryName(typeof(ModMain).Assembly.Location);
-                    _bootstrapLogPath = Path.Combine(modPath ?? string.Empty, "logs", "bootstrap.log");
-                }
-
-                var dir = Path.GetDirectoryName(_bootstrapLogPath);
-                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-                {
-                    Directory.CreateDirectory(dir);
-                }
-
-                File.AppendAllText(_bootstrapLogPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {line}\n");
+                return (int)(World.world?.worldLaws?.world_era?.years ?? 0);
             }
             catch
             {
+                return 0;
             }
         }
 
-        public enum LogLevel
+        private void OnYearChanged(int currentYear)
         {
-            Debug,
-            Info,
-            Warning,
-            Error
+            CycleManager.Instance?.Update(currentYear);
+            DemonLordManager.Instance?.Update(currentYear);
+            LegionManager.Instance?.Update(currentYear);
+            SealSystem.Instance?.Update(currentYear);
+        }
+
+        private void OnDestroy()
+        {
+            Shutdown();
+        }
+
+        private void OnApplicationQuit()
+        {
+            Shutdown();
+        }
+
+        private void Shutdown()
+        {
+            if (!_isInitialized) return;
+            
+            Logger.Info("ModMain", "Shutting down...");
+            
+            // Dispose in reverse order
+            for (int i = _systems.Count - 1; i >= 0; i--)
+            {
+                try
+                {
+                    _systems[i].Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error("ModMain", $"Error disposing {_systems[i].SystemName}", ex);
+                }
+            }
+            
+            _systems.Clear();
+            _isInitialized = false;
+            Instance = null;
+            
+            Logger.Info("ModMain", "Shutdown complete");
+        }
+
+        // Public API for debugging
+        public void ForceNextPhase()
+        {
+            var currentPhase = CycleManager.Instance?.State?.CurrentPhase;
+            if (currentPhase == null) return;
+            
+            CyclePhase nextPhase = currentPhase.Value switch
+            {
+                CyclePhase.Sealed => CyclePhase.Omen,
+                CyclePhase.Omen => CyclePhase.Awakening,
+                CyclePhase.Awakening => CyclePhase.Invasion,
+                CyclePhase.Invasion => CyclePhase.Weakening,
+                CyclePhase.Peak => CyclePhase.Weakening,
+                CyclePhase.Weakening => CyclePhase.Resealed,
+                CyclePhase.Resealed => CyclePhase.Sealed,
+                _ => CyclePhase.Sealed
+            };
+            
+            CycleManager.Instance?.TransitionToPhase(nextPhase);
+        }
+
+        public void ForceSealDemon()
+        {
+            SealSystem.Instance?.TriggerExecutionSeal();
+        }
+
+        public string GetStatusSummary()
+        {
+            var cycle = CycleManager.Instance?.State;
+            var demon = DemonLordManager.Instance?.ActiveDemonLord;
+            
+            return $"Cycle: {cycle?.CycleCount ?? 0}, Phase: {cycle?.CurrentPhase.ToString() ?? "Unknown"}, " +
+                   $"Demon: {demon?.Name ?? "None"}, " +
+                   $"Seal Progress: {SealSystem.Instance?.RitualProgress ?? 0:F0}%";
         }
     }
 }

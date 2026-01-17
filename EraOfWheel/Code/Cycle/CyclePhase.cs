@@ -1,49 +1,62 @@
 namespace EraOfWheel.Cycle
 {
-    /// <summary>
-    /// 纪元阶段枚举
-    /// </summary>
     public enum CyclePhase
     {
-        /// <summary>萌芽期 - 文明初生</summary>
-        Germination = 0,
-        
-        /// <summary>成长期 - 文明发展</summary>
-        Growth = 1,
-        
-        /// <summary>鼎盛期 - 文明巅峰</summary>
-        Prosperity = 2,
-        
-        /// <summary>衰落期 - 文明衰退</summary>
-        Decline = 3,
-        
-        /// <summary>灭绝期 - 文明消亡</summary>
-        Extinction = 4
+        Sealed,
+        Omen,
+        Awakening,
+        Invasion,
+        Peak,
+        Weakening,
+        Resealed
     }
 
-    /// <summary>
-    /// 阶段配置
-    /// </summary>
-    public static class CyclePhaseConfig
+    public static class CyclePhaseExtensions
     {
-        public static string GetPhaseName(CyclePhase phase) => phase switch
+        public static string ToDisplayName(this CyclePhase phase)
         {
-            CyclePhase.Germination => "萌芽",
-            CyclePhase.Growth => "成长",
-            CyclePhase.Prosperity => "鼎盛",
-            CyclePhase.Decline => "衰落",
-            CyclePhase.Extinction => "灭绝",
-            _ => "未知"
-        };
+            switch (phase)
+            {
+                case CyclePhase.Sealed: return "封印状态";
+                case CyclePhase.Omen: return "预兆阶段";
+                case CyclePhase.Awakening: return "苏醒准备";
+                case CyclePhase.Invasion: return "正式降临";
+                case CyclePhase.Peak: return "全盛期";
+                case CyclePhase.Weakening: return "衰弱期";
+                case CyclePhase.Resealed: return "被封印";
+                default: return phase.ToString();
+            }
+        }
 
-        public static float GetPhaseDuration(CyclePhase phase) => phase switch
+        public static bool IsCombatPhase(this CyclePhase phase)
         {
-            CyclePhase.Germination => 100f,
-            CyclePhase.Growth => 200f,
-            CyclePhase.Prosperity => 150f,
-            CyclePhase.Decline => 100f,
-            CyclePhase.Extinction => 50f,
-            _ => 100f
-        };
+            return phase == CyclePhase.Awakening ||
+                   phase == CyclePhase.Invasion ||
+                   phase == CyclePhase.Peak ||
+                   phase == CyclePhase.Weakening;
+        }
+
+        public static bool CanTransitionTo(this CyclePhase current, CyclePhase target)
+        {
+            switch (current)
+            {
+                case CyclePhase.Sealed:
+                    return target == CyclePhase.Omen;
+                case CyclePhase.Omen:
+                    return target == CyclePhase.Awakening || target == CyclePhase.Sealed;
+                case CyclePhase.Awakening:
+                    return target == CyclePhase.Invasion || target == CyclePhase.Sealed;
+                case CyclePhase.Invasion:
+                    return target == CyclePhase.Peak || target == CyclePhase.Weakening;
+                case CyclePhase.Peak:
+                    return target == CyclePhase.Weakening;
+                case CyclePhase.Weakening:
+                    return target == CyclePhase.Resealed;
+                case CyclePhase.Resealed:
+                    return target == CyclePhase.Sealed;
+                default:
+                    return false;
+            }
+        }
     }
 }

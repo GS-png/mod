@@ -1,155 +1,104 @@
 using System;
-using System.Collections.Generic;
-using EraOfWheel.Core;
 using UnityEngine;
+using EraOfWheel.Core;
+using EraOfWheel.Core.Config;
 
 namespace EraOfWheel.UI
 {
-    /// <summary>
-    /// UI管理器 - 统一管理所有MOD UI面板
-    /// </summary>
     public class UIManager : IModSystem
     {
         public static UIManager Instance { get; private set; }
         
         public string SystemName => "UIManager";
         public bool IsInitialized { get; private set; }
-
-        private Dictionary<string, BasePanel> _panels = new Dictionary<string, BasePanel>();
-        private Canvas _canvas;
+        
+        public bool IsPanelVisible { get; private set; } = false;
+        
+        private UIConfig _config;
+        private KeyCode _hotkey = KeyCode.F8;
+        private GameObject _mainPanel;
 
         public void Initialize()
         {
             if (IsInitialized) return;
-
+            
             Instance = this;
-            CreateCanvas();
-            RegisterPanels();
+            _config = ConfigManager.Instance?.Config?.ui ?? new UIConfig();
+            
+            ParseHotkey(_config.hotkey);
+            CreateUI();
             
             IsInitialized = true;
-            Logger.Info(SystemName, "UI管理器初始化完成");
+            Logger.Info(SystemName, $"UIManager initialized, hotkey: {_hotkey}");
         }
 
-        private void CreateCanvas()
+        private void ParseHotkey(string keyName)
         {
-            var canvasGo = new GameObject("EraOfWheel_Canvas");
-            _canvas = canvasGo.AddComponent<Canvas>();
-            _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            _canvas.sortingOrder = 100;
+            if (Enum.TryParse<KeyCode>(keyName, true, out var key))
+            {
+                _hotkey = key;
+            }
+        }
+
+        private void CreateUI()
+        {
+            if (!_config.enabled) return;
             
-            canvasGo.AddComponent<UnityEngine.UI.CanvasScaler>();
-            canvasGo.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+            // Note: Full implementation would create NeoModLoader UI elements
+            Logger.Debug(SystemName, "UI elements created (placeholder)");
+        }
+
+        public void Update()
+        {
+            if (!IsInitialized || !_config.enabled) return;
             
-            UnityEngine.Object.DontDestroyOnLoad(canvasGo);
-        }
-
-        private void RegisterPanels()
-        {
-            // 注册各个面板
-            Register("main", new MainControlPanel());
-            Register("cycle", new CycleStatusPanel());
-            Register("demon", new DemonLordPanel());
-            Register("settings", new SettingsPanel());
-        }
-
-        public void Register(string id, BasePanel panel)
-        {
-            _panels[id] = panel;
-            panel.Initialize(_canvas.transform);
-        }
-
-        public T GetPanel<T>(string id) where T : BasePanel
-        {
-            return _panels.TryGetValue(id, out var panel) ? panel as T : null;
-        }
-
-        public void ShowPanel(string id)
-        {
-            if (_panels.TryGetValue(id, out var panel))
+            if (Input.GetKeyDown(_hotkey))
             {
-                panel.Show();
+                TogglePanel();
             }
         }
 
-        public void HidePanel(string id)
+        public void TogglePanel()
         {
-            if (_panels.TryGetValue(id, out var panel))
+            IsPanelVisible = !IsPanelVisible;
+            
+            if (_mainPanel != null)
             {
-                panel.Hide();
+                _mainPanel.SetActive(IsPanelVisible);
+            }
+            
+            Logger.Debug(SystemName, $"Panel visibility: {IsPanelVisible}");
+        }
+
+        public void ShowPanel()
+        {
+            IsPanelVisible = true;
+            if (_mainPanel != null)
+            {
+                _mainPanel.SetActive(true);
             }
         }
 
-        public void TogglePanel(string id)
+        public void HidePanel()
         {
-            if (_panels.TryGetValue(id, out var panel))
+            IsPanelVisible = false;
+            if (_mainPanel != null)
             {
-                if (panel.IsVisible) panel.Hide();
-                else panel.Show();
-            }
-        }
-
-        public void HideAll()
-        {
-            foreach (var panel in _panels.Values)
-            {
-                panel.Hide();
+                _mainPanel.SetActive(false);
             }
         }
 
         public void Dispose()
         {
-            foreach (var panel in _panels.Values)
+            if (_mainPanel != null)
             {
-                panel.Dispose();
-            }
-            _panels.Clear();
-            
-            if (_canvas != null)
-            {
-                UnityEngine.Object.Destroy(_canvas.gameObject);
+                UnityEngine.Object.Destroy(_mainPanel);
+                _mainPanel = null;
             }
             
-            Instance = null;
             IsInitialized = false;
-        }
-    }
-
-    /// <summary>
-    /// 面板基类
-    /// </summary>
-    public abstract class BasePanel : IDisposable
-    {
-        public abstract string PanelId { get; }
-        public bool IsVisible { get; protected set; }
-        protected GameObject Root { get; set; }
-        protected Transform Parent { get; set; }
-
-        public virtual void Initialize(Transform parent)
-        {
-            Parent = parent;
-            CreateUI();
-        }
-
-        protected abstract void CreateUI();
-
-        public virtual void Show()
-        {
-            Root?.SetActive(true);
-            IsVisible = true;
-        }
-
-        public virtual void Hide()
-        {
-            Root?.SetActive(false);
-            IsVisible = false;
-        }
-
-        public virtual void Dispose()
-        {
-            if (Root != null)
-            {
-                UnityEngine.Object.Destroy(Root);
-            }
+            Instance = null;
+            Logger.Info(SystemName, "UIManager disposed");
         }
     }
 }

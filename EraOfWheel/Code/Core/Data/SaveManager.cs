@@ -4,222 +4,194 @@ using UnityEngine;
 
 namespace EraOfWheel.Core.Data
 {
-    /// <summary>
-    /// 存档管理器 - 负责游戏存档和遗产数据的持久化
-    /// </summary>
+    [Serializable]
+    public class ModSaveData
+    {
+        public string mod_version = "0.1.0";
+        public int current_cycle = 1;
+        public int world_age_years = 0;
+        public string current_phase = "Sealed";
+        public DemonLordSaveData[] demon_lords = new DemonLordSaveData[0];
+        public LegacySaveData legacy = new LegacySaveData();
+    }
+
+    [Serializable]
+    public class DemonLordSaveData
+    {
+        public string id;
+        public string state = "Sealed";
+        public float seal_strength = 100f;
+        public float health_percent = 100f;
+        public int total_kills = 0;
+        public CycleHistory[] history = new CycleHistory[0];
+    }
+
+    [Serializable]
+    public class CycleHistory
+    {
+        public int cycle;
+        public int cities_destroyed;
+        public int heroes_killed;
+        public string seal_method;
+    }
+
+    [Serializable]
+    public class LegacySaveData
+    {
+        public string[] military_legacies = new string[0];
+        public string[] economic_legacies = new string[0];
+        public string[] tech_legacies = new string[0];
+        public string[] legendary_legacies = new string[0];
+        public string[] curse_legacies = new string[0];
+    }
+
     public class SaveManager : IModSystem
     {
         public static SaveManager Instance { get; private set; }
         
         public string SystemName => "SaveManager";
         public bool IsInitialized { get; private set; }
-
-        private string _savePath;
-        private string _legacyPath;
-        private const int MAX_SLOTS = 3;
-        private const string BACKUP_SUFFIX = ".backup";
-
-        public SaveData CurrentSave { get; private set; }
-        public LegacyData Legacy { get; private set; }
+        
+        public ModSaveData Data { get; private set; }
+        
+        private const string SaveFileName = "era_of_wheel_save.json";
 
         public void Initialize()
         {
             if (IsInitialized) return;
-
-            Instance = this;
             
-            var modPath = Path.GetDirectoryName(typeof(SaveManager).Assembly.Location);
-            _savePath = Path.Combine(modPath, "saves");
-            _legacyPath = Path.Combine(modPath, "legacy.json");
-
-            if (!Directory.Exists(_savePath))
-            {
-                Directory.CreateDirectory(_savePath);
-            }
-
-            LoadLegacy();
+            Instance = this;
+            Data = new ModSaveData();
+            
             IsInitialized = true;
-            ModMain.Log($"[{SystemName}] 初始化完成");
+            Logger.Info(SystemName, "SaveManager initialized");
         }
 
-        /// <summary>
-        /// 保存游戏到指定槽位
-        /// </summary>
-        public bool Save(int slot, SaveData data)
+        public void LoadFromWorld()
         {
-            if (slot < 0 || slot >= MAX_SLOTS)
-            {
-                ModMain.Log($"[{SystemName}] 无效的存档槽位: {slot}", ModMain.LogLevel.Error);
-                return false;
-            }
-
             try
             {
-                data.slotIndex = slot;
-                data.saveTime = DateTime.UtcNow;
-                
-                var filePath = GetSavePath(slot);
-                
-                // 创建备份
-                if (File.Exists(filePath))
+                var savePath = GetSavePath();
+                if (!File.Exists(savePath))
                 {
-                    File.Copy(filePath, filePath + BACKUP_SUFFIX, true);
+                    Logger.Info(SystemName, "No save file found, using new data");
+                    Data = new ModSaveData();
+                    return;
                 }
-
-                var json = JsonUtility.ToJson(data, true);
-                File.WriteAllText(filePath, json);
                 
-                CurrentSave = data;
-                ModMain.Log($"[{SystemName}] 存档已保存: 槽位 {slot}");
-                return true;
+                var json = File.ReadAllText(savePath);
+                Data = JsonUtility.FromJson<ModSaveData>(json);
+                Logger.Info(SystemName, $"Loaded save: Cycle {Data.current_cycle}, Phase {Data.current_phase}");
             }
             catch (Exception ex)
             {
-                ModMain.Log($"[{SystemName}] 保存失败: {ex.Message}", ModMain.LogLevel.Error);
-                return false;
+                Logger.Error(SystemName, "Error loading save", ex);
+                Data = new ModSaveData();
             }
         }
 
-        /// <summary>
-        /// 从指定槽位加载游戏
-        /// </summary>
-        public SaveData Load(int slot)
+        public void SaveToWorld()
         {
-            if (slot < 0 || slot >= MAX_SLOTS)
-            {
-                ModMain.Log($"[{SystemName}] 无效的存档槽位: {slot}", ModMain.LogLevel.Error);
-                return null;
-            }
-
-            var filePath = GetSavePath(slot);
-
             try
             {
-                if (!File.Exists(filePath))
+                var savePath = GetSavePath();
+                var directory = Path.GetDirectoryName(savePath);
+                
+                if (!Directory.Exists(directory))
                 {
-                    // 尝试从备份恢复
-                    if (File.Exists(filePath + BACKUP_SUFFIX))
-                    {
-                        ModMain.Log($"[{SystemName}] 从备份恢复存档", ModMain.LogLevel.Warning);
-                        File.Copy(filePath + BACKUP_SUFFIX, filePath);
-                    }
-                    else
-                    {
-                        return null;
-                    }
+                    Directory.CreateDirectory(directory);
                 }
-
-                var json = File.ReadAllText(filePath);
-                var data = JsonUtility.FromJson<SaveData>(json);
                 
-                // 版本检查和迁移
-                data = MigrateIfNeeded(data);
+                BackupSave(savePath);
                 
-                CurrentSave = data;
-                ModMain.Log($"[{SystemName}] 存档已加载: 槽位 {slot}");
-                return data;
+                var json = JsonUtility.ToJson(Data, true);
+                File.WriteAllText(savePath, json);
+                Logger.Info(SystemName, "Save completed");
             }
             catch (Exception ex)
             {
-                ModMain.Log($"[{SystemName}] 加载失败: {ex.Message}", ModMain.LogLevel.Error);
-                return TryRecoverFromBackup(slot);
+                Logger.Error(SystemName, "Error saving", ex);
             }
         }
 
-        /// <summary>
-        /// 检查槽位是否有存档
-        /// </summary>
-        public bool HasSave(int slot)
-        {
-            return File.Exists(GetSavePath(slot));
-        }
-
-        /// <summary>
-        /// 删除指定槽位的存档
-        /// </summary>
-        public void Delete(int slot)
-        {
-            var filePath = GetSavePath(slot);
-            if (File.Exists(filePath)) File.Delete(filePath);
-            if (File.Exists(filePath + BACKUP_SUFFIX)) File.Delete(filePath + BACKUP_SUFFIX);
-            ModMain.Log($"[{SystemName}] 存档已删除: 槽位 {slot}");
-        }
-
-        /// <summary>
-        /// 加载遗产数据
-        /// </summary>
-        public void LoadLegacy()
+        private void BackupSave(string savePath)
         {
             try
             {
-                if (File.Exists(_legacyPath))
+                if (File.Exists(savePath))
                 {
-                    var json = File.ReadAllText(_legacyPath);
-                    Legacy = JsonUtility.FromJson<LegacyData>(json);
+                    var backupPath = savePath + ".backup";
+                    File.Copy(savePath, backupPath, true);
                 }
-                else
-                {
-                    Legacy = new LegacyData();
-                }
-            }
-            catch
-            {
-                Legacy = new LegacyData();
-            }
-        }
-
-        /// <summary>
-        /// 保存遗产数据
-        /// </summary>
-        public void SaveLegacy()
-        {
-            try
-            {
-                var json = JsonUtility.ToJson(Legacy, true);
-                File.WriteAllText(_legacyPath, json);
             }
             catch (Exception ex)
             {
-                ModMain.Log($"[{SystemName}] 保存遗产数据失败: {ex.Message}", ModMain.LogLevel.Error);
+                Logger.Warn(SystemName, $"Backup failed: {ex.Message}");
             }
         }
 
-        private string GetSavePath(int slot) => Path.Combine(_savePath, $"save_{slot}.json");
-
-        private SaveData MigrateIfNeeded(SaveData data)
+        public void RestoreBackup()
         {
-            // 版本迁移逻辑
-            if (data.version != "1.0.0")
-            {
-                ModMain.Log($"[{SystemName}] 迁移存档: {data.version} → 1.0.0");
-                data.version = "1.0.0";
-            }
-            return data;
-        }
-
-        private SaveData TryRecoverFromBackup(int slot)
-        {
-            var backupPath = GetSavePath(slot) + BACKUP_SUFFIX;
-            if (!File.Exists(backupPath)) return null;
-
             try
             {
-                var json = File.ReadAllText(backupPath);
-                var data = JsonUtility.FromJson<SaveData>(json);
-                ModMain.Log($"[{SystemName}] 从备份恢复成功", ModMain.LogLevel.Warning);
-                return data;
+                var savePath = GetSavePath();
+                var backupPath = savePath + ".backup";
+                
+                if (File.Exists(backupPath))
+                {
+                    File.Copy(backupPath, savePath, true);
+                    LoadFromWorld();
+                    Logger.Info(SystemName, "Backup restored");
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                return null;
+                Logger.Error(SystemName, "Error restoring backup", ex);
             }
+        }
+
+        private string GetSavePath()
+        {
+            var worldPath = Application.persistentDataPath;
+            return Path.Combine(worldPath, SaveFileName);
+        }
+
+        public void UpdateCycleData(int cycle, string phase)
+        {
+            Data.current_cycle = cycle;
+            Data.current_phase = phase;
+        }
+
+        public void UpdateDemonLordData(string id, string state, float sealStrength, float healthPercent)
+        {
+            for (int i = 0; i < Data.demon_lords.Length; i++)
+            {
+                if (Data.demon_lords[i].id == id)
+                {
+                    Data.demon_lords[i].state = state;
+                    Data.demon_lords[i].seal_strength = sealStrength;
+                    Data.demon_lords[i].health_percent = healthPercent;
+                    return;
+                }
+            }
+            
+            var list = new System.Collections.Generic.List<DemonLordSaveData>(Data.demon_lords);
+            list.Add(new DemonLordSaveData
+            {
+                id = id,
+                state = state,
+                seal_strength = sealStrength,
+                health_percent = healthPercent
+            });
+            Data.demon_lords = list.ToArray();
         }
 
         public void Dispose()
         {
-            SaveLegacy();
-            Instance = null;
+            SaveToWorld();
             IsInitialized = false;
+            Instance = null;
+            Logger.Info(SystemName, "SaveManager disposed");
         }
     }
 }

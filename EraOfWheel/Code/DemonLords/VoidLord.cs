@@ -1,101 +1,148 @@
+using System;
 using EraOfWheel.Core;
-using EraOfWheel.Core.Events;
+using EraOfWheel.Core.Config;
 
 namespace EraOfWheel.DemonLords
 {
-    /// <summary>
-    /// 虚无之主 - 存在吞噬者
-    /// </summary>
     public class VoidLord : BaseDemonLord
     {
         public override string Id => "void_lord";
-        public override string Name => "虚无之主";
-        public override string Title => "存在吞噬者";
-        public override string Description => "来自虚空的古老存在，以吞噬一切存在为食。其力量随着被吞噬的生命而增长。";
-        public override DemonLordType Type => DemonLordType.Void;
+        public override string Name => "虚无之主·伊格尔";
+        public override string Title => "存在的终结者";
+        public override string Description => "代表虚无概念的原初魔王，能够抹除万物的存在痕迹";
+        public override int UnlockCycle => 1;
 
-        private float _corruptionRadius = 10f;
-        private int _devourCount = 0;
+        private VoidLordConfig _config;
+        private int _voidDomainRadius;
+        private float _voidDomainDamagePercent;
+        private int _worldContractionKillThreshold;
+        private float _worldContractionPercent;
+        private float _minHabitablePercent;
+        
+        private int _lastContractionKillCount = 0;
 
-        protected override void InitializeStats()
+        public VoidLord()
         {
-            Stats["corruption_power"] = 1.0f;
-            Stats["devour_rate"] = 0.5f;
-            Stats["void_expansion"] = 0.1f;
+            Stats.BaseHealth = 100000f;
+            Stats.BaseDamage = 1000f;
+            Stats.BaseDefense = 500f;
+            Stats.BaseSpeed = 12f;
+            Stats.HealthGrowthPerCycle = 0.5f;
+            Stats.DamageGrowthPerCycle = 0.33f;
         }
 
-        protected override void InitializeAbilities()
+        public override void Initialize(int cycleCount)
         {
-            UnlockedAbilities.Add("void_touch");
-        }
-
-        public override void ExecuteInvasion()
-        {
-            if (!IsAwakened) return;
-
-            var threatLevel = GetThreatLevel();
+            base.Initialize(cycleCount);
             
-            if (threatLevel >= 3)
+            _config = ConfigManager.Instance?.Config?.demon_lords?.void_lord;
+            if (_config != null)
             {
-                ExecuteVoidStorm();
-            }
-            else if (threatLevel >= 2)
-            {
-                ExecuteCorruption();
+                _voidDomainRadius = _config.void_domain_radius;
+                _voidDomainDamagePercent = _config.void_domain_damage_percent;
+                _worldContractionKillThreshold = _config.world_contraction_kill_threshold;
+                _worldContractionPercent = _config.world_contraction_percent;
+                _minHabitablePercent = _config.min_habitable_percent;
+                IsEnabled = _config.enabled;
             }
             else
             {
-                ExecuteDevour();
+                _voidDomainRadius = 1000;
+                _voidDomainDamagePercent = 1f;
+                _worldContractionKillThreshold = 100;
+                _worldContractionPercent = 5f;
+                _minHabitablePercent = 40f;
             }
         }
 
-        private void ExecuteDevour()
+        protected override void UpdateInvasion(int currentYear)
         {
-            _devourCount++;
-            Stats["corruption_power"] += 0.1f;
+            base.UpdateInvasion(currentYear);
             
-            Logger.Info("VoidLord", "虚无之主发动【吞噬】");
-            EventBus.Instance?.Publish(new DemonLordInvasionEvent(this, "devour"));
+            ApplyVoidDomain();
+            CheckWorldContraction();
         }
 
-        private void ExecuteCorruption()
+        public override void ApplyUniqueAbility()
         {
-            _corruptionRadius += Stats["void_expansion"] * 5f;
+            ApplyVoidDomain();
+        }
+
+        private void ApplyVoidDomain()
+        {
+            if (DemonActor == null) return;
             
-            Logger.Info("VoidLord", $"虚无之主发动【虚空腐蚀】范围: {_corruptionRadius:F1}");
-            EventBus.Instance?.Publish(new DemonLordInvasionEvent(this, "corruption"));
-        }
-
-        private void ExecuteVoidStorm()
-        {
-            Logger.Info("VoidLord", "⚠️ 虚无之主发动【虚空风暴】！");
-            EventBus.Instance?.Publish(new DemonLordInvasionEvent(this, "void_storm"));
-        }
-
-        public override void Evolve(PlayerActionData actions)
-        {
-            // 学习玩家的防御模式
-            if (actions.ActionCounts.TryGetValue("defense", out int defenseCount))
+            try
             {
-                if (defenseCount > 5)
+                var units = World.world?.units;
+                if (units == null) return;
+
+                foreach (var unit in units)
                 {
-                    Stats["corruption_power"] += 0.2f;
-                    Logger.Debug("VoidLord", "虚无之主进化: 增强腐蚀力量");
+                    if (unit == null || unit == DemonActor) continue;
+                    if (unit.hasTrait("dlm_demon_faction")) continue;
+                    
+                    float distance = CalculateDistance(DemonActor.currentPosition, unit.currentPosition);
+                    if (distance <= _voidDomainRadius)
+                    {
+                        float damage = unit.data.health * (_voidDomainDamagePercent / 100f);
+                        unit.getHit(damage, pType: AttackType.Other);
+                    }
                 }
             }
-            
-            // 解锁新能力
-            if (_devourCount >= 10 && !UnlockedAbilities.Contains("mass_devour"))
+            catch (Exception ex)
             {
-                UnlockedAbilities.Add("mass_devour");
-                Logger.Info("VoidLord", "虚无之主解锁新能力: 【群体吞噬】");
+                Logger.Error($"DemonLord.{Id}", $"Error applying void domain", ex);
             }
         }
 
-        public override int GetThreatLevel()
+        private void CheckWorldContraction()
         {
-            var baseThreat = base.GetThreatLevel();
-            return baseThreat + (_devourCount / 5);
+            int killsSinceLastContraction = TotalKills - _lastContractionKillCount;
+            
+            if (killsSinceLastContraction >= _worldContractionKillThreshold)
+            {
+                TriggerWorldContraction();
+                _lastContractionKillCount = TotalKills;
+            }
+        }
+
+        private void TriggerWorldContraction()
+        {
+            Logger.Info($"DemonLord.{Id}", $"World Contraction triggered! {_worldContractionPercent}% of world becomes void");
+            
+            // Note: Full implementation would convert tiles to void terrain
+            // For MVP, we log the event
+        }
+
+        private float CalculateDistance(WorldTile a, WorldTile b)
+        {
+            if (a == null || b == null) return float.MaxValue;
+            
+            float dx = a.x - b.x;
+            float dy = a.y - b.y;
+            return (float)Math.Sqrt(dx * dx + dy * dy);
+        }
+
+        public override void OnCycleEvolution(int newCycleCount)
+        {
+            Logger.Info($"DemonLord.{Id}", $"Evolving for cycle {newCycleCount}");
+            
+            if (newCycleCount >= 2)
+            {
+                _voidDomainRadius = (int)(_voidDomainRadius * 1.1f);
+            }
+            
+            if (newCycleCount >= 3)
+            {
+                _voidDomainDamagePercent *= 1.2f;
+            }
+        }
+
+        protected override void ResetForNextCycle()
+        {
+            base.ResetForNextCycle();
+            _lastContractionKillCount = 0;
         }
     }
 }

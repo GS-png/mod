@@ -1,10 +1,10 @@
 {
-  "name": "EraOfWheel",
-  "author": "吴旭",
+  "name": "Era Wheel - Demon Lord Reincarnation Cycle",
+  "author": "EraOfWheel Team",
   "version": "0.1.0",
-  "description": "纪元之轮：魔王轮回 - WorldBox AI协作叙事MOD",
-  "GUID": "com.wuxu.eraofwheel",
-  "Dependencies": [],
-  "OptionalDependencies": [],
-  "IncompatibleWith": []
+  "description": "纪元之轮：魔王轮回 - 将WorldBox变为史诗叙事引擎，通过轮回系统让每次游戏产生独特的文明兴衰史诗",
+  "iconPath": "icon.png",
+  "targetGameVersion": "0.51.2",
+  "dependencies": [],
+  "tags": ["gameplay", "demon", "cycle", "narrative", "epic"]
 }

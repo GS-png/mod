@@ -1,143 +1,188 @@
 using System;
 using System.IO;
-using EraOfWheel.Core.Events;
 using UnityEngine;
 
 namespace EraOfWheel.Core.Config
 {
-    /// <summary>
-    /// 配置管理器 - 负责加载、保存和管理MOD配置
-    /// </summary>
     public class ConfigManager : IModSystem
     {
         public static ConfigManager Instance { get; private set; }
         
         public string SystemName => "ConfigManager";
         public bool IsInitialized { get; private set; }
-
-        private ModConfig _config;
+        
+        public ModConfig Config { get; private set; }
+        
         private string _configPath;
-        private DateTime _lastModified;
-
-        public ModConfig Config => _config;
+        private string _backupPath;
 
         public void Initialize()
         {
             if (IsInitialized) return;
-
+            
             Instance = this;
             
-            // 设置配置文件路径
-            var modPath = Path.GetDirectoryName(typeof(ConfigManager).Assembly.Location);
+            var modPath = GetModPath();
             _configPath = Path.Combine(modPath, "Resources", "Config", "config.json");
-
-            Load();
+            _backupPath = Path.Combine(modPath, "Resources", "Config", "config.backup.json");
+            
+            LoadConfig();
+            
             IsInitialized = true;
-            ModMain.Log($"[{SystemName}] 初始化完成");
+            Logger.Info(SystemName, $"ConfigManager initialized, config loaded from {_configPath}");
         }
 
-        /// <summary>
-        /// 加载配置文件
-        /// </summary>
-        public void Load()
+        private string GetModPath()
+        {
+            var assemblyPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            return Path.GetDirectoryName(assemblyPath) ?? Application.dataPath;
+        }
+
+        public void LoadConfig()
+        {
+            Config = LoadFromFile(_configPath);
+            if (Config == null)
+            {
+                Logger.Warn(SystemName, "Failed to load config, using defaults");
+                Config = CreateDefaultConfig();
+                SaveConfig();
+            }
+            
+            ValidateConfig();
+            ApplyLogLevel();
+        }
+
+        private ModConfig LoadFromFile(string path)
         {
             try
             {
-                if (File.Exists(_configPath))
+                if (!File.Exists(path))
                 {
-                    var json = File.ReadAllText(_configPath);
-                    _config = JsonUtility.FromJson<ModConfig>(json);
-                    _lastModified = File.GetLastWriteTime(_configPath);
-                    ModMain.Log($"[{SystemName}] 配置已加载: {_configPath}");
+                    Logger.Info(SystemName, $"Config file not found at {path}");
+                    return null;
                 }
-                else
-                {
-                    ModMain.Log($"[{SystemName}] 配置文件不存在，使用默认值", ModMain.LogLevel.Warning);
-                    _config = new ModConfig();
-                    Save(); // 创建默认配置文件
-                }
+                
+                var json = File.ReadAllText(path);
+                return JsonUtility.FromJson<ModConfig>(json);
             }
             catch (Exception ex)
             {
-                ModMain.Log($"[{SystemName}] 加载配置失败: {ex.Message}", ModMain.LogLevel.Error);
-                _config = new ModConfig();
+                Logger.Error(SystemName, $"Error loading config from {path}", ex);
+                return null;
             }
         }
 
-        /// <summary>
-        /// 保存配置到文件
-        /// </summary>
-        public void Save()
+        public void SaveConfig()
         {
             try
             {
+                BackupConfig();
+                
                 var directory = Path.GetDirectoryName(_configPath);
                 if (!Directory.Exists(directory))
                 {
                     Directory.CreateDirectory(directory);
                 }
-
-                var json = JsonUtility.ToJson(_config, true);
+                
+                var json = JsonUtility.ToJson(Config, true);
                 File.WriteAllText(_configPath, json);
-                _lastModified = File.GetLastWriteTime(_configPath);
-                ModMain.Log($"[{SystemName}] 配置已保存");
+                Logger.Info(SystemName, "Config saved");
             }
             catch (Exception ex)
             {
-                ModMain.Log($"[{SystemName}] 保存配置失败: {ex.Message}", ModMain.LogLevel.Error);
+                Logger.Error(SystemName, "Error saving config", ex);
             }
         }
 
-        /// <summary>
-        /// 重新加载配置（热重载）
-        /// </summary>
-        public void Reload()
+        private void BackupConfig()
         {
-            var oldConfig = _config;
-            Load();
+            try
+            {
+                if (File.Exists(_configPath))
+                {
+                    File.Copy(_configPath, _backupPath, true);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn(SystemName, $"Failed to backup config: {ex.Message}");
+            }
+        }
+
+        public void RestoreBackup()
+        {
+            try
+            {
+                if (File.Exists(_backupPath))
+                {
+                    File.Copy(_backupPath, _configPath, true);
+                    LoadConfig();
+                    Logger.Info(SystemName, "Config restored from backup");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(SystemName, "Error restoring backup", ex);
+            }
+        }
+
+        public void ResetToDefaults()
+        {
+            Config = CreateDefaultConfig();
+            SaveConfig();
+            Logger.Info(SystemName, "Config reset to defaults");
+        }
+
+        private ModConfig CreateDefaultConfig()
+        {
+            var config = new ModConfig();
             
-            // 发布配置变更事件
-            EventBus.Instance?.Publish(new ConfigChangedEvent("*", oldConfig, _config));
-            ModMain.Log($"[{SystemName}] 配置已重新加载");
+            config.cycle.trigger_conditions.conditions.Add(new TriggerCondition { type = "world_age_years", threshold = 600 });
+            config.cycle.trigger_conditions.conditions.Add(new TriggerCondition { type = "total_population", threshold = 10000 });
+            config.cycle.trigger_conditions.conditions.Add(new TriggerCondition { type = "total_cities", threshold = 50 });
+            
+            return config;
         }
 
-        /// <summary>
-        /// 检查配置文件是否已修改
-        /// </summary>
-        public bool HasFileChanged()
+        private void ValidateConfig()
         {
-            if (!File.Exists(_configPath)) return false;
-            return File.GetLastWriteTime(_configPath) > _lastModified;
+            Config.difficulty.cycle_growth = ErrorHandler.Clamp(Config.difficulty.cycle_growth, 0f, 2f);
+            Config.difficulty.adaptive.min = ErrorHandler.Clamp(Config.difficulty.adaptive.min, 0.1f, 1f);
+            Config.difficulty.adaptive.max = ErrorHandler.Clamp(Config.difficulty.adaptive.max, 1f, 3f);
+            Config.difficulty.caps.min_power = ErrorHandler.Clamp(Config.difficulty.caps.min_power, 0.1f, 1f);
+            Config.difficulty.caps.max_power = ErrorHandler.Clamp(Config.difficulty.caps.max_power, 1f, 10f);
+            
+            Config.seal.failure_conditions.cities_controlled_ratio = ErrorHandler.Clamp(Config.seal.failure_conditions.cities_controlled_ratio, 0.3f, 0.9f);
+            Config.seal.restart_cycle.legacy_keep_ratio = ErrorHandler.Clamp(Config.seal.restart_cycle.legacy_keep_ratio, 0f, 1f);
+            
+            Config.legacy.legendary_probability = ErrorHandler.Clamp(Config.legacy.legendary_probability, 0f, 1f);
+            Config.legacy.stacking_diminish_rate = ErrorHandler.Clamp(Config.legacy.stacking_diminish_rate, 0f, 1f);
+            
+            Config.llm.permission_level = ErrorHandler.Clamp(Config.llm.permission_level, 1, 5);
+            
+            if (Config.cycle.trigger_conditions.conditions == null || Config.cycle.trigger_conditions.conditions.Count == 0)
+            {
+                Logger.Warn(SystemName, "No trigger conditions configured, adding default");
+                Config.cycle.trigger_conditions.conditions.Add(new TriggerCondition { type = "world_age_years", threshold = 600 });
+            }
+            
+            if (!Config.seal.victory_conditions.execution && !Config.seal.victory_conditions.ritual)
+            {
+                Logger.Warn(SystemName, "No victory conditions enabled, enabling execution as fallback");
+                Config.seal.victory_conditions.execution = true;
+            }
         }
 
-        /// <summary>
-        /// 获取配置值（泛型）
-        /// </summary>
-        public T Get<T>(Func<ModConfig, T> selector)
+        private void ApplyLogLevel()
         {
-            return selector(_config);
+            Logger.SetMinLevel(Config.core.log_level);
         }
-
-        /// <summary>
-        /// 设置配置值并触发事件
-        /// </summary>
-        public void Set<T>(Action<ModConfig> setter, string key, T oldValue, T newValue)
-        {
-            setter(_config);
-            EventBus.Instance?.Publish(new ConfigChangedEvent(key, oldValue, newValue));
-        }
-
-        // 便捷访问属性
-        public bool DebugMode => _config.debug_mode;
-        public LLMConfig LLM => _config.llm;
-        public GameplayConfig Gameplay => _config.gameplay;
-        public UIConfig UI => _config.ui;
 
         public void Dispose()
         {
-            Save();
-            Instance = null;
             IsInitialized = false;
+            Instance = null;
+            Logger.Info(SystemName, "ConfigManager disposed");
         }
     }
 }

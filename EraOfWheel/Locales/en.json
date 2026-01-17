@@ -1,0 +1,56 @@
+{
+  "mod": {
+    "name": "Era Wheel - Demon Lord Reincarnation",
+    "version": "0.1.0"
+  },
+  "phases": {
+    "sealed": "Sealed",
+    "omen": "Omen",
+    "awakening": "Awakening",
+    "invasion": "Invasion",
+    "peak": "Peak",
+    "weakening": "Weakening",
+    "resealed": "Resealed"
+  },
+  "demon_lords": {
+    "void_lord": {
+      "name": "Void Lord Igel",
+      "title": "Ender of Existence",
+      "description": "Primordial demon representing the void, capable of erasing all traces of existence"
+    },
+    "plague_mother": {
+      "name": "Plague Mother Nagati",
+      "title": "Caress of Decay",
+      "description": "Demon lord of disease and rot, her love manifests as deadly plagues"
+    }
+  },
+  "legacies": {
+    "hero_proof": "Hero's Proof",
+    "post_war_prosperity": "Post-War Prosperity",
+    "forbidden_knowledge": "Forbidden Knowledge",
+    "demon_slayer_title": "Demon Slayer Title",
+    "demonic_taint": "Demonic Taint"
+  },
+  "ui": {
+    "main_panel_title": "Era Wheel - Demon Lord System",
+    "tab_overview": "Overview",
+    "tab_demon": "Demon Management",
+    "tab_civilization": "Civilization",
+    "tab_ai": "AI Control",
+    "tab_settings": "Settings",
+    "current_cycle": "Current Cycle",
+    "world_age": "World Age",
+    "phase": "Phase",
+    "seal_strength": "Seal Strength",
+    "awaken_demon": "Force Awaken",
+    "seal_demon": "Force Seal",
+    "restart_cycle": "Restart Cycle"
+  },
+  "notifications": {
+    "phase_changed": "Phase Changed",
+    "demon_awakening": "Demon Awakening",
+    "demon_sealed": "Demon Sealed",
+    "legion_wave": "Legion Wave",
+    "legacy_granted": "Legacy Granted"
+  }
+}

@@ -1,171 +1,154 @@
 using System;
 using System.Collections.Generic;
 using EraOfWheel.Core;
+using EraOfWheel.Core.Config;
 using EraOfWheel.Core.Events;
-using UnityEngine;
-using UnityEngine.UI;
 
 namespace EraOfWheel.UI
 {
-    /// <summary>
-    /// 通知系统 - 游戏内消息提示
-    /// </summary>
+    public class Notification
+    {
+        public string Id { get; set; }
+        public string Title { get; set; }
+        public string Message { get; set; }
+        public float Duration { get; set; }
+        public float TimeRemaining { get; set; }
+        public NotificationType Type { get; set; }
+    }
+
+    public enum NotificationType
+    {
+        Info,
+        Warning,
+        Critical,
+        Success
+    }
+
     public class NotificationSystem : IModSystem
     {
         public static NotificationSystem Instance { get; private set; }
         
         public string SystemName => "NotificationSystem";
         public bool IsInitialized { get; private set; }
+        
+        private Queue<Notification> _queue = new Queue<Notification>();
+        private List<Notification> _activeNotifications = new List<Notification>();
+        private int _maxActive = 3;
+        private float _defaultDuration;
 
-        private Queue<Notification> _pendingNotifications = new Queue<Notification>();
-        private List<Notification> _history = new List<Notification>();
-        private Notification _currentNotification;
-        private float _displayTime = 0f;
-        private int _maxHistory = 50;
-
-        public IReadOnlyList<Notification> History => _history;
+        public IReadOnlyList<Notification> ActiveNotifications => _activeNotifications;
 
         public void Initialize()
         {
             if (IsInitialized) return;
-
+            
             Instance = this;
-            SubscribeEvents();
+            _defaultDuration = ConfigManager.Instance?.Config?.ui?.notification_duration_seconds ?? 5f;
+            
+            SubscribeToEvents();
             
             IsInitialized = true;
-            Logger.Info(SystemName, "通知系统初始化完成");
+            Logger.Info(SystemName, "NotificationSystem initialized");
         }
 
-        private void SubscribeEvents()
+        private void SubscribeToEvents()
         {
-            EventBus.Instance?.Subscribe<PhaseChangedEvent>(e => 
-                Show($"纪元阶段变化: {e.NewPhase}", NotificationPriority.High));
-            
-            EventBus.Instance?.Subscribe<DemonLords.DemonLordAwakenedEvent>(e => 
-                Show($"⚠️ {e.DemonLord.Name}已苏醒！", NotificationPriority.Critical));
-            
-            EventBus.Instance?.Subscribe<LegacyEarnedEvent>(e => 
-                Show($"获得遗产点: +{e.PointsEarned}", NotificationPriority.Normal));
+            EventBus.Instance?.Subscribe<PhaseChangedEvent>(OnPhaseChanged);
+            EventBus.Instance?.Subscribe<DemonAwakeningEvent>(OnDemonAwakening);
+            EventBus.Instance?.Subscribe<DemonSealedEvent>(OnDemonSealed);
+            EventBus.Instance?.Subscribe<LegionWaveSpawnedEvent>(OnLegionWave);
         }
 
-        /// <summary>
-        /// 显示通知
-        /// </summary>
-        public void Show(string message, NotificationPriority priority = NotificationPriority.Normal)
+        private void OnPhaseChanged(PhaseChangedEvent e)
+        {
+            Show("阶段转换", $"进入{e.CurrentPhase}阶段", NotificationType.Info);
+        }
+
+        private void OnDemonAwakening(DemonAwakeningEvent e)
+        {
+            Show("魔王苏醒", $"{e.DemonName}已苏醒！", NotificationType.Critical);
+        }
+
+        private void OnDemonSealed(DemonSealedEvent e)
+        {
+            Show("魔王封印", $"魔王已被封印！(方式: {e.SealMethod})", NotificationType.Success);
+        }
+
+        private void OnLegionWave(LegionWaveSpawnedEvent e)
+        {
+            Show("军团来袭", $"第{e.WaveNumber}波军团已生成 ({e.UnitCount}单位)", NotificationType.Warning);
+        }
+
+        public void Show(string title, string message, NotificationType type = NotificationType.Info)
         {
             var notification = new Notification
             {
-                Id = Guid.NewGuid().ToString("N").Substring(0, 8),
+                Id = Guid.NewGuid().ToString(),
+                Title = title,
                 Message = message,
-                Priority = priority,
-                Timestamp = DateTime.UtcNow,
-                Duration = GetDuration(priority)
+                Type = type,
+                Duration = _defaultDuration,
+                TimeRemaining = _defaultDuration
             };
-
-            if (priority == NotificationPriority.Critical)
-            {
-                // 关键通知立即显示
-                DisplayNotification(notification);
-            }
-            else
-            {
-                _pendingNotifications.Enqueue(notification);
-            }
-
-            AddToHistory(notification);
-            Logger.Debug(SystemName, $"通知: [{priority}] {message}");
+            
+            _queue.Enqueue(notification);
+            Logger.Debug(SystemName, $"Notification queued: {title}");
         }
 
-        /// <summary>
-        /// 每帧更新
-        /// </summary>
         public void Update(float deltaTime)
         {
-            if (_currentNotification != null)
+            if (!IsInitialized) return;
+            
+            // Process queue
+            while (_queue.Count > 0 && _activeNotifications.Count < _maxActive)
             {
-                _displayTime += deltaTime;
-                if (_displayTime >= _currentNotification.Duration)
+                var notification = _queue.Dequeue();
+                _activeNotifications.Add(notification);
+                OnNotificationShow(notification);
+            }
+            
+            // Update active notifications
+            for (int i = _activeNotifications.Count - 1; i >= 0; i--)
+            {
+                var notification = _activeNotifications[i];
+                notification.TimeRemaining -= deltaTime;
+                
+                if (notification.TimeRemaining <= 0)
                 {
-                    HideCurrentNotification();
+                    _activeNotifications.RemoveAt(i);
+                    OnNotificationHide(notification);
                 }
             }
-            else if (_pendingNotifications.Count > 0)
-            {
-                DisplayNotification(_pendingNotifications.Dequeue());
-            }
         }
 
-        private void DisplayNotification(Notification notification)
+        private void OnNotificationShow(Notification notification)
         {
-            _currentNotification = notification;
-            _displayTime = 0f;
-            
-            // TODO: 更新UI显示
-            EventBus.Instance?.Publish(new NotificationDisplayedEvent(notification));
+            // Note: Full implementation would show visual notification
+            Logger.Info(SystemName, $"[{notification.Type}] {notification.Title}: {notification.Message}");
         }
 
-        private void HideCurrentNotification()
+        private void OnNotificationHide(Notification notification)
         {
-            _currentNotification = null;
-            _displayTime = 0f;
+            Logger.Debug(SystemName, $"Notification dismissed: {notification.Title}");
         }
 
-        private float GetDuration(NotificationPriority priority)
+        public void DismissAll()
         {
-            var baseDuration = Core.Config.ConfigManager.Instance?.UI?.notification_duration ?? 5;
-            
-            return priority switch
-            {
-                NotificationPriority.Critical => baseDuration * 2f,
-                NotificationPriority.High => baseDuration * 1.5f,
-                NotificationPriority.Low => baseDuration * 0.5f,
-                _ => baseDuration
-            };
-        }
-
-        private void AddToHistory(Notification notification)
-        {
-            _history.Add(notification);
-            if (_history.Count > _maxHistory)
-            {
-                _history.RemoveAt(0);
-            }
-        }
-
-        public void ClearHistory()
-        {
-            _history.Clear();
+            _activeNotifications.Clear();
+            _queue.Clear();
         }
 
         public void Dispose()
         {
-            _pendingNotifications.Clear();
-            _history.Clear();
-            Instance = null;
+            EventBus.Instance?.Unsubscribe<PhaseChangedEvent>(OnPhaseChanged);
+            EventBus.Instance?.Unsubscribe<DemonAwakeningEvent>(OnDemonAwakening);
+            EventBus.Instance?.Unsubscribe<DemonSealedEvent>(OnDemonSealed);
+            EventBus.Instance?.Unsubscribe<LegionWaveSpawnedEvent>(OnLegionWave);
+            
+            DismissAll();
             IsInitialized = false;
+            Instance = null;
+            Logger.Info(SystemName, "NotificationSystem disposed");
         }
-    }
-
-    public enum NotificationPriority
-    {
-        Low,
-        Normal,
-        High,
-        Critical
-    }
-
-    public class Notification
-    {
-        public string Id { get; set; }
-        public string Message { get; set; }
-        public NotificationPriority Priority { get; set; }
-        public DateTime Timestamp { get; set; }
-        public float Duration { get; set; }
-    }
-
-    public class NotificationDisplayedEvent : GameEvent
-    {
-        public Notification Notification { get; }
-        public NotificationDisplayedEvent(Notification n) => Notification = n;
     }
 }

@@ -2,47 +2,45 @@ using System;
 
 namespace EraOfWheel.Cycle
 {
-    /// <summary>
-    /// 轮回状态
-    /// </summary>
     [Serializable]
     public class CycleState
     {
-        public int cycleNumber = 1;
-        public CyclePhase currentPhase = CyclePhase.Germination;
-        public float phaseProgress = 0f;
-        public float phaseTarget = 100f;
-        public bool isActive = false;
-        public DateTime cycleStartTime;
+        public int CycleCount { get; set; } = 1;
+        public CyclePhase CurrentPhase { get; set; } = CyclePhase.Sealed;
+        public int WorldAgeYears { get; set; } = 0;
+        public int PhaseStartYear { get; set; } = 0;
+        public int InvasionStartYear { get; set; } = 0;
+        public string ActiveDemonLordId { get; set; } = "";
+        
+        public int YearsInCurrentPhase => WorldAgeYears - PhaseStartYear;
+        public int YearsInInvasion => InvasionStartYear > 0 ? WorldAgeYears - InvasionStartYear : 0;
 
-        public float ProgressPercent => phaseTarget > 0 ? phaseProgress / phaseTarget * 100f : 0f;
-
-        public bool IsPhaseComplete => phaseProgress >= phaseTarget;
-
-        public CyclePhase? NextPhase => currentPhase switch
+        public void TransitionTo(CyclePhase newPhase)
         {
-            CyclePhase.Germination => CyclePhase.Growth,
-            CyclePhase.Growth => CyclePhase.Prosperity,
-            CyclePhase.Prosperity => CyclePhase.Decline,
-            CyclePhase.Decline => CyclePhase.Extinction,
-            CyclePhase.Extinction => null, // 轮回结束
-            _ => null
-        };
+            PhaseStartYear = WorldAgeYears;
+            CurrentPhase = newPhase;
 
-        public void Reset()
-        {
-            currentPhase = CyclePhase.Germination;
-            phaseProgress = 0f;
-            phaseTarget = CyclePhaseConfig.GetPhaseDuration(CyclePhase.Germination);
-            isActive = false;
+            if (newPhase == CyclePhase.Invasion)
+            {
+                InvasionStartYear = WorldAgeYears;
+            }
+            else if (newPhase == CyclePhase.Resealed)
+            {
+                InvasionStartYear = 0;
+            }
         }
 
-        public void StartNewCycle()
+        public void IncrementCycle()
         {
-            cycleNumber++;
-            Reset();
-            isActive = true;
-            cycleStartTime = DateTime.UtcNow;
+            CycleCount++;
+        }
+
+        public void Reset(float legacyKeepRatio)
+        {
+            CurrentPhase = CyclePhase.Sealed;
+            PhaseStartYear = WorldAgeYears;
+            InvasionStartYear = 0;
+            ActiveDemonLordId = "";
         }
     }
 }
