@@ -41,15 +41,15 @@ namespace EraOfWheel.Cycle
             switch (current)
             {
                 case CyclePhase.Sealed:
-                    return target == CyclePhase.Omen;
+                    return target == CyclePhase.Omen || target == CyclePhase.Awakening;
                 case CyclePhase.Omen:
                     return target == CyclePhase.Awakening || target == CyclePhase.Sealed;
                 case CyclePhase.Awakening:
                     return target == CyclePhase.Invasion || target == CyclePhase.Sealed;
                 case CyclePhase.Invasion:
-                    return target == CyclePhase.Peak || target == CyclePhase.Weakening;
+                    return target == CyclePhase.Peak || target == CyclePhase.Weakening || target == CyclePhase.Resealed;
                 case CyclePhase.Peak:
-                    return target == CyclePhase.Weakening;
+                    return target == CyclePhase.Weakening || target == CyclePhase.Resealed;
                 case CyclePhase.Weakening:
                     return target == CyclePhase.Resealed;
                 case CyclePhase.Resealed:

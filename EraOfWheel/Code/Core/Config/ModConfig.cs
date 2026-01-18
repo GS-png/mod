@@ -76,7 +76,7 @@ namespace EraOfWheel.Core.Config
     public class DemonLordsConfig
     {
         public VoidLordConfig void_lord = new VoidLordConfig();
-        public PlagueMother plague_mother = new PlagueMother();
+        public PlagueMotherConfig plague_mother = new PlagueMotherConfig();
     }
 
     [Serializable]
@@ -92,7 +92,7 @@ namespace EraOfWheel.Core.Config
     }
 
     [Serializable]
-    public class PlagueMother
+    public class PlagueMotherConfig
     {
         public bool enabled = true;
         public int unlock_cycle = 1;

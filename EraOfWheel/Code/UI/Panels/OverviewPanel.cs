@@ -79,7 +79,7 @@ namespace EraOfWheel.UI.Panels
                 ActiveDemonName = activeDemon?.Name ?? "无",
                 ActiveDemonState = activeDemon?.State.ToDisplayName() ?? "封印中",
                 DemonHealthPercent = activeDemon?.Stats?.HealthPercent ?? 0f,
-                SealStrength = activeDemon?.SealStrength ?? 100f,
+                SealStrength = activeDemon != null ? activeDemon.SealStrength : (cycleState?.SealStrength ?? 100f),
                 
                 SealWarActive = SealSystem.Instance?.SealWarWindowActive ?? false,
                 RitualProgress = SealSystem.Instance?.RitualProgress ?? 0f,

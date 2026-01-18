@@ -9,11 +9,14 @@ namespace EraOfWheel.Cycle
         public CyclePhase CurrentPhase { get; set; } = CyclePhase.Sealed;
         public int WorldAgeYears { get; set; } = 0;
         public int PhaseStartYear { get; set; } = 0;
-        public int InvasionStartYear { get; set; } = 0;
+        public int InvasionStartYear { get; set; } = -1;
         public string ActiveDemonLordId { get; set; } = "";
+
+        public float SealStrength { get; set; } = 100f;
+        public bool SealDecayStarted { get; set; } = false;
         
         public int YearsInCurrentPhase => WorldAgeYears - PhaseStartYear;
-        public int YearsInInvasion => InvasionStartYear > 0 ? WorldAgeYears - InvasionStartYear : 0;
+        public int YearsInInvasion => InvasionStartYear >= 0 ? WorldAgeYears - InvasionStartYear : 0;
 
         public void TransitionTo(CyclePhase newPhase)
         {
@@ -26,7 +29,7 @@ namespace EraOfWheel.Cycle
             }
             else if (newPhase == CyclePhase.Resealed)
             {
-                InvasionStartYear = 0;
+                InvasionStartYear = -1;
             }
         }
 
@@ -39,8 +42,10 @@ namespace EraOfWheel.Cycle
         {
             CurrentPhase = CyclePhase.Sealed;
             PhaseStartYear = WorldAgeYears;
-            InvasionStartYear = 0;
+            InvasionStartYear = -1;
             ActiveDemonLordId = "";
+            SealStrength = 100f;
+            SealDecayStarted = false;
         }
     }
 }

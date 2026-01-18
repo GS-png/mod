@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 using EraOfWheel.Core;
 using EraOfWheel.Core.Config;
@@ -252,6 +253,26 @@ namespace EraOfWheel.UI
             var active = DemonLordManager.Instance?.ActiveDemonLord;
             GUILayout.Label($"活跃魔王: {(active?.Name ?? "(无)")}");
 
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("打印魔王Actor状态"))
+            {
+                PrintActiveDemonActorStatus();
+            }
+            if (GUILayout.Button("测试击杀魔王(巨额伤害)"))
+            {
+                var demon = DemonLordManager.Instance?.ActiveDemonLord;
+                if (demon != null)
+                {
+                    demon.ApplyDamage(99999999f);
+                }
+                else
+                {
+                    Logger.Warn(SystemName, "No active demon lord for kill test");
+                    NotificationSystem.Instance?.Show("调试", "当前没有活跃魔王", NotificationType.Warning);
+                }
+            }
+            GUILayout.EndHorizontal();
+
             if (GUILayout.Button("下一阶段"))
             {
                 ModMain.Instance?.ForceNextPhase();
@@ -266,6 +287,160 @@ namespace EraOfWheel.UI
                 {
                     GUILayout.Label($"[{n.Type}] {n.Title}: {n.Message}");
                 }
+            }
+        }
+
+        private void PrintActiveDemonActorStatus()
+        {
+            var demon = DemonLordManager.Instance?.ActiveDemonLord;
+            if (demon == null)
+            {
+                Logger.Warn(SystemName, "No active demon lord");
+                NotificationSystem.Instance?.Show("调试", "当前没有活跃魔王", NotificationType.Warning);
+                return;
+            }
+
+            bool hasActor = TryGetDemonActor(demon, out var actor) && actor != null;
+            bool owns = TryGetOwnsDemonActor(demon, out var ownsFlag) && ownsFlag;
+            float actorHealth = -1f;
+            bool hasHealth = hasActor && TryGetActorHealth(actor, out actorHealth);
+
+            string statsHp = demon.Stats != null ? $"{demon.Stats.CurrentHealth:0}/{demon.Stats.MaxHealth:0} ({demon.Stats.HealthPercent:0.0}%)" : "(无Stats)";
+            string msg = $"id={demon.Id}, state={demon.State}, actor={(hasActor ? "OK" : "NULL")}, owns={(owns ? "Y" : "N")}, actorHp={(hasHealth ? actorHealth.ToString("0") : "?")}, statsHp={statsHp}, dead={(demon.Stats?.IsDead == true ? "Y" : "N")}";
+
+            Logger.Info(SystemName, msg);
+            NotificationSystem.Instance?.Show("魔王Actor状态", msg, NotificationType.Info);
+        }
+
+        private static bool TryGetDemonActor(BaseDemonLord demon, out Actor actor)
+        {
+            actor = null;
+            if (demon == null) return false;
+
+            try
+            {
+                var t = demon.GetType();
+                const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+
+                var prop = t.GetProperty("DemonActor", flags);
+                if (prop != null)
+                {
+                    actor = prop.GetValue(demon, null) as Actor;
+                    if (actor != null) return true;
+                }
+
+                var field = t.GetField("DemonActor", flags);
+                if (field != null)
+                {
+                    actor = field.GetValue(demon) as Actor;
+                    if (actor != null) return true;
+                }
+
+                field = t.GetField("<DemonActor>k__BackingField", flags);
+                if (field != null)
+                {
+                    actor = field.GetValue(demon) as Actor;
+                    if (actor != null) return true;
+                }
+            }
+            catch
+            {
+            }
+
+            return actor != null;
+        }
+
+        private static bool TryGetOwnsDemonActor(BaseDemonLord demon, out bool owns)
+        {
+            owns = false;
+            if (demon == null) return false;
+
+            try
+            {
+                var t = demon.GetType();
+                const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+
+                var prop = t.GetProperty("OwnsDemonActor", flags);
+                if (prop != null && prop.PropertyType == typeof(bool))
+                {
+                    owns = (bool)prop.GetValue(demon, null);
+                    return true;
+                }
+
+                var field = t.GetField("OwnsDemonActor", flags);
+                if (field != null && field.FieldType == typeof(bool))
+                {
+                    owns = (bool)field.GetValue(demon);
+                    return true;
+                }
+
+                field = t.GetField("<OwnsDemonActor>k__BackingField", flags);
+                if (field != null && field.FieldType == typeof(bool))
+                {
+                    owns = (bool)field.GetValue(demon);
+                    return true;
+                }
+            }
+            catch
+            {
+            }
+
+            return false;
+        }
+
+        private static bool TryGetActorHealth(Actor actor, out float health)
+        {
+            health = -1f;
+            if (actor == null) return false;
+
+            try
+            {
+                var dataField = actor.GetType().GetField("data", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                var data = dataField != null ? dataField.GetValue(actor) : null;
+                if (data == null)
+                {
+                    var dataProp = actor.GetType().GetProperty("data", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                    data = dataProp != null ? dataProp.GetValue(actor, null) : null;
+                }
+
+                if (data == null) return false;
+
+                var v = GetMemberValue(data, "health");
+                if (v == null) return false;
+
+                health = Convert.ToSingle(v);
+                return true;
+            }
+            catch
+            {
+                health = -1f;
+                return false;
+            }
+        }
+
+        private static object GetMemberValue(object obj, string name)
+        {
+            if (obj == null || string.IsNullOrEmpty(name)) return null;
+
+            try
+            {
+                var t = obj.GetType();
+                const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
+
+                var field = t.GetField(name, flags);
+                if (field != null) return field.GetValue(obj);
+
+                var prop = t.GetProperty(name, flags);
+                if (prop != null) return prop.GetValue(obj, null);
+
+                var method = t.GetMethod(name, flags, null, Type.EmptyTypes, null);
+                if (method != null) return method.Invoke(obj, null);
+
+                return null;
+            }
+            catch
+            {
+                return null;
             }
         }
 

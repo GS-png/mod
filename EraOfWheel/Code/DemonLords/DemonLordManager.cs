@@ -4,6 +4,8 @@ using EraOfWheel.Core;
 using EraOfWheel.Core.Config;
 using EraOfWheel.Core.Events;
 using EraOfWheel.Cycle;
+using EraOfWheel.Core.Data;
+using ModSaveManager = EraOfWheel.Core.Data.SaveManager;
 
 namespace EraOfWheel.DemonLords
 {
@@ -27,10 +29,54 @@ namespace EraOfWheel.DemonLords
             Instance = this;
             
             RegisterDemonLords();
+            LoadFromSave();
             SubscribeToEvents();
             
             IsInitialized = true;
             Logger.Info(SystemName, $"DemonLordManager initialized with {_demonLords.Count} demon lords");
+        }
+
+        private void LoadFromSave()
+        {
+            var save = ModSaveManager.Instance?.Data;
+            if (save == null) return;
+
+            int cycleCount = CycleManager.Instance?.State?.CycleCount ?? save.current_cycle;
+            if (cycleCount <= 0) cycleCount = 1;
+
+            if (save.demon_lords != null)
+            {
+                foreach (var dl in save.demon_lords)
+                {
+                    if (dl == null || string.IsNullOrEmpty(dl.id)) continue;
+                    if (_demonLords.TryGetValue(dl.id, out var demon))
+                    {
+                        demon.LoadFromSaveData(dl, cycleCount);
+                    }
+                }
+            }
+
+            var preferredId = CycleManager.Instance?.State?.ActiveDemonLordId;
+            if (string.IsNullOrEmpty(preferredId))
+            {
+                preferredId = save.active_demon_lord_id;
+                if (CycleManager.Instance?.State != null)
+                {
+                    CycleManager.Instance.State.ActiveDemonLordId = preferredId ?? "";
+                }
+            }
+
+            if (!string.IsNullOrEmpty(preferredId) && _demonLords.TryGetValue(preferredId, out var active))
+            {
+                _activeDemonLord = active;
+
+                if (CycleManager.Instance?.State != null)
+                {
+                    CycleManager.Instance.State.SealStrength = active.SealStrength;
+                }
+
+                _activeDemonLord.EnsureActorSpawned();
+            }
         }
 
         private void RegisterDemonLords()
@@ -59,6 +105,11 @@ namespace EraOfWheel.DemonLords
             {
                 case CyclePhase.Omen:
                     SelectActiveDemonLord(e.CycleCount);
+                    if (_activeDemonLord != null)
+                    {
+                        float seal = CycleManager.Instance?.State?.SealStrength ?? _activeDemonLord.SealStrength;
+                        _activeDemonLord.SyncSealStrength(seal);
+                    }
                     _activeDemonLord?.TransitionState(DemonState.Omen);
                     break;
                 case CyclePhase.Awakening:
@@ -74,9 +125,19 @@ namespace EraOfWheel.DemonLords
                     _activeDemonLord?.TransitionState(DemonState.Weakening);
                     break;
                 case CyclePhase.Resealed:
-                    _activeDemonLord?.TransitionState(DemonState.Resealed);
+                    if (_activeDemonLord != null && _activeDemonLord.State != DemonState.Resealed)
+                    {
+                        _activeDemonLord.TransitionState(DemonState.Resealed);
+                    }
                     break;
                 case CyclePhase.Sealed:
+                    foreach (var demon in _demonLords.Values)
+                    {
+                        if (demon != null && demon.State == DemonState.Resealed)
+                        {
+                            demon.TransitionState(DemonState.Sealed);
+                        }
+                    }
                     _activeDemonLord = null;
                     break;
             }
@@ -120,6 +181,15 @@ namespace EraOfWheel.DemonLords
             {
                 CycleManager.Instance.State.ActiveDemonLordId = _activeDemonLord.Id;
             }
+
+            ModSaveManager.Instance?.UpdateCycleData(
+                CycleManager.Instance?.State?.CycleCount ?? cycleCount,
+                CycleManager.Instance?.State?.CurrentPhase.ToString() ?? CyclePhase.Sealed.ToString(),
+                CycleManager.Instance?.State?.PhaseStartYear ?? 0,
+                CycleManager.Instance?.State?.InvasionStartYear ?? -1,
+                CycleManager.Instance?.State?.ActiveDemonLordId ?? _activeDemonLord.Id,
+                CycleManager.Instance?.State?.SealStrength ?? _activeDemonLord.SealStrength
+            );
             Logger.Info(SystemName, $"Selected demon lord for cycle {cycleCount}: {_activeDemonLord.Name}");
         }
 
@@ -138,6 +208,15 @@ namespace EraOfWheel.DemonLords
                 CycleManager.Instance.State.ActiveDemonLordId = demonId;
             }
 
+            ModSaveManager.Instance?.UpdateCycleData(
+                CycleManager.Instance?.State?.CycleCount ?? currentCycle,
+                CycleManager.Instance?.State?.CurrentPhase.ToString() ?? CyclePhase.Sealed.ToString(),
+                CycleManager.Instance?.State?.PhaseStartYear ?? 0,
+                CycleManager.Instance?.State?.InvasionStartYear ?? -1,
+                CycleManager.Instance?.State?.ActiveDemonLordId ?? demonId,
+                CycleManager.Instance?.State?.SealStrength ?? demon.SealStrength
+            );
+
             Logger.Info(SystemName, $"Active demon lord set manually: {demon.Name}");
             return true;
         }
@@ -146,8 +225,12 @@ namespace EraOfWheel.DemonLords
         {
             if (_activeDemonLord != null)
             {
-                _activeDemonLord.TransitionState(DemonState.Resealed);
-                _activeDemonLord.OnCycleEvolution(e.CycleCount + 1);
+                if (_activeDemonLord.State != DemonState.Resealed)
+                {
+                    _activeDemonLord.TransitionState(DemonState.Resealed);
+                }
+                int nextCycle = CycleManager.Instance?.State?.CycleCount ?? (e.CycleCount + 1);
+                _activeDemonLord.OnCycleEvolution(nextCycle);
             }
             
             _activeDemonLord = null;
@@ -168,27 +251,39 @@ namespace EraOfWheel.DemonLords
         public void DamageDemonLord(float damage)
         {
             if (_activeDemonLord == null) return;
-            
-            _activeDemonLord.Stats.TakeDamage(damage);
-            
-            if (_activeDemonLord.Stats.IsDead)
-            {
-                Logger.Info(SystemName, $"{_activeDemonLord.Name} has been defeated!");
-                _activeDemonLord.TransitionState(DemonState.Weakening);
-            }
-            else if (_activeDemonLord.Stats.HealthPercent < 30f && _activeDemonLord.State != DemonState.Weakening)
+
+            _activeDemonLord.ApplyDamage(damage);
+
+            if (!_activeDemonLord.Stats.IsDead &&
+                _activeDemonLord.Stats.HealthPercent < 30f &&
+                _activeDemonLord.State != DemonState.Weakening)
             {
                 _activeDemonLord.TransitionState(DemonState.Weakening);
             }
         }
 
-        public void SealActiveDemonLord()
+        public void SealActiveDemonLord(string sealMethod = null)
         {
             if (_activeDemonLord == null) return;
-            
+
+            if (!string.IsNullOrEmpty(sealMethod))
+            {
+                _activeDemonLord.SetPendingSealMethod(sealMethod);
+            }
+
             _activeDemonLord.TransitionState(DemonState.Resealed);
             
             CycleManager.Instance?.TransitionToPhase(CyclePhase.Resealed);
+        }
+
+        public void ForceResetAllDemonsToSealed()
+        {
+            int cycleCount = CycleManager.Instance?.State?.CycleCount ?? 1;
+            foreach (var demon in _demonLords.Values)
+            {
+                demon?.ForceResetToSealed(cycleCount);
+            }
+            _activeDemonLord = null;
         }
 
         public void Dispose()

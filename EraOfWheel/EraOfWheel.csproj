@@ -58,6 +58,7 @@
     <None Include="mod.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="README.md" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Resources\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="GameResources\**\*" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Locales\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

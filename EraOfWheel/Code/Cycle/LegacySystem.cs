@@ -65,9 +65,35 @@ namespace EraOfWheel.Cycle
         {
             var saveData = ModSaveManager.Instance?.Data?.legacy;
             if (saveData == null) return;
-            
-            // Load from save data - simplified for MVP
+
+            _militaryLegacies.Clear();
+            _economicLegacies.Clear();
+            _techLegacies.Clear();
+            _legendaryLegacies.Clear();
+            _curseLegacies.Clear();
+
+            LoadLegacyArray(saveData.military_legacies, LegacyType.Military);
+            LoadLegacyArray(saveData.economic_legacies, LegacyType.Economic);
+            LoadLegacyArray(saveData.tech_legacies, LegacyType.Technology);
+            LoadLegacyArray(saveData.legendary_legacies, LegacyType.Legendary);
+            LoadLegacyArray(saveData.curse_legacies, LegacyType.Curse);
+
             RecalculateBonuses();
+        }
+
+        private void LoadLegacyArray(string[] ids, LegacyType type)
+        {
+            if (ids == null) return;
+
+            int currentCycle = CycleManager.Instance?.State?.CycleCount ?? 1;
+            foreach (var id in ids)
+            {
+                if (string.IsNullOrEmpty(id)) continue;
+
+                var legacy = CreateLegacyFromId(type, id, currentCycle);
+                if (legacy == null) continue;
+                GrantLegacy(legacy);
+            }
         }
 
         private void SubscribeToEvents()
@@ -118,6 +144,7 @@ namespace EraOfWheel.Cycle
             }
             
             RecalculateBonuses();
+            PersistToSave();
             Logger.Info(SystemName, $"Legacies granted for cycle {cycleCount}");
         }
 
@@ -168,8 +195,55 @@ namespace EraOfWheel.Cycle
             return legacy;
         }
 
+        private Legacy CreateLegacyFromId(LegacyType type, string id, int cycleCount)
+        {
+            if (string.IsNullOrEmpty(id)) return null;
+
+            var legacy = new Legacy
+            {
+                Type = type,
+                AcquiredCycle = cycleCount,
+                StackCount = 1,
+                Id = id
+            };
+
+            if (type == LegacyType.Military)
+            {
+                legacy.Name = id == "hero_proof" ? "英雄之证" : id;
+                legacy.BonusValue = id == "hero_proof" ? 10f : 0f;
+                return legacy;
+            }
+            if (type == LegacyType.Economic)
+            {
+                legacy.Name = id == "post_war_prosperity" ? "战后繁荣" : id;
+                legacy.BonusValue = id == "post_war_prosperity" ? 30f : 0f;
+                return legacy;
+            }
+            if (type == LegacyType.Technology)
+            {
+                legacy.Name = id == "forbidden_knowledge" ? "禁忌知识" : id;
+                legacy.BonusValue = id == "forbidden_knowledge" ? 20f : 0f;
+                return legacy;
+            }
+            if (type == LegacyType.Legendary)
+            {
+                legacy.Name = id == "demon_slayer_title" ? "屠魔者称号" : id;
+                legacy.BonusValue = id == "demon_slayer_title" ? 50f : 0f;
+                return legacy;
+            }
+            if (type == LegacyType.Curse)
+            {
+                legacy.Name = id == "demonic_taint" ? "魔气侵染" : id;
+                legacy.BonusValue = id == "demonic_taint" ? -10f : 0f;
+                return legacy;
+            }
+
+            return null;
+        }
+
         private void GrantLegacy(Legacy legacy)
         {
+            if (legacy == null) return;
             var dict = GetDictionaryForType(legacy.Type);
             
             if (dict.ContainsKey(legacy.Id))
@@ -189,6 +263,37 @@ namespace EraOfWheel.Cycle
                 dict[legacy.Id] = legacy;
                 Logger.Info(SystemName, $"Granted new legacy: {legacy.Name}");
             }
+        }
+
+        private void PersistToSave()
+        {
+            var save = ModSaveManager.Instance?.Data;
+            if (save == null) return;
+            if (save.legacy == null) save.legacy = new LegacySaveData();
+
+            save.legacy.military_legacies = ExpandIds(_militaryLegacies);
+            save.legacy.economic_legacies = ExpandIds(_economicLegacies);
+            save.legacy.tech_legacies = ExpandIds(_techLegacies);
+            save.legacy.legendary_legacies = ExpandIds(_legendaryLegacies);
+            save.legacy.curse_legacies = ExpandIds(_curseLegacies);
+        }
+
+        private static string[] ExpandIds(Dictionary<string, Legacy> dict)
+        {
+            if (dict == null || dict.Count == 0) return new string[0];
+
+            var result = new List<string>();
+            foreach (var kv in dict)
+            {
+                var legacy = kv.Value;
+                if (legacy == null) continue;
+                int count = Math.Max(1, legacy.StackCount);
+                for (int i = 0; i < count; i++)
+                {
+                    result.Add(legacy.Id);
+                }
+            }
+            return result.ToArray();
         }
 
         private Dictionary<string, Legacy> GetDictionaryForType(LegacyType type)
@@ -248,6 +353,7 @@ namespace EraOfWheel.Cycle
             _curseLegacies.Clear();
             
             RecalculateBonuses();
+            PersistToSave();
             Logger.Info(SystemName, $"Legacies scaled by {keepRatio * 100}% after restart");
         }
 

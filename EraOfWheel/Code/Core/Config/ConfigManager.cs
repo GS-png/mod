@@ -13,6 +13,9 @@ namespace EraOfWheel.Core.Config
         public bool IsInitialized { get; private set; }
         
         public ModConfig Config { get; private set; }
+
+        private readonly System.Collections.Generic.List<string> _startupWarnings = new System.Collections.Generic.List<string>();
+        public System.Collections.Generic.IReadOnlyList<string> StartupWarnings => _startupWarnings;
         
         private string _configPath;
         private string _backupPath;
@@ -45,6 +48,7 @@ namespace EraOfWheel.Core.Config
             if (Config == null)
             {
                 Logger.Warn(SystemName, "Failed to load config, using defaults");
+                AddStartupWarning("配置文件加载失败，已回退为默认配置");
                 Config = CreateDefaultConfig();
                 SaveConfig();
             }
@@ -60,6 +64,7 @@ namespace EraOfWheel.Core.Config
                 if (!File.Exists(path))
                 {
                     Logger.Info(SystemName, $"Config file not found at {path}");
+                    AddStartupWarning($"未找到配置文件：{path}（将使用默认配置）");
                     return null;
                 }
                 
@@ -69,6 +74,7 @@ namespace EraOfWheel.Core.Config
             catch (Exception ex)
             {
                 Logger.Error(SystemName, $"Error loading config from {path}", ex);
+                AddStartupWarning($"配置读取异常：{ex.Message}（将使用默认配置）");
                 return null;
             }
         }
@@ -164,14 +170,43 @@ namespace EraOfWheel.Core.Config
             if (Config.cycle.trigger_conditions.conditions == null || Config.cycle.trigger_conditions.conditions.Count == 0)
             {
                 Logger.Warn(SystemName, "No trigger conditions configured, adding default");
+                AddStartupWarning("轮回触发条件为空，已自动补充默认触发条件（世界年龄>=600）");
                 Config.cycle.trigger_conditions.conditions.Add(new TriggerCondition { type = "world_age_years", threshold = 600 });
+            }
+            else
+            {
+                bool anyPositive = false;
+                foreach (var c in Config.cycle.trigger_conditions.conditions)
+                {
+                    if (c == null) continue;
+                    if (c.threshold > 0)
+                    {
+                        anyPositive = true;
+                        break;
+                    }
+                }
+
+                if (!anyPositive)
+                {
+                    Logger.Warn(SystemName, "All trigger condition thresholds are <= 0, using default fallback");
+                    AddStartupWarning("轮回触发条件阈值全部为0/负数，已回退默认触发条件（世界年龄>=600）");
+                    Config.cycle.trigger_conditions.conditions.Clear();
+                    Config.cycle.trigger_conditions.conditions.Add(new TriggerCondition { type = "world_age_years", threshold = 600 });
+                }
             }
             
             if (!Config.seal.victory_conditions.execution && !Config.seal.victory_conditions.ritual)
             {
                 Logger.Warn(SystemName, "No victory conditions enabled, enabling execution as fallback");
+                AddStartupWarning("封印胜利条件配置为空，已自动启用‘击杀封印’作为保底");
                 Config.seal.victory_conditions.execution = true;
             }
+        }
+
+        private void AddStartupWarning(string message)
+        {
+            if (string.IsNullOrEmpty(message)) return;
+            _startupWarnings.Add(message);
         }
 
         private void ApplyLogLevel()

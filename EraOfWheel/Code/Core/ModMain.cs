@@ -80,6 +80,16 @@ namespace EraOfWheel.Core
                     Logger.Error("ModMain", $"Failed to initialize {system.SystemName}", ex);
                 }
             }
+
+            var configWarnings = ConfigManager.Instance?.StartupWarnings;
+            if (configWarnings != null)
+            {
+                foreach (var w in configWarnings)
+                {
+                    if (string.IsNullOrEmpty(w)) continue;
+                    NotificationSystem.Instance?.Show("配置警告", w, NotificationType.Warning);
+                }
+            }
             
             // Load save after all systems initialized
             ModSaveManager.Instance?.LoadFromWorld();

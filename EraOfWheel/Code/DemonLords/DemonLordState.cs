@@ -47,9 +47,9 @@ namespace EraOfWheel.DemonLords
                 case DemonState.Awakening:
                     return target == DemonState.Invasion;
                 case DemonState.Invasion:
-                    return target == DemonState.Peak || target == DemonState.Weakening;
+                    return target == DemonState.Peak || target == DemonState.Weakening || target == DemonState.Resealed;
                 case DemonState.Peak:
-                    return target == DemonState.Weakening;
+                    return target == DemonState.Weakening || target == DemonState.Resealed;
                 case DemonState.Weakening:
                     return target == DemonState.Resealed;
                 case DemonState.Resealed:
