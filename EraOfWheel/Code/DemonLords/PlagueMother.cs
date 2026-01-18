@@ -30,7 +30,7 @@ namespace EraOfWheel.DemonLords
         private readonly List<ToxicFogZone> _toxicFogZones = new List<ToxicFogZone>();
         private readonly HashSet<string> _mutatedUnits = new HashSet<string>();
         private int _totalMutations = 0;
-        private readonly Dictionary<int, int> _cityLastOutbreakYear = new Dictionary<int, int>();
+        private readonly Dictionary<long, int> _cityLastOutbreakYear = new Dictionary<long, int>();
         private int _convertedSinceLastPlagueLord = 0;
         private int _lastPlagueLordYear = int.MinValue;
 
@@ -463,9 +463,9 @@ namespace EraOfWheel.DemonLords
         {
             if (city?.units == null) return;
 
-            int cityId = GetCityId(city);
+            long cityId = GetCityId(city);
             int cityCooldown = Math.Max(10, _incubationYears);
-            if (cityId != 0)
+            if (cityId != 0L)
             {
                 if (_cityLastOutbreakYear.TryGetValue(cityId, out var lastYear))
                 {
@@ -773,16 +773,16 @@ namespace EraOfWheel.DemonLords
             });
         }
 
-        private int GetCityId(City city)
+        private long GetCityId(City city)
         {
             try
             {
-                if (city?.data == null) return 0;
+                if (city?.data == null) return 0L;
                 return city.data.id;
             }
             catch
             {
-                return 0;
+                return 0L;
             }
         }
 

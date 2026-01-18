@@ -5,6 +5,7 @@ using UnityEngine;
 using EraOfWheel.Core;
 using EraOfWheel.Core.Events;
 using EraOfWheel.Cycle;
+using Logger = EraOfWheel.Core.Logger;
 
 namespace EraOfWheel.DemonLords.Legion
 {
