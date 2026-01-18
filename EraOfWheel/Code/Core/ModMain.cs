@@ -10,6 +10,7 @@ using EraOfWheel.Cycle;
 using ModSaveManager = EraOfWheel.Core.Data.SaveManager;
 using EraOfWheel.DemonLords;
 using EraOfWheel.DemonLords.Legion;
+using EraOfWheel.DemonLords.General;
 using EraOfWheel.UI;
 using EraOfWheel.UI.Panels;
 
@@ -61,6 +62,7 @@ namespace EraOfWheel.Core
             RegisterSystem(new ModSaveManager());
             RegisterSystem(new CycleManager());
             RegisterSystem(new DemonLordManager());
+            RegisterSystem(new GeneralManager());
             RegisterSystem(new LegionManager());
             RegisterSystem(new SealSystem());
             RegisterSystem(new LegacySystem());
@@ -202,6 +204,7 @@ namespace EraOfWheel.Core
         {
             CycleManager.Instance?.Update(currentYear);
             DemonLordManager.Instance?.Update(currentYear);
+            GeneralManager.Instance?.Update(currentYear);
             LegionManager.Instance?.Update(currentYear);
             SealSystem.Instance?.Update(currentYear);
         }

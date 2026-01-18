@@ -20,7 +20,15 @@ namespace EraOfWheel.Core.Data
         public int last_seal_decay_year = -1;
         public bool seal_war_active = false;
         public float ritual_progress = 0f;
+
+        public bool failure_decision_pending = false;
+        public string failure_reason = "";
+        public int failure_cycle_count = 0;
+        public bool terminal_aftermath_active = false;
+        public int terminal_aftermath_last_tick_year = -1;
+
         public DemonLordSaveData[] demon_lords = new DemonLordSaveData[0];
+        public GeneralSaveData[] generals = new GeneralSaveData[0];
         public LegacySaveData legacy = new LegacySaveData();
     }
 
@@ -42,6 +50,16 @@ namespace EraOfWheel.Core.Data
         public int cities_destroyed;
         public int heroes_killed;
         public string seal_method;
+    }
+
+    [Serializable]
+    public class GeneralSaveData
+    {
+        public string id;
+        public string demon_lord_id;
+        public int defeat_count = 0;
+        public bool betrayed = false;
+        public int last_seen_year = -1;
     }
 
     [Serializable]
@@ -122,6 +140,16 @@ namespace EraOfWheel.Core.Data
             if (Data == null) return;
             Data.seal_war_active = sealWarActive;
             Data.ritual_progress = ritualProgress;
+        }
+
+        public void UpdateFailureProtectionData(bool pending, string reason, int cycleCount, bool terminalAftermathActive, int terminalAftermathLastTickYear)
+        {
+            if (Data == null) return;
+            Data.failure_decision_pending = pending;
+            Data.failure_reason = reason ?? "";
+            Data.failure_cycle_count = cycleCount;
+            Data.terminal_aftermath_active = terminalAftermathActive;
+            Data.terminal_aftermath_last_tick_year = terminalAftermathLastTickYear;
         }
 
         public void SaveToWorld()
@@ -244,6 +272,35 @@ namespace EraOfWheel.Core.Data
                 health_percent = healthPercent
             });
             Data.demon_lords = list.ToArray();
+        }
+
+        public void UpdateGeneralData(string id, string demonLordId, int defeatCount, bool betrayed, int lastSeenYear)
+        {
+            if (Data == null) return;
+            if (string.IsNullOrEmpty(id)) return;
+
+            for (int i = 0; i < Data.generals.Length; i++)
+            {
+                if (Data.generals[i] != null && Data.generals[i].id == id)
+                {
+                    Data.generals[i].demon_lord_id = demonLordId ?? "";
+                    Data.generals[i].defeat_count = Math.Max(0, defeatCount);
+                    Data.generals[i].betrayed = betrayed;
+                    Data.generals[i].last_seen_year = lastSeenYear;
+                    return;
+                }
+            }
+
+            var list = new System.Collections.Generic.List<GeneralSaveData>(Data.generals);
+            list.Add(new GeneralSaveData
+            {
+                id = id,
+                demon_lord_id = demonLordId ?? "",
+                defeat_count = Math.Max(0, defeatCount),
+                betrayed = betrayed,
+                last_seen_year = lastSeenYear
+            });
+            Data.generals = list.ToArray();
         }
 
         public void UpdateDemonLordData(string id, string state, float sealStrength, float healthPercent, int totalKills)

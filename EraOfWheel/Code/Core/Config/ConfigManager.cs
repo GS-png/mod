@@ -164,6 +164,11 @@ namespace EraOfWheel.Core.Config
             
             Config.legacy.legendary_probability = ErrorHandler.Clamp(Config.legacy.legendary_probability, 0f, 1f);
             Config.legacy.stacking_diminish_rate = ErrorHandler.Clamp(Config.legacy.stacking_diminish_rate, 0f, 1f);
+
+            Config.generals.defeat_threshold = ErrorHandler.Clamp(Config.generals.defeat_threshold, 1, 20);
+            Config.generals.betray_probability = ErrorHandler.Clamp(Config.generals.betray_probability, 0f, 1f);
+            Config.generals.retreat_health_percent = ErrorHandler.Clamp(Config.generals.retreat_health_percent, 1f, 90f);
+            Config.generals.skill_check_interval_years = ErrorHandler.Clamp(Config.generals.skill_check_interval_years, 1, 50);
             
             Config.llm.permission_level = ErrorHandler.Clamp(Config.llm.permission_level, 1, 5);
             

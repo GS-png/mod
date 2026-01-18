@@ -45,12 +45,12 @@ namespace EraOfWheel.DemonLords
             _config = ConfigManager.Instance?.Config?.demon_lords?.void_lord;
             if (_config != null)
             {
+                ApplyConfigOverrides(_config.enabled, _config.unlock_cycle);
                 _voidDomainRadius = _config.void_domain_radius;
                 _voidDomainDamagePercent = _config.void_domain_damage_percent;
                 _worldContractionKillThreshold = _config.world_contraction_kill_threshold;
                 _worldContractionPercent = _config.world_contraction_percent;
                 _minHabitablePercent = _config.min_habitable_percent;
-                IsEnabled = _config.enabled;
             }
             else
             {

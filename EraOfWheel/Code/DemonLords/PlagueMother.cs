@@ -62,11 +62,11 @@ namespace EraOfWheel.DemonLords
             var config = ConfigManager.Instance?.Config?.demon_lords?.plague_mother;
             if (config != null)
             {
+                ApplyConfigOverrides(config.enabled, config.unlock_cycle);
                 _infectionSpreadChance = config.infection_spread_chance;
                 _incubationYears = config.incubation_years;
                 _toxicFogDurationYears = config.toxic_fog_duration_years;
                 _plagueLordSummonThreshold = config.plague_lord_summon_threshold;
-                IsEnabled = config.enabled;
             }
             else
             {

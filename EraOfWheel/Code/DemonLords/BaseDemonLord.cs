@@ -36,9 +36,21 @@ namespace EraOfWheel.DemonLords
 
         private string _pendingSealMethod;
         private int _lastSpawnAttemptYear = int.MinValue;
+        private int _configuredUnlockCycle = -1;
         
         public bool IsEnabled { get; set; } = true;
-        public bool IsUnlocked(int currentCycle) => currentCycle >= UnlockCycle;
+        public bool IsUnlocked(int currentCycle) => currentCycle >= EffectiveUnlockCycle;
+
+        public int EffectiveUnlockCycle => _configuredUnlockCycle > 0 ? _configuredUnlockCycle : UnlockCycle;
+
+        public void ApplyConfigOverrides(bool enabled, int unlockCycle)
+        {
+            IsEnabled = enabled;
+            if (unlockCycle > 0)
+            {
+                _configuredUnlockCycle = unlockCycle;
+            }
+        }
 
         public virtual void Initialize(int cycleCount)
         {

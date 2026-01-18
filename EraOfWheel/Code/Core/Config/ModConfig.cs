@@ -11,6 +11,7 @@ namespace EraOfWheel.Core.Config
         public CycleConfig cycle = new CycleConfig();
         public DifficultyConfig difficulty = new DifficultyConfig();
         public DemonLordsConfig demon_lords = new DemonLordsConfig();
+        public GeneralSystemConfig generals = new GeneralSystemConfig();
         public SealConfig seal = new SealConfig();
         public LegacyConfig legacy = new LegacyConfig();
         public LLMConfig llm = new LLMConfig();
@@ -77,6 +78,10 @@ namespace EraOfWheel.Core.Config
     {
         public VoidLordConfig void_lord = new VoidLordConfig();
         public PlagueMotherConfig plague_mother = new PlagueMotherConfig();
+        public IfritConfig ifrit = new IfritConfig();
+        public AnubisConfig anubis = new AnubisConfig();
+        public OmegaConfig omega = new OmegaConfig();
+        public MephistoConfig mephisto = new MephistoConfig();
     }
 
     [Serializable]
@@ -100,6 +105,56 @@ namespace EraOfWheel.Core.Config
         public int incubation_years = 5;
         public int toxic_fog_duration_years = 10;
         public int plague_lord_summon_threshold = 100;
+    }
+
+    [Serializable]
+    public class IfritConfig
+    {
+        public bool enabled = true;
+        public int unlock_cycle = 2;
+        public float ignite_radius = 120f;
+        public int ignite_max_targets = 60;
+        public int firestorm_interval_years = 12;
+    }
+
+    [Serializable]
+    public class AnubisConfig
+    {
+        public bool enabled = true;
+        public int unlock_cycle = 2;
+        public float curse_radius = 140f;
+        public int curse_max_targets = 40;
+        public int soul_harvest_interval_years = 15;
+    }
+
+    [Serializable]
+    public class OmegaConfig
+    {
+        public bool enabled = true;
+        public int unlock_cycle = 3;
+        public float overclock_radius = 160f;
+        public int overclock_max_targets = 50;
+        public int overclock_interval_years = 18;
+    }
+
+    [Serializable]
+    public class MephistoConfig
+    {
+        public bool enabled = true;
+        public int unlock_cycle = 3;
+        public float temptation_radius = 180f;
+        public int temptation_max_targets = 35;
+        public int temptation_interval_years = 20;
+    }
+
+    [Serializable]
+    public class GeneralSystemConfig
+    {
+        public bool enabled = true;
+        public int defeat_threshold = 3;
+        public float betray_probability = 0.25f;
+        public float retreat_health_percent = 20f;
+        public int skill_check_interval_years = 5;
     }
 
     [Serializable]
@@ -178,6 +233,7 @@ namespace EraOfWheel.Core.Config
         public bool enabled = true;
         public string hotkey = "F8";
         public int notification_duration_seconds = 5;
+        public int notification_max_active = 3;
         public bool show_debug_tools = false;
     }
 }

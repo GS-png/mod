@@ -22,6 +22,105 @@ namespace EraOfWheel.UI
         }
     }
 
+    public class EraOfWheelOverlayGuiBehaviour : MonoBehaviour
+    {
+        private Rect _failureWindowRect = new Rect(0, 0, 460, 240);
+
+        private void OnGUI()
+        {
+            NotificationSystem.Instance?.RenderGui();
+            RenderTerminalAftermathBanner();
+            RenderFailureDecisionGui();
+        }
+
+        private void RenderTerminalAftermathBanner()
+        {
+            var seal = SealSystem.Instance;
+            if (seal == null) return;
+            if (!seal.IsTerminalAftermathActive) return;
+
+            string reason = seal.FailureReason;
+            string text = string.IsNullOrEmpty(reason)
+                ? "【终末余波】世界正在崩坏：请尽快采取行动"
+                : $"【终末余波】世界正在崩坏：{reason}";
+
+            const float height = 34f;
+            var rect = new Rect(0, 0, Screen.width, height);
+
+            Color prev = GUI.color;
+            GUI.color = new Color(0.75f, 0.1f, 0.1f, 0.85f);
+            GUI.Box(rect, "");
+            GUI.color = Color.white;
+            GUI.Label(new Rect(12, 6, Screen.width - 24, height - 10), text);
+            GUI.color = prev;
+        }
+
+        private void RenderFailureDecisionGui()
+        {
+            var seal = SealSystem.Instance;
+            if (seal == null) return;
+            if (!seal.IsFailureDecisionPending) return;
+
+            _failureWindowRect.x = (Screen.width - _failureWindowRect.width) * 0.5f;
+            _failureWindowRect.y = (Screen.height - _failureWindowRect.height) * 0.5f;
+
+            _failureWindowRect = GUILayout.Window(891338, _failureWindowRect, DrawFailureWindow, "轮回失败");
+        }
+
+        private void DrawFailureWindow(int id)
+        {
+            var seal = SealSystem.Instance;
+            if (seal == null)
+            {
+                GUILayout.Label("(SealSystem未初始化)");
+                return;
+            }
+
+            string reason = seal.FailureReason;
+            int cycle = seal.FailureCycleCount;
+            bool canRestart = seal.CanRestartCycleOnFailure;
+
+            float keepRatio = ConfigManager.Instance?.Config?.seal?.restart_cycle?.legacy_keep_ratio ?? 0.5f;
+
+            GUILayout.Label("【提示】");
+            if (canRestart)
+            {
+                GUILayout.Label($"重启轮回后：遗产保留 {keepRatio * 100f:0}%（军事/经济/科技按比例缩减）");
+                GUILayout.Label("传奇遗产：100%保留；诅咒：清除");
+            }
+            else
+            {
+                GUILayout.Label("当前配置不允许重启轮回，只能进入终末余波");
+            }
+            GUILayout.Space(8);
+
+            GUILayout.Label($"原因：{(string.IsNullOrEmpty(reason) ? "(未知)" : reason)}");
+            GUILayout.Label($"轮回：第{cycle}轮");
+            GUILayout.Space(8);
+            GUILayout.Label("你要选择怎么继续？");
+
+            GUILayout.FlexibleSpace();
+            GUILayout.BeginHorizontal();
+
+            if (canRestart)
+            {
+                if (GUILayout.Button("重启轮回"))
+                {
+                    seal.ResolveFailureRestart();
+                }
+            }
+
+            if (GUILayout.Button("进入终末余波"))
+            {
+                seal.ResolveFailureTerminalAftermath();
+            }
+
+            GUILayout.EndHorizontal();
+
+            GUI.DragWindow(new Rect(0, 0, 10000, 24));
+        }
+    }
+
     public class UIManager : IModSystem
     {
         public static UIManager Instance { get; private set; }
@@ -35,6 +134,9 @@ namespace EraOfWheel.UI
         private KeyCode _hotkey = KeyCode.F8;
         private GameObject _mainPanel;
         private EraOfWheelGuiBehaviour _gui;
+
+        private GameObject _overlayPanel;
+        private EraOfWheelOverlayGuiBehaviour _overlayGui;
 
         private Rect _windowRect = new Rect(40, 40, 520, 640);
         private Vector2 _scrollPos;
@@ -68,13 +170,27 @@ namespace EraOfWheel.UI
             if (!_config.enabled) return;
             
             // Note: Full implementation would create NeoModLoader UI elements
+            if (_mainPanel != null && _overlayPanel != null) return;
+
+            if (_overlayPanel == null)
+            {
+                _overlayPanel = new GameObject("EraOfWheel_Overlay");
+                var parent = ModMain.Instance?.GetGameObject();
+                if (parent != null)
+                {
+                    _overlayPanel.transform.SetParent(parent.transform, false);
+                }
+                UnityEngine.Object.DontDestroyOnLoad(_overlayPanel);
+                _overlayGui = _overlayPanel.AddComponent<EraOfWheelOverlayGuiBehaviour>();
+            }
+
             if (_mainPanel != null) return;
 
             _mainPanel = new GameObject("EraOfWheel_UI");
-            var parent = ModMain.Instance?.GetGameObject();
-            if (parent != null)
+            var parent2 = ModMain.Instance?.GetGameObject();
+            if (parent2 != null)
             {
-                _mainPanel.transform.SetParent(parent.transform, false);
+                _mainPanel.transform.SetParent(parent2.transform, false);
             }
             UnityEngine.Object.DontDestroyOnLoad(_mainPanel);
 
@@ -451,7 +567,13 @@ namespace EraOfWheel.UI
                 UnityEngine.Object.Destroy(_mainPanel);
                 _mainPanel = null;
             }
+            if (_overlayPanel != null)
+            {
+                UnityEngine.Object.Destroy(_overlayPanel);
+                _overlayPanel = null;
+            }
             _gui = null;
+            _overlayGui = null;
             
             IsInitialized = false;
             Instance = null;

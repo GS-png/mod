@@ -20,6 +20,12 @@ namespace EraOfWheel.Cycle
         
         private SealConfig _config;
         private int _failureStartYear = -1;
+        private bool _failureDecisionPending = false;
+        private string _failureReason = "";
+        private int _failureCycleCount = 0;
+        private bool _terminalAftermathActive = false;
+        private int _lastTerminalAftermathTickYear = -1;
+        private int _lastTerminalAftermathPenaltyYear = -1;
         private bool _executionAchieved = false;
         private bool _ritualAchieved = false;
         private int _lastRitualUpdateYear = -1;
@@ -60,6 +66,24 @@ namespace EraOfWheel.Cycle
                     _ritualAchieved = true;
                 }
             }
+
+            _failureDecisionPending = save.failure_decision_pending;
+            _failureReason = save.failure_reason ?? "";
+            _failureCycleCount = save.failure_cycle_count;
+            _terminalAftermathActive = save.terminal_aftermath_active;
+            _lastTerminalAftermathTickYear = save.terminal_aftermath_last_tick_year;
+            _lastTerminalAftermathPenaltyYear = save.terminal_aftermath_last_tick_year;
+        }
+
+        private void PersistFailureProtectionState()
+        {
+            ModSaveManager.Instance?.UpdateFailureProtectionData(
+                _failureDecisionPending,
+                _failureReason,
+                _failureCycleCount,
+                _terminalAftermathActive,
+                _lastTerminalAftermathTickYear
+            );
         }
 
         private void SubscribeToEvents()
@@ -104,7 +128,40 @@ namespace EraOfWheel.Cycle
                 UpdateRitualProgress(currentYear);
             }
 
+            if (_terminalAftermathActive)
+            {
+                UpdateTerminalAftermath(currentYear);
+            }
+
             ModSaveManager.Instance?.UpdateSealSystemData(SealWarWindowActive, RitualProgress);
+        }
+
+        private void UpdateTerminalAftermath(int currentYear)
+        {
+            if (currentYear == _lastTerminalAftermathTickYear) return;
+            _lastTerminalAftermathTickYear = currentYear;
+
+            PersistFailureProtectionState();
+
+            EventBus.Instance?.Publish(new TerminalAftermathTickEvent
+            {
+                CycleCount = _failureCycleCount > 0 ? _failureCycleCount : (CycleManager.Instance?.State?.CycleCount ?? 0),
+                WorldYear = currentYear
+            });
+
+            if (_lastTerminalAftermathPenaltyYear < 0)
+            {
+                _lastTerminalAftermathPenaltyYear = currentYear;
+                return;
+            }
+
+            const int penaltyIntervalYears = 10;
+            if (currentYear - _lastTerminalAftermathPenaltyYear < penaltyIntervalYears) return;
+            _lastTerminalAftermathPenaltyYear = currentYear;
+
+            LegacySystem.Instance?.ApplyTerminalAftermathPenalty(_failureCycleCount > 0 ? _failureCycleCount : (CycleManager.Instance?.State?.CycleCount ?? 0));
+
+            PersistFailureProtectionState();
         }
 
         private void CheckExecutionCondition()
@@ -156,12 +213,20 @@ namespace EraOfWheel.Cycle
             SealWarWindowActive = false;
             RitualProgress = 0f;
             _failureStartYear = -1;
+            _failureDecisionPending = false;
+            _failureReason = "";
+            _failureCycleCount = 0;
+            _terminalAftermathActive = false;
+            _lastTerminalAftermathTickYear = -1;
+            _lastTerminalAftermathPenaltyYear = -1;
             _executionAchieved = false;
             _ritualAchieved = false;
             _lastRitualUpdateYear = -1;
 
             _primarySite = null;
             _subSites.Clear();
+
+            PersistFailureProtectionState();
         }
 
         private void UpdateRitualProgress(int currentYear)
@@ -454,9 +519,20 @@ namespace EraOfWheel.Cycle
             CompleteSeal(method);
         }
 
+        private void CompleteSeal(string method)
+        {
+            Logger.Info(SystemName, $"Seal completed via {method}!");
+
+            CycleManager.Instance?.SetPendingSealMethod(method);
+            DemonLordManager.Instance?.SealActiveDemonLord(method);
+            
+            DeactivateSealWarWindow();
+        }
+
         private void CheckFailureConditions(int currentYear)
         {
             if (!CanCheckFailure()) return;
+            if (_failureDecisionPending) return;
             
             float controlledRatio = CalculateDemonControlRatio();
             
@@ -485,6 +561,7 @@ namespace EraOfWheel.Cycle
 
         private bool CanCheckFailure()
         {
+            if (_terminalAftermathActive) return false;
             var phase = CycleManager.Instance?.State?.CurrentPhase;
             return phase == CyclePhase.Invasion || phase == CyclePhase.Peak;
         }
@@ -564,28 +641,86 @@ namespace EraOfWheel.Cycle
             EvaluateVictory();
         }
 
-        private void CompleteSeal(string method)
-        {
-            Logger.Info(SystemName, $"Seal completed via {method}!");
-
-            CycleManager.Instance?.SetPendingSealMethod(method);
-            DemonLordManager.Instance?.SealActiveDemonLord(method);
-            
-            DeactivateSealWarWindow();
-        }
-
         private void TriggerFailure(string reason)
         {
             Logger.Warn(SystemName, $"Failure condition met: {reason}");
-            
-            if (_config.restart_cycle.enabled)
+            if (_failureDecisionPending) return;
+
+            _failureDecisionPending = true;
+            _failureReason = reason ?? "";
+            _failureCycleCount = CycleManager.Instance?.State?.CycleCount ?? 0;
+
+            bool canRestart = _config != null && _config.restart_cycle != null && _config.restart_cycle.enabled;
+            EventBus.Instance?.Publish(new CycleFailureDecisionRequestedEvent
+            {
+                Reason = _failureReason,
+                CycleCount = _failureCycleCount,
+                CanRestartCycle = canRestart
+            });
+
+            PersistFailureProtectionState();
+        }
+
+        public bool IsFailureDecisionPending => _failureDecisionPending;
+        public string FailureReason => _failureReason;
+        public int FailureCycleCount => _failureCycleCount;
+        public bool CanRestartCycleOnFailure => _config != null && _config.restart_cycle != null && _config.restart_cycle.enabled;
+        public bool IsTerminalAftermathActive => _terminalAftermathActive;
+
+        public void ResolveFailureRestart()
+        {
+            if (!_failureDecisionPending) return;
+
+            _failureDecisionPending = false;
+            bool canRestart = _config != null && _config.restart_cycle != null && _config.restart_cycle.enabled;
+
+            EventBus.Instance?.Publish(new CycleFailureResolvedEvent
+            {
+                Reason = _failureReason,
+                CycleCount = _failureCycleCount,
+                Choice = canRestart ? "restart" : "aftermath"
+            });
+
+            if (canRestart)
             {
                 ForceRestart();
+                return;
             }
-            else
+
+            EnterTerminalAftermath();
+        }
+
+        public void ResolveFailureTerminalAftermath()
+        {
+            if (!_failureDecisionPending) return;
+
+            _failureDecisionPending = false;
+
+            EventBus.Instance?.Publish(new CycleFailureResolvedEvent
             {
-                Logger.Error(SystemName, "No recovery option available - Terminal Aftermath");
-            }
+                Reason = _failureReason,
+                CycleCount = _failureCycleCount,
+                Choice = "aftermath"
+            });
+
+            EnterTerminalAftermath();
+        }
+
+        private void EnterTerminalAftermath()
+        {
+            Logger.Error(SystemName, "No recovery option available - Terminal Aftermath");
+            _terminalAftermathActive = true;
+            _lastTerminalAftermathTickYear = -1;
+            _lastTerminalAftermathPenaltyYear = -1;
+
+            LegacySystem.Instance?.ApplyTerminalAftermathPenalty(_failureCycleCount);
+            EventBus.Instance?.Publish(new TerminalAftermathEnteredEvent
+            {
+                Reason = _failureReason,
+                CycleCount = _failureCycleCount
+            });
+
+            PersistFailureProtectionState();
         }
 
         private void OfferCycleRestart()
@@ -596,9 +731,17 @@ namespace EraOfWheel.Cycle
 
         public void ForceRestart()
         {
+            _terminalAftermathActive = false;
+            _failureDecisionPending = false;
+            _failureReason = "";
+            _failureCycleCount = 0;
+            _lastTerminalAftermathTickYear = -1;
+            _lastTerminalAftermathPenaltyYear = -1;
             CycleManager.Instance?.ForceRestartCycle();
             DemonLordManager.Instance?.ForceResetAllDemonsToSealed();
             DeactivateSealWarWindow();
+
+            PersistFailureProtectionState();
         }
 
         public void AddRitualProgress(float amount)
@@ -626,6 +769,12 @@ namespace EraOfWheel.Cycle
             EventBus.Instance?.Unsubscribe<PhaseChangedEvent>(OnPhaseChanged);
             
             DeactivateSealWarWindow();
+            _failureDecisionPending = false;
+            _failureReason = "";
+            _failureCycleCount = 0;
+            _lastTerminalAftermathTickYear = -1;
+            _lastTerminalAftermathPenaltyYear = -1;
+            PersistFailureProtectionState();
             IsInitialized = false;
             Instance = null;
             Logger.Info(SystemName, "SealSystem disposed");

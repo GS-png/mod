@@ -18,6 +18,10 @@ namespace EraOfWheel.UI.Panels
         private GameObject _panelRoot;
         private bool _isVisible = false;
 
+        private string _cachedSummaryText = "";
+        private float _lastSummaryBuildTime = -999f;
+        private const float SummaryCacheSeconds = 0.5f;
+
         public void Initialize()
         {
             if (IsInitialized) return;
@@ -43,6 +47,7 @@ namespace EraOfWheel.UI.Panels
             {
                 _panelRoot.SetActive(true);
             }
+            _lastSummaryBuildTime = -999f;
             Refresh();
         }
 
@@ -58,6 +63,8 @@ namespace EraOfWheel.UI.Panels
         public void Refresh()
         {
             if (!_isVisible) return;
+
+            _lastSummaryBuildTime = -999f;
             
             var data = GetOverviewData();
             UpdateDisplay(data);
@@ -118,6 +125,15 @@ namespace EraOfWheel.UI.Panels
 
         public string GetSummaryText()
         {
+            if (!string.IsNullOrEmpty(_cachedSummaryText))
+            {
+                float now = Time.realtimeSinceStartup;
+                if (now - _lastSummaryBuildTime < SummaryCacheSeconds)
+                {
+                    return _cachedSummaryText;
+                }
+            }
+
             var data = GetOverviewData();
             var sb = new StringBuilder();
             
@@ -160,7 +176,9 @@ namespace EraOfWheel.UI.Panels
             sb.AppendLine($"军团波次: {data.LegionWaveCount}");
             sb.AppendLine("═══════════════════════════════════");
             
-            return sb.ToString();
+            _cachedSummaryText = sb.ToString();
+            _lastSummaryBuildTime = Time.realtimeSinceStartup;
+            return _cachedSummaryText;
         }
 
         public void Dispose()

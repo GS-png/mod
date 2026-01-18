@@ -68,6 +68,18 @@ namespace EraOfWheel.DemonLords
 
             if (!string.IsNullOrEmpty(preferredId) && _demonLords.TryGetValue(preferredId, out var active))
             {
+                if (!active.IsEnabled || !active.IsUnlocked(cycleCount))
+                {
+                    Logger.Warn(SystemName, $"Saved active demon '{preferredId}' is not eligible (enabled={active.IsEnabled}, unlock={active.EffectiveUnlockCycle}, currentCycle={cycleCount}). Clearing active id.");
+                    _activeDemonLord = null;
+                    if (CycleManager.Instance?.State != null)
+                    {
+                        CycleManager.Instance.State.ActiveDemonLordId = "";
+                    }
+                    save.active_demon_lord_id = "";
+                    return;
+                }
+
                 _activeDemonLord = active;
 
                 if (CycleManager.Instance?.State != null)
@@ -83,12 +95,57 @@ namespace EraOfWheel.DemonLords
         {
             RegisterDemonLord(new VoidLord());
             RegisterDemonLord(new PlagueMother());
+            RegisterDemonLord(new Ifrit());
+            RegisterDemonLord(new Anubis());
+            RegisterDemonLord(new Omega());
+            RegisterDemonLord(new Mephisto());
         }
 
         private void RegisterDemonLord(BaseDemonLord demonLord)
         {
             _demonLords[demonLord.Id] = demonLord;
+            ApplyDemonConfigOverrides(demonLord);
             Logger.Debug(SystemName, $"Registered demon lord: {demonLord.Name}");
+        }
+
+        private void ApplyDemonConfigOverrides(BaseDemonLord demon)
+        {
+            if (demon == null) return;
+
+            try
+            {
+                var cfg = ConfigManager.Instance?.Config?.demon_lords;
+                if (cfg == null) return;
+
+                var rootType = cfg.GetType();
+                var field = rootType.GetField(demon.Id);
+                if (field == null) return;
+
+                var demonCfg = field.GetValue(cfg);
+                if (demonCfg == null) return;
+
+                var enabledField = demonCfg.GetType().GetField("enabled");
+                var unlockField = demonCfg.GetType().GetField("unlock_cycle");
+
+                bool enabled = demon.IsEnabled;
+                int unlock = demon.UnlockCycle;
+
+                if (enabledField != null && enabledField.FieldType == typeof(bool))
+                {
+                    enabled = (bool)enabledField.GetValue(demonCfg);
+                }
+
+                if (unlockField != null && unlockField.FieldType == typeof(int))
+                {
+                    unlock = (int)unlockField.GetValue(demonCfg);
+                }
+
+                demon.ApplyConfigOverrides(enabled, unlock);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(SystemName, "Failed to apply demon config overrides", ex);
+            }
         }
 
         private void SubscribeToEvents()

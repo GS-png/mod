@@ -376,6 +376,43 @@ namespace EraOfWheel.Cycle
             return all;
         }
 
+        public void ApplyTerminalAftermathPenalty(int cycleCount)
+        {
+            if (!IsInitialized) return;
+
+            try
+            {
+                const string curseId = "demonic_taint";
+                var legacy = CreateLegacyFromId(LegacyType.Curse, curseId, cycleCount);
+                if (legacy == null) return;
+
+                GrantLegacy(legacy);
+                RecalculateBonuses();
+                PersistToSave();
+
+                Logger.Warn(SystemName, $"Terminal aftermath penalty applied (cycle {cycleCount})");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(SystemName, "Failed to apply terminal aftermath penalty", ex);
+            }
+        }
+
+        public void GrantTerminalAftermathCurse(int cycleCount)
+        {
+            if (!IsInitialized) return;
+
+            const string curseId = "demonic_taint";
+            if (_curseLegacies.ContainsKey(curseId)) return;
+
+            var legacy = CreateLegacyFromId(LegacyType.Curse, curseId, cycleCount);
+            if (legacy == null) return;
+
+            GrantLegacy(legacy);
+            RecalculateBonuses();
+            PersistToSave();
+        }
+
         public void Dispose()
         {
             EventBus.Instance?.Unsubscribe<CycleCompletedEvent>(OnCycleCompleted);

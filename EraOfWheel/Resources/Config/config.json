@@ -49,7 +49,42 @@
       "incubation_years": 5,
       "toxic_fog_duration_years": 10,
       "plague_lord_summon_threshold": 100
+    },
+    "ifrit": {
+      "enabled": true,
+      "unlock_cycle": 2,
+      "ignite_radius": 120,
+      "ignite_max_targets": 60,
+      "firestorm_interval_years": 12
+    },
+    "anubis": {
+      "enabled": true,
+      "unlock_cycle": 2,
+      "curse_radius": 140,
+      "curse_max_targets": 40,
+      "soul_harvest_interval_years": 15
+    },
+    "omega": {
+      "enabled": true,
+      "unlock_cycle": 3,
+      "overclock_radius": 160,
+      "overclock_max_targets": 50,
+      "overclock_interval_years": 18
+    },
+    "mephisto": {
+      "enabled": true,
+      "unlock_cycle": 3,
+      "temptation_radius": 180,
+      "temptation_max_targets": 35,
+      "temptation_interval_years": 20
     }
+  },
+  "generals": {
+    "enabled": true,
+    "defeat_threshold": 3,
+    "betray_probability": 0.25,
+    "retreat_health_percent": 20,
+    "skill_check_interval_years": 5
   },
   "seal": {
     "invasion_window_years": {
@@ -100,6 +135,7 @@
     "enabled": true,
     "hotkey": "F8",
     "notification_duration_seconds": 5,
+    "notification_max_active": 3,
     "show_debug_tools": false
   }
 }
