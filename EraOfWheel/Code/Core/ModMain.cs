@@ -13,6 +13,7 @@ using EraOfWheel.DemonLords.Legion;
 using EraOfWheel.DemonLords.General;
 using EraOfWheel.UI;
 using EraOfWheel.UI.Panels;
+using Logger = EraOfWheel.Core.Logger;
 
 namespace EraOfWheel.Core
 {

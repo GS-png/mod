@@ -4,6 +4,7 @@ using UnityEngine;
 using EraOfWheel.Core;
 using EraOfWheel.Core.Config;
 using EraOfWheel.Core.Events;
+using Logger = EraOfWheel.Core.Logger;
 
 namespace EraOfWheel.UI
 {
