@@ -1,0 +1,9 @@
+{
+  "name": "Era Wheel - Demon Lord Reincarnation",
+  "author": "Your Name",
+  "version": "1.0.0",
+  "description": "纪元之轮：魔王轮回 - 将WorldBox变为自我演化的史诗叙事引擎",
+  "iconPath": "icon.png",
+  "targetGameVersion": "0.51.2",
+  "dependencies": []
+}

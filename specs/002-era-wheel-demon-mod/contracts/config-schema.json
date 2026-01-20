@@ -1,0 +1,519 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "era-wheel-config-v1.0.0",
+  "title": "Era Wheel MOD Configuration",
+  "description": "纪元之轮：魔王轮回 MOD 配置文件 Schema",
+  "type": "object",
+  "required": ["config_version", "cycle", "demon_lord", "civilization", "narrative"],
+  "properties": {
+    "config_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "配置版本号，用于迁移"
+    },
+    
+    "cycle": {
+      "type": "object",
+      "description": "轮回系统配置",
+      "required": ["trigger", "seal", "phases"],
+      "properties": {
+        "trigger": {
+          "type": "object",
+          "description": "轮回触发配置",
+          "properties": {
+            "first_cycle_mode": {
+              "type": "string",
+              "enum": ["prosperity", "fixed_age", "manual"],
+              "default": "prosperity",
+              "description": "第1轮回触发模式"
+            },
+            "prosperity_thresholds": {
+              "type": "object",
+              "properties": {
+                "population": { "type": "integer", "minimum": 0, "default": 3000 },
+                "cities": { "type": "integer", "minimum": 0, "default": 15 },
+                "heroes": { "type": "integer", "minimum": 0, "default": 1 },
+                "tech_level": { "type": "integer", "minimum": 0, "default": 5 }
+              }
+            },
+            "fixed_age_years": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 10000,
+              "default": 600,
+              "description": "固定年龄触发（保底）"
+            }
+          }
+        },
+        "seal": {
+          "type": "object",
+          "description": "封印系统配置",
+          "properties": {
+            "initial_strength": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "default": 100
+            },
+            "decay_rate_per_year": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10,
+              "default": 0.5,
+              "description": "每年衰减百分比"
+            },
+            "victory_conditions": {
+              "type": "object",
+              "properties": {
+                "execution": { "type": "boolean", "default": true },
+                "ritual": { "type": "boolean", "default": true },
+                "time_window": { "type": "boolean", "default": true },
+                "alliance": { "type": "boolean", "default": false }
+              }
+            },
+            "fallback_condition": {
+              "type": "string",
+              "enum": ["execution"],
+              "default": "execution",
+              "description": "保底封印条件（不可关闭）"
+            }
+          }
+        },
+        "phases": {
+          "type": "object",
+          "description": "阶段持续时间配置",
+          "properties": {
+            "omen_duration": {
+              "type": "object",
+              "properties": {
+                "min": { "type": "integer", "default": 20 },
+                "max": { "type": "integer", "default": 50 }
+              }
+            },
+            "awakening_duration": {
+              "type": "object",
+              "properties": {
+                "min": { "type": "integer", "default": 10 },
+                "max": { "type": "integer", "default": 30 }
+              }
+            },
+            "invasion_timeout": {
+              "type": "integer",
+              "minimum": 50,
+              "maximum": 500,
+              "default": 200,
+              "description": "入侵超时（年），强制进入衰弱期"
+            }
+          }
+        }
+      }
+    },
+    
+    "demon_lord": {
+      "type": "object",
+      "description": "魔王系统配置",
+      "properties": {
+        "awakening_mode": {
+          "type": "string",
+          "enum": ["specified", "random"],
+          "default": "random",
+          "description": "苏醒模式：指定/随机"
+        },
+        "random_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "default": 1,
+          "description": "随机模式下苏醒数量"
+        },
+        "multi_lord_mode": {
+          "type": "string",
+          "enum": ["independent", "alliance", "civil_war", "auto_judge"],
+          "default": "independent",
+          "description": "多魔王互动模式"
+        },
+        "growth": {
+          "type": "object",
+          "properties": {
+            "cycle_multiplier": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "default": 0.25,
+              "description": "每轮回成长率"
+            },
+            "strength_min": {
+              "type": "number",
+              "minimum": 0.1,
+              "default": 0.6
+            },
+            "strength_max": {
+              "type": "number",
+              "maximum": 5,
+              "default": 3.0
+            }
+          }
+        },
+        "generals": {
+          "type": "object",
+          "properties": {
+            "initial_count": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 6,
+              "default": 2
+            },
+            "per_cycle_increase": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2,
+              "default": 1
+            },
+            "max_count": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 6,
+              "default": 6
+            },
+            "betrayal_base_chance": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 0.2,
+              "default": 0.02
+            },
+            "betrayal_defeat_threshold": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 3
+            }
+          }
+        },
+        "legion": {
+          "type": "object",
+          "properties": {
+            "wave_interval_years": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10
+            },
+            "base_units_per_wave": {
+              "type": "integer",
+              "minimum": 5,
+              "maximum": 100,
+              "default": 30
+            },
+            "wave_growth_rate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 0.5,
+              "default": 0.15
+            },
+            "max_units_per_wave": {
+              "type": "integer",
+              "minimum": 10,
+              "maximum": 200,
+              "default": 100
+            },
+            "max_alive_units": {
+              "type": "integer",
+              "minimum": 50,
+              "maximum": 500,
+              "default": 200,
+              "description": "性能保护上限"
+            },
+            "elite_rate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 0.3,
+              "default": 0.1
+            }
+          }
+        },
+        "enabled_lords": {
+          "type": "object",
+          "description": "各魔王启用状态",
+          "properties": {
+            "void_lord": { "type": "boolean", "default": true },
+            "plague_lord": { "type": "boolean", "default": true },
+            "machine_lord": { "type": "boolean", "default": true },
+            "time_lord": { "type": "boolean", "default": true },
+            "flame_lord": { "type": "boolean", "default": true },
+            "abyss_lord": { "type": "boolean", "default": true },
+            "death_lord": { "type": "boolean", "default": true },
+            "soul_lord": { "type": "boolean", "default": true },
+            "nature_lord": { "type": "boolean", "default": true },
+            "judgment_lord": { "type": "boolean", "default": true }
+          }
+        }
+      }
+    },
+    
+    "civilization": {
+      "type": "object",
+      "description": "文明系统配置",
+      "properties": {
+        "anti_demon": {
+          "type": "object",
+          "properties": {
+            "kill_thresholds": {
+              "type": "array",
+              "items": { "type": "integer" },
+              "default": [100, 300, 600, 1000, 1500, 2000, 3000, 5000, 8000, 10000],
+              "description": "抗魔等级提升阈值"
+            },
+            "damage_reduction_per_level": {
+              "type": "number",
+              "default": 0.05,
+              "description": "每级减少受到的伤害"
+            },
+            "damage_bonus_per_level": {
+              "type": "number",
+              "default": 0.1,
+              "description": "每级增加造成的伤害"
+            }
+          }
+        },
+        "csi": {
+          "type": "object",
+          "description": "文明强度指数计算权重",
+          "properties": {
+            "population_weight": { "type": "number", "default": 0.25 },
+            "cities_weight": { "type": "number", "default": 0.2 },
+            "tech_weight": { "type": "number", "default": 0.2 },
+            "anti_demon_weight": { "type": "number", "default": 0.2 },
+            "heroes_weight": { "type": "number", "default": 0.15 }
+          }
+        },
+        "alliance": {
+          "type": "object",
+          "properties": {
+            "auto_form_threshold": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "default": 0.2,
+              "description": "城市损毁比例触发自动组建"
+            },
+            "council_interval_years": {
+              "type": "integer",
+              "default": 20
+            }
+          }
+        },
+        "hero": {
+          "type": "object",
+          "properties": {
+            "destined_chance": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 0.2,
+              "default": 0.05
+            },
+            "inheritance_chance": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "default": 0.3
+            }
+          }
+        }
+      }
+    },
+    
+    "legacy": {
+      "type": "object",
+      "description": "纪元遗产配置",
+      "properties": {
+        "max_stacks": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "default": 5
+        },
+        "stack_diminish": {
+          "type": "array",
+          "items": { "type": "number" },
+          "default": [1.0, 0.8, 0.6, 0.4, 0.2],
+          "description": "叠加递减系数"
+        },
+        "curse_threshold": {
+          "type": "object",
+          "properties": {
+            "city_loss_percent": { "type": "number", "default": 0.5 },
+            "hero_deaths": { "type": "integer", "default": 3 }
+          }
+        }
+      }
+    },
+    
+    "adaptive_difficulty": {
+      "type": "object",
+      "description": "自适应难度配置",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "multiplier_min": {
+          "type": "number",
+          "default": 0.85
+        },
+        "multiplier_max": {
+          "type": "number",
+          "default": 1.25
+        },
+        "smoothing_factor": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.3,
+          "description": "平滑系数，防止剧烈波动"
+        },
+        "max_change_per_update": {
+          "type": "number",
+          "default": 0.05
+        },
+        "emergency_threshold": {
+          "type": "object",
+          "properties": {
+            "population": { "type": "integer", "default": 500 },
+            "civilizations": { "type": "integer", "default": 1 }
+          },
+          "description": "触发保底模式的阈值"
+        }
+      }
+    },
+    
+    "narrative": {
+      "type": "object",
+      "description": "叙事系统配置",
+      "properties": {
+        "event_pool": {
+          "type": "object",
+          "properties": {
+            "trigger_interval_frames": {
+              "type": "integer",
+              "default": 300,
+              "description": "事件检查间隔（帧）"
+            },
+            "duplicate_prevention_window": {
+              "type": "integer",
+              "default": 10
+            }
+          }
+        },
+        "ai_engine": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean", "default": false },
+            "provider": {
+              "type": "string",
+              "enum": ["openai", "claude", "ollama", "custom"],
+              "default": "openai"
+            },
+            "api_url": { "type": "string" },
+            "model": { "type": "string", "default": "gpt-4" },
+            "permission_level": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 5,
+              "default": 2,
+              "description": "1=观察者, 2=记录者, 3=叙事者, 4=编剧, 5=造物主"
+            },
+            "timeout_seconds": {
+              "type": "integer",
+              "default": 30
+            },
+            "retry_count": {
+              "type": "integer",
+              "default": 3
+            },
+            "max_tokens_per_call": {
+              "type": "integer",
+              "default": 500
+            },
+            "operation_cooldown_minutes": {
+              "type": "integer",
+              "default": 5
+            },
+            "confirmation_mode": {
+              "type": "string",
+              "enum": ["auto", "manual", "suggest_only"],
+              "default": "manual"
+            }
+          }
+        }
+      }
+    },
+    
+    "performance": {
+      "type": "object",
+      "description": "性能配置",
+      "properties": {
+        "update_intervals": {
+          "type": "object",
+          "properties": {
+            "demon_lord": { "type": "integer", "default": 1 },
+            "legion": { "type": "integer", "default": 5 },
+            "hero": { "type": "integer", "default": 10 },
+            "civilization": { "type": "integer", "default": 30 },
+            "ai_story": { "type": "integer", "default": 300 }
+          },
+          "description": "各系统更新间隔（帧）"
+        },
+        "object_pool_size": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 5000,
+          "default": 1000
+        },
+        "warning_thresholds": {
+          "type": "object",
+          "properties": {
+            "frame_time_ms": { "type": "number", "default": 5 },
+            "memory_mb": { "type": "integer", "default": 100 }
+          }
+        }
+      }
+    },
+    
+    "ui": {
+      "type": "object",
+      "description": "界面配置",
+      "properties": {
+        "scale": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2,
+          "default": 1
+        },
+        "animation_enabled": { "type": "boolean", "default": true },
+        "notification_duration_seconds": {
+          "type": "integer",
+          "default": 5
+        },
+        "theme": {
+          "type": "string",
+          "enum": ["default", "dark", "light"],
+          "default": "default"
+        }
+      }
+    },
+    
+    "debug": {
+      "type": "object",
+      "description": "调试配置",
+      "properties": {
+        "enabled": { "type": "boolean", "default": false },
+        "show_internal_vars": { "type": "boolean", "default": false },
+        "show_performance": { "type": "boolean", "default": false },
+        "log_level": {
+          "type": "string",
+          "enum": ["debug", "info", "warning", "error"],
+          "default": "info"
+        }
+      }
+    }
+  }
+}

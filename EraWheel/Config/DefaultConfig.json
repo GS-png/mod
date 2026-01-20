@@ -1,0 +1,153 @@
+{
+  "config_version": "1.0.0",
+  "cycle": {
+    "trigger": {
+      "first_cycle_mode": "prosperity",
+      "prosperity_thresholds": {
+        "population": 3000,
+        "cities": 15,
+        "heroes": 1,
+        "tech_level": 5
+      },
+      "fixed_age_years": 600
+    },
+    "seal": {
+      "initial_strength": 100,
+      "decay_rate_per_year": 0.5,
+      "victory_conditions": {
+        "execution": true,
+        "ritual": true,
+        "time_window": true,
+        "alliance": false
+      },
+      "fallback_condition": "execution"
+    },
+    "phases": {
+      "omen_duration": { "min": 20, "max": 50 },
+      "awakening_duration": { "min": 10, "max": 30 },
+      "invasion_timeout": 200
+    }
+  },
+  "demon_lord": {
+    "awakening_mode": "random",
+    "random_count": 1,
+    "multi_lord_mode": "independent",
+    "growth": {
+      "cycle_multiplier": 0.25,
+      "strength_min": 0.6,
+      "strength_max": 3.0
+    },
+    "generals": {
+      "initial_count": 2,
+      "per_cycle_increase": 1,
+      "max_count": 6,
+      "betrayal_base_chance": 0.02,
+      "betrayal_defeat_threshold": 3
+    },
+    "legion": {
+      "wave_interval_years": 10,
+      "base_units_per_wave": 30,
+      "wave_growth_rate": 0.15,
+      "max_units_per_wave": 100,
+      "max_alive_units": 200,
+      "elite_rate": 0.1
+    },
+    "enabled_lords": {
+      "void_lord": true,
+      "plague_lord": true,
+      "machine_lord": true,
+      "time_lord": true,
+      "flame_lord": true,
+      "abyss_lord": true,
+      "death_lord": true,
+      "soul_lord": true,
+      "nature_lord": true,
+      "judgment_lord": true
+    }
+  },
+  "civilization": {
+    "anti_demon": {
+      "kill_thresholds": [100, 300, 600, 1000, 1500, 2000, 3000, 5000, 8000, 10000],
+      "damage_reduction_per_level": 0.05,
+      "damage_bonus_per_level": 0.1
+    },
+    "csi": {
+      "population_weight": 0.25,
+      "cities_weight": 0.2,
+      "tech_weight": 0.2,
+      "anti_demon_weight": 0.2,
+      "heroes_weight": 0.15
+    },
+    "alliance": {
+      "auto_form_threshold": 0.2,
+      "council_interval_years": 20
+    },
+    "hero": {
+      "destined_chance": 0.05,
+      "inheritance_chance": 0.3
+    }
+  },
+  "legacy": {
+    "max_stacks": 5,
+    "stack_diminish": [1.0, 0.8, 0.6, 0.4, 0.2],
+    "curse_threshold": {
+      "city_loss_percent": 0.5,
+      "hero_deaths": 3
+    }
+  },
+  "adaptive_difficulty": {
+    "enabled": true,
+    "multiplier_min": 0.85,
+    "multiplier_max": 1.25,
+    "smoothing_factor": 0.3,
+    "max_change_per_update": 0.05,
+    "emergency_threshold": {
+      "population": 500,
+      "civilizations": 1
+    }
+  },
+  "narrative": {
+    "event_pool": {
+      "trigger_interval_frames": 300,
+      "duplicate_prevention_window": 10
+    },
+    "ai_engine": {
+      "enabled": false,
+      "provider": "openai",
+      "api_url": "",
+      "model": "gpt-4",
+      "permission_level": 2,
+      "timeout_seconds": 30,
+      "retry_count": 3,
+      "max_tokens_per_call": 500,
+      "operation_cooldown_minutes": 5,
+      "confirmation_mode": "manual"
+    }
+  },
+  "performance": {
+    "update_intervals": {
+      "demon_lord": 1,
+      "legion": 5,
+      "hero": 10,
+      "civilization": 30,
+      "ai_story": 300
+    },
+    "object_pool_size": 1000,
+    "warning_thresholds": {
+      "frame_time_ms": 5,
+      "memory_mb": 100
+    }
+  },
+  "ui": {
+    "scale": 1,
+    "animation_enabled": true,
+    "notification_duration_seconds": 5,
+    "theme": "default"
+  },
+  "debug": {
+    "enabled": false,
+    "show_internal_vars": false,
+    "show_performance": false,
+    "log_level": "info"
+  }
+}

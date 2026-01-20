@@ -1,0 +1,76 @@
+{
+  "Version": "1.0.0",
+  "Events": [
+    {
+      "Id": "omen_started",
+      "Category": "Omen",
+      "Priority": "Critical",
+      "Weight": 100,
+      "TitleKey": "event.omen_started.title",
+      "DescriptionKey": "event.omen_started.desc",
+      "Conditions": [
+        { "Type": "phase", "Operator": "eq", "Value": "Omen" }
+      ],
+      "Effects": [
+        { "Type": "log", "Value": "预兆阶段开始，封印开始衰减" }
+      ],
+      "CooldownYears": 0,
+      "Unique": false,
+      "Tags": ["omen", "phase_change"]
+    },
+    {
+      "Id": "omen_darkness_spreads",
+      "Category": "Omen",
+      "Priority": "High",
+      "Weight": 80,
+      "TitleKey": "event.omen_darkness.title",
+      "DescriptionKey": "event.omen_darkness.desc",
+      "Conditions": [
+        { "Type": "phase", "Operator": "eq", "Value": "Omen" },
+        { "Type": "seal_strength", "Operator": "lt", "Value": "80" }
+      ],
+      "Effects": [
+        { "Type": "log", "Value": "黑暗蔓延，不祥之兆显现" }
+      ],
+      "CooldownYears": 30,
+      "Unique": false,
+      "Tags": ["omen", "atmosphere"]
+    },
+    {
+      "Id": "omen_prophetic_dream",
+      "Category": "Omen",
+      "Priority": "Normal",
+      "Weight": 60,
+      "TitleKey": "event.omen_dream.title",
+      "DescriptionKey": "event.omen_dream.desc",
+      "Conditions": [
+        { "Type": "phase", "Operator": "eq", "Value": "Omen" },
+        { "Type": "hero_count", "Operator": "ge", "Value": "1" }
+      ],
+      "Effects": [
+        { "Type": "log", "Value": "英雄在梦中看到了可怕的预言" }
+      ],
+      "CooldownYears": 50,
+      "Unique": false,
+      "Tags": ["omen", "hero", "prophecy"]
+    },
+    {
+      "Id": "omen_seal_warning",
+      "Category": "System",
+      "Priority": "High",
+      "Weight": 90,
+      "TitleKey": "event.seal_warning.title",
+      "DescriptionKey": "event.seal_warning.desc",
+      "Conditions": [
+        { "Type": "seal_strength", "Operator": "lt", "Value": "50" },
+        { "Type": "seal_strength", "Operator": "gt", "Value": "30" }
+      ],
+      "Effects": [
+        { "Type": "log", "Value": "封印强度跌破50%，魔王即将苏醒" }
+      ],
+      "CooldownYears": 20,
+      "Unique": false,
+      "Tags": ["seal", "warning"]
+    }
+  ]
+}

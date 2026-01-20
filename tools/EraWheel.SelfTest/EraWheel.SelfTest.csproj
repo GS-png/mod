@@ -1,0 +1,59 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../../EraWheel/Config/ConfigModels.cs" />
+    <Compile Include="../../EraWheel/Config/ConfigSchema.cs" />
+
+    <Compile Include="../../EraWheel/Core/CompatReflection.cs" />
+    <Compile Include="../../EraWheel/Core/EventBus.cs" />
+    <Compile Include="../../EraWheel/Core/JsonCompat.cs" />
+    <Compile Include="../../EraWheel/Core/Log.cs" />
+    <Compile Include="../../EraWheel/Core/Types.cs" />
+    <Compile Include="../../EraWheel/Core/UpdateScheduler.cs" />
+    <Compile Include="../../EraWheel/Core/WorldCompat.cs" />
+
+    <Compile Include="../../EraWheel/Core/CycleHistory.cs" />
+    <Compile Include="../../EraWheel/Core/CycleManager.cs" />
+    <Compile Include="../../EraWheel/Core/EraStateMachine.cs" />
+    <Compile Include="../../EraWheel/Core/LegacyModels.cs" />
+    <Compile Include="../../EraWheel/Core/LegacyTraitFactory.cs" />
+    <Compile Include="../../EraWheel/Core/LegacySystem.cs" />
+    <Compile Include="../../EraWheel/Core/SealSystem.cs" />
+
+    <Compile Include="../../EraWheel/Civilization/ProsperityTracker.cs" />
+    <Compile Include="../../EraWheel/Civilization/AntiDemonLevel.cs" />
+    <Compile Include="../../EraWheel/Civilization/CombatModifiers.cs" />
+    <Compile Include="../../EraWheel/Civilization/CivilizationTracker.cs" />
+    <Compile Include="../../EraWheel/Civilization/AllianceModels.cs" />
+    <Compile Include="../../EraWheel/Civilization/AllianceSystem.cs" />
+
+    <Compile Include="../../EraWheel/Data/SaveModels.cs" />
+    <Compile Include="../../EraWheel/Data/MigrationManager.cs" />
+
+    <Compile Include="../../EraWheel/Narrative/NarrativeDispatcher.cs" />
+
+    <Compile Include="../../EraWheel/DemonLord/DemonLordModels.cs" />
+    <Compile Include="../../EraWheel/DemonLord/DemonLordBase.cs" />
+    <Compile Include="../../EraWheel/DemonLord/DemonLordFactory.cs" />
+    <Compile Include="../../EraWheel/DemonLord/DemonLordRegistry.cs" />
+    <Compile Include="../../EraWheel/DemonLord/DemonLordStateMachine.cs" />
+    <Compile Include="../../EraWheel/DemonLord/LegionModels.cs" />
+    <Compile Include="../../EraWheel/DemonLord/LegionUnitFactory.cs" />
+    <Compile Include="../../EraWheel/DemonLord/LegionWaveSystem.cs" />
+    <Compile Include="../../EraWheel/DemonLord/GeneralModels.cs" />
+    <Compile Include="../../EraWheel/DemonLord/GeneralFactory.cs" />
+    <Compile Include="../../EraWheel/DemonLord/GeneralSystem.cs" />
+    <Compile Include="../../EraWheel/DemonLord/SpawnSystem.cs" />
+    <Compile Include="../../EraWheel/DemonLord/StrongholdModels.cs" />
+    <Compile Include="../../EraWheel/DemonLord/StrongholdSystem.cs" />
+
+    <Compile Include="../../EraWheel/DemonLord/Lords/VoidLord.cs" />
+    <Compile Include="../../EraWheel/DemonLord/Lords/PlagueLord.cs" />
+  </ItemGroup>
+</Project>

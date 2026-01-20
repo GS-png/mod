@@ -1,0 +1,107 @@
+{
+  "Version": "1.0.0",
+  "Events": [
+    {
+      "Id": "battle_demon_awakens",
+      "Category": "Demon",
+      "Priority": "Critical",
+      "Weight": 100,
+      "TitleKey": "event.demon_awaken.title",
+      "DescriptionKey": "event.demon_awaken.desc",
+      "Conditions": [
+        { "Type": "phase", "Operator": "eq", "Value": "Awakening" }
+      ],
+      "Effects": [
+        { "Type": "log", "Value": "魔王从沉睡中苏醒" }
+      ],
+      "CooldownYears": 0,
+      "Unique": false,
+      "Tags": ["demon", "awakening"]
+    },
+    {
+      "Id": "battle_invasion_begins",
+      "Category": "Battle",
+      "Priority": "Critical",
+      "Weight": 100,
+      "TitleKey": "event.invasion_start.title",
+      "DescriptionKey": "event.invasion_start.desc",
+      "Conditions": [
+        { "Type": "phase", "Operator": "eq", "Value": "Invasion" }
+      ],
+      "Effects": [
+        { "Type": "log", "Value": "魔王大军开始入侵" }
+      ],
+      "CooldownYears": 0,
+      "Unique": false,
+      "Tags": ["battle", "invasion"]
+    },
+    {
+      "Id": "battle_demon_peak",
+      "Category": "Battle",
+      "Priority": "High",
+      "Weight": 90,
+      "TitleKey": "event.demon_peak.title",
+      "DescriptionKey": "event.demon_peak.desc",
+      "Conditions": [
+        { "Type": "phase", "Operator": "eq", "Value": "Peak" }
+      ],
+      "Effects": [
+        { "Type": "log", "Value": "魔王势力达到巅峰" }
+      ],
+      "CooldownYears": 0,
+      "Unique": false,
+      "Tags": ["demon", "peak"]
+    },
+    {
+      "Id": "battle_demon_weakening",
+      "Category": "Battle",
+      "Priority": "High",
+      "Weight": 85,
+      "TitleKey": "event.demon_weaken.title",
+      "DescriptionKey": "event.demon_weaken.desc",
+      "Conditions": [
+        { "Type": "phase", "Operator": "eq", "Value": "Weakening" }
+      ],
+      "Effects": [
+        { "Type": "log", "Value": "魔王力量开始衰退" }
+      ],
+      "CooldownYears": 0,
+      "Unique": false,
+      "Tags": ["demon", "weakening"]
+    },
+    {
+      "Id": "battle_general_appears",
+      "Category": "Battle",
+      "Priority": "High",
+      "Weight": 70,
+      "TitleKey": "event.general_appear.title",
+      "DescriptionKey": "event.general_appear.desc",
+      "Conditions": [
+        { "Type": "phase", "Operator": "in", "Value": "Invasion,Peak" }
+      ],
+      "Effects": [
+        { "Type": "log", "Value": "魔王麾下将领出现在战场" }
+      ],
+      "CooldownYears": 40,
+      "Unique": false,
+      "Tags": ["general", "battle"]
+    },
+    {
+      "Id": "battle_legion_wave",
+      "Category": "Battle",
+      "Priority": "Normal",
+      "Weight": 60,
+      "TitleKey": "event.legion_wave.title",
+      "DescriptionKey": "event.legion_wave.desc",
+      "Conditions": [
+        { "Type": "phase", "Operator": "in", "Value": "Invasion,Peak" }
+      ],
+      "Effects": [
+        { "Type": "log", "Value": "新一波军团抵达" }
+      ],
+      "CooldownYears": 15,
+      "Unique": false,
+      "Tags": ["legion", "wave"]
+    }
+  ]
+}

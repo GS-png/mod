@@ -1,0 +1,57 @@
+{
+  "Version": "1.0.0",
+  "Events": [
+    {
+      "Id": "hero_destined_born",
+      "Category": "Hero",
+      "Priority": "Critical",
+      "Weight": 100,
+      "TitleKey": "event.hero_born.title",
+      "DescriptionKey": "event.hero_born.desc",
+      "Conditions": [
+        { "Type": "phase", "Operator": "in", "Value": "Omen,Awakening,Invasion" }
+      ],
+      "Effects": [
+        { "Type": "log", "Value": "命定英雄诞生" }
+      ],
+      "CooldownYears": 100,
+      "Unique": false,
+      "Tags": ["hero", "birth"]
+    },
+    {
+      "Id": "hero_challenge_demon",
+      "Category": "Hero",
+      "Priority": "High",
+      "Weight": 70,
+      "TitleKey": "event.hero_challenge.title",
+      "DescriptionKey": "event.hero_challenge.desc",
+      "Conditions": [
+        { "Type": "phase", "Operator": "in", "Value": "Invasion,Peak" },
+        { "Type": "hero_count", "Operator": "ge", "Value": "1" }
+      ],
+      "Effects": [
+        { "Type": "log", "Value": "英雄向魔王发起挑战" }
+      ],
+      "CooldownYears": 30,
+      "Unique": false,
+      "Tags": ["hero", "battle"]
+    },
+    {
+      "Id": "hero_inheritance",
+      "Category": "Hero",
+      "Priority": "Normal",
+      "Weight": 50,
+      "TitleKey": "event.hero_inherit.title",
+      "DescriptionKey": "event.hero_inherit.desc",
+      "Conditions": [
+        { "Type": "cycle_count", "Operator": "ge", "Value": "1" }
+      ],
+      "Effects": [
+        { "Type": "log", "Value": "英雄之魂传承给了后人" }
+      ],
+      "CooldownYears": 80,
+      "Unique": false,
+      "Tags": ["hero", "legacy"]
+    }
+  ]
+}

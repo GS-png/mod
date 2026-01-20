@@ -1,0 +1,91 @@
+{
+  "Version": "1.0.0",
+  "Events": [
+    {
+      "Id": "system_cycle_complete",
+      "Category": "System",
+      "Priority": "Critical",
+      "Weight": 100,
+      "TitleKey": "event.cycle_complete.title",
+      "DescriptionKey": "event.cycle_complete.desc",
+      "Conditions": [
+        { "Type": "phase", "Operator": "eq", "Value": "Resealed" }
+      ],
+      "Effects": [
+        { "Type": "log", "Value": "轮回完成，新的纪元开始" }
+      ],
+      "CooldownYears": 0,
+      "Unique": false,
+      "Tags": ["cycle", "completion"]
+    },
+    {
+      "Id": "system_alliance_formed",
+      "Category": "Alliance",
+      "Priority": "High",
+      "Weight": 90,
+      "TitleKey": "event.alliance_formed.title",
+      "DescriptionKey": "event.alliance_formed.desc",
+      "Conditions": [
+        { "Type": "alliance_formed", "Operator": "eq", "Value": "true" }
+      ],
+      "Effects": [
+        { "Type": "log", "Value": "反魔联盟成立" }
+      ],
+      "CooldownYears": 200,
+      "Unique": true,
+      "Tags": ["alliance", "formation"]
+    },
+    {
+      "Id": "system_legacy_granted",
+      "Category": "Legacy",
+      "Priority": "High",
+      "Weight": 85,
+      "TitleKey": "event.legacy_granted.title",
+      "DescriptionKey": "event.legacy_granted.desc",
+      "Conditions": [
+        { "Type": "cycle_count", "Operator": "ge", "Value": "1" }
+      ],
+      "Effects": [
+        { "Type": "log", "Value": "纪元遗产被授予" }
+      ],
+      "CooldownYears": 0,
+      "Unique": false,
+      "Tags": ["legacy", "reward"]
+    },
+    {
+      "Id": "system_anti_demon_levelup",
+      "Category": "System",
+      "Priority": "Normal",
+      "Weight": 70,
+      "TitleKey": "event.anti_demon_up.title",
+      "DescriptionKey": "event.anti_demon_up.desc",
+      "Conditions": [
+        { "Type": "anti_demon_level", "Operator": "ge", "Value": "1" }
+      ],
+      "Effects": [
+        { "Type": "log", "Value": "文明抗魔等级提升" }
+      ],
+      "CooldownYears": 50,
+      "Unique": false,
+      "Tags": ["civilization", "growth"]
+    },
+    {
+      "Id": "system_prosperity_reached",
+      "Category": "System",
+      "Priority": "Normal",
+      "Weight": 75,
+      "TitleKey": "event.prosperity.title",
+      "DescriptionKey": "event.prosperity.desc",
+      "Conditions": [
+        { "Type": "phase", "Operator": "eq", "Value": "Sealed" },
+        { "Type": "population", "Operator": "ge", "Value": "3000" }
+      ],
+      "Effects": [
+        { "Type": "log", "Value": "文明繁荣达到触发阈值" }
+      ],
+      "CooldownYears": 100,
+      "Unique": false,
+      "Tags": ["prosperity", "trigger"]
+    }
+  ]
+}
