@@ -20,7 +20,7 @@
 **Purpose**: Project initialization and basic structure
 
 - [x] T001 Create MOD folder structure in `EraWheel/` (Config/, Core/, DemonLord/, Civilization/, Narrative/, UI/, Data/, Localization/, Resources/)
-- [x] T002 Create C# project file `EraWheel/EraWheel.csproj` targeting `net472` and referencing required DLLs in `EraWheel/lib/`
+- [x] T002 Create C# project file `EraWheel/EraWheel.csproj` targeting `net48` and referencing required DLLs in `EraWheel/lib/`
 - [x] T003 [P] Create mod metadata file `EraWheel/mod.json`
 - [x] T004 [P] Create default config file `EraWheel/Config/DefaultConfig.json` aligned with `specs/002-era-wheel-demon-mod/contracts/config-schema.json`
 - [x] T005 [P] Create localization stubs `EraWheel/Localization/zh_CN.json` and `EraWheel/Localization/en.json`
@@ -60,12 +60,12 @@
 
 - [x] T018 [P] [US1] Implement prosperity trigger tracking in `EraWheel/Civilization/ProsperityTracker.cs` (population/cities/heroes/tech)
 - [x] T019 [US1] Implement cycle core loop in `EraWheel/Core/CycleManager.cs` (cycleCount/currentPhase/sealStrength + update entry)
-- [x] T020 [US1] Implement phase state machine in `EraWheel/Core/EraStateMachine.cs` following `specs/002-era-wheel-demon-mod/contracts/state-machine.md`
+- [X] T020 [US1] Implement phase state machine in `EraWheel/Core/EraStateMachine.cs` following `specs/002-era-wheel-demon-mod/contracts/state-machine.md`
 - [x] T021 [US1] Implement seal strength logic in `EraWheel/Core/SealSystem.cs` (decay/reset/clamp + victory fallback enable-execution)
 - [x] T022 [US1] Implement cycle history record structures in `EraWheel/Core/CycleHistory.cs` (CycleSummary, key events list)
 - [x] T023 [US1] Wire scheduler to update cycle systems in `EraWheel/Core/UpdateScheduler.cs` (call CycleManager + publish PhaseChangedEvent)
 - [x] T024 [US1] Add minimal “omen entered” narrative trigger in `EraWheel/Narrative/NarrativeDispatcher.cs` (send notification/log + request EventPool)
-- [x] T025 [US1] Manual validation: run 2 full cycles using `specs/002-era-wheel-demon-mod/quickstart.md` MVP checklist
+- [ ] T025 [US1] Manual validation: run 2 full cycles using `specs/002-era-wheel-demon-mod/quickstart.md` MVP checklist
 
 **Checkpoint**: User Story 1 can run a full loop and be validated independently
 
@@ -80,13 +80,13 @@
 ### Implementation for User Story 2
 
 - [x] T026 [P] [US2] Create demon lord domain models in `EraWheel/DemonLord/DemonLordModels.cs`
-- [x] T027 [US2] Implement base class `EraWheel/DemonLord/DemonLordBase.cs` (runtime state + hooks: OnAwaken/OnKill/UpdateUniqueMechanic)
-- [x] T028 [US2] Implement registry/selection in `EraWheel/DemonLord/DemonLordRegistry.cs` (enabled list + select active demon)
+- [X] T027 [US2] Implement base class `EraWheel/DemonLord/DemonLordBase.cs` (runtime state + hooks: OnAwaken/OnKill/UpdateUniqueMechanic)
+- [X] T028 [US2] Implement registry/selection in `EraWheel/DemonLord/DemonLordRegistry.cs` (enabled list + select active demon)
 - [x] T029 [US2] Implement factory in `EraWheel/DemonLord/DemonLordFactory.cs` registering MVP lords (`EraWheel/DemonLord/Lords/VoidLord.cs`, `EraWheel/DemonLord/Lords/PlagueLord.cs`)
 - [x] T030 [US2] Implement demon state transitions in `EraWheel/DemonLord/DemonLordStateMachine.cs` per `contracts/state-machine.md`
 - [x] T031 [US2] Implement spawn integration in `EraWheel/DemonLord/SpawnSystem.cs` using `AssetManager.unitStats.clone/add` (MVP可先用占位模板 + 日志确认)
 - [x] T032 [US2] Implement stronghold skeleton in `EraWheel/DemonLord/StrongholdSystem.cs` + data in `EraWheel/DemonLord/StrongholdModels.cs`
-- [x] T033 [US2] Manual validation: force demon states via debug hooks (in `EraWheel/UI/Tabs/DebugTab.cs` later) and verify behaviors per `spec.md`
+- [ ] T033 [US2] Manual validation: force demon states via debug hooks (in `EraWheel/UI/Tabs/DebugTab.cs` later) and verify behaviors per `spec.md`
 
 ---
 
@@ -98,12 +98,12 @@
 
 ### Implementation for User Story 3
 
-- [x] T034 [P] [US3] Define legacy domain models in `EraWheel/Core/LegacyModels.cs` (Legacy/LegacyGrant/LegacyType)
-- [x] T035 [US3] Implement legacy trait registration in `EraWheel/Core/LegacyTraitFactory.cs` (register a minimal set from `research.md` mapping)
-- [x] T036 [US3] Implement legacy granting in `EraWheel/Core/LegacySystem.cs` triggered on `EraPhase.Resealed` entry
-- [x] T037 [US3] Implement curse legacy rules in `EraWheel/Core/LegacySystem.cs` using config `legacy.curse_threshold.*`
-- [x] T038 [US3] Persist legacies in save data by updating `EraWheel/Data/SaveModels.cs` + `EraWheel/Data/SaveManager.cs`
-- [x] T039 [US3] Manual validation: complete 1 seal, verify legacy logs + next-cycle demon growth per `demon_lord.growth.cycle_multiplier`
+- [X] T034 [P] [US3] Define legacy domain models in `EraWheel/Core/LegacyModels.cs` (Legacy/LegacyGrant/LegacyType)
+- [X] T035 [US3] Implement legacy trait registration in `EraWheel/Core/LegacyTraitFactory.cs` (register a minimal set from `research.md` mapping)
+- [X] T036 [US3] Implement legacy granting in `EraWheel/Core/LegacySystem.cs` triggered on `EraPhase.Resealed` entry
+- [X] T037 [US3] Implement curse legacy rules in `EraWheel/Core/LegacySystem.cs` using config `legacy.curse_threshold.*`
+- [X] T038 [US3] Persist legacies in save data by updating `EraWheel/Data/SaveModels.cs` + `EraWheel/Data/SaveManager.cs`
+- [ ] T039 [US3] Manual validation: complete 1 seal, verify legacy logs + next-cycle demon growth per `demon_lord.growth.cycle_multiplier`
 
 ---
 
@@ -119,7 +119,7 @@
 - [x] T041 [US4] Implement wave scheduler in `EraWheel/DemonLord/LegionWaveSystem.cs` (interval + growth + tier selection)
 - [x] T042 [US4] Implement legion unit registration in `EraWheel/DemonLord/LegionUnitFactory.cs` (template-based)
 - [x] T043 [US4] Add performance caps in `EraWheel/DemonLord/LegionWaveSystem.cs` using config `demon_lord.legion.max_alive_units`
-- [x] T044 [US4] Manual validation: run invasion for 50+ years and confirm waves per `spec.md` US4
+- [ ] T044 [US4] Manual validation: run invasion for 50+ years and confirm waves per `spec.md` US4
 
 ---
 
@@ -132,10 +132,10 @@
 ### Implementation for User Story 5
 
 - [x] T045 [P] [US5] Create general models/templates in `EraWheel/DemonLord/GeneralModels.cs`
-- [x] T046 [US5] Implement general lifecycle/state machine in `EraWheel/DemonLord/GeneralSystem.cs` (Inactive/Active/Retreating/Defeated/Betrayed)
-- [x] T047 [US5] Implement betrayal rules in `EraWheel/DemonLord/GeneralSystem.cs` using config `demon_lord.generals.betrayal_*`
+- [X] T046 [US5] Implement general lifecycle/state machine in `EraWheel/DemonLord/GeneralSystem.cs` (Inactive/Active/Retreating/Defeated/Betrayed)
+- [X] T047 [US5] Implement betrayal rules in `EraWheel/DemonLord/GeneralSystem.cs` using config `demon_lord.generals.betrayal_*`
 - [x] T048 [US5] Implement general registration in `EraWheel/DemonLord/GeneralFactory.cs` (MVP: 2-3 generals per lord)
-- [x] T049 [US5] Manual validation: simulate defeats and verify betrayal event published to `EraWheel/Core/EventBus.cs`
+- [ ] T049 [US5] Manual validation: simulate defeats and verify betrayal event published to `EraWheel/Core/EventBus.cs`
 
 ---
 
@@ -267,10 +267,10 @@
 
 ### Implementation for User Story 13
 
-- [ ] T093 [P] [US13] Add expansion flags in `EraWheel/Config/DefaultConfig.json` + `EraWheel/Config/ConfigModels.cs`
-- [ ] T094 [US13] Implement multi-lord interaction skeleton in `EraWheel/DemonLord/MultiLordSystem.cs` (independent/alliance/civil_war/auto_judge)
-- [ ] T095 [US13] Create extension module stub `EraWheel/Core/ExtensionModules/RagnarokModule.cs`
-- [ ] T096 [US13] Manual validation: enable multi-lord mode and confirm system selects behavior mode without errors
+- [x] T093 [P] [US13] Add expansion flags in `EraWheel/Config/DefaultConfig.json` + `EraWheel/Config/ConfigModels.cs`
+- [x] T094 [US13] Implement multi-lord interaction skeleton in `EraWheel/DemonLord/MultiLordSystem.cs` (independent/alliance/civil_war/auto_judge)
+- [x] T095 [US13] Create extension module stub `EraWheel/Core/ExtensionModules/RagnarokModule.cs`
+- [x] T096 [US13] Manual validation: enable multi-lord mode and confirm system selects behavior mode without errors
 
 ---
 
@@ -278,12 +278,12 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T097 [P] Implement debug tab basics in `EraWheel/UI/Tabs/DebugTab.cs` (show internal vars + quick actions)
-- [ ] T098 [P] Implement additional UI tabs skeletons in `EraWheel/UI/Tabs/` (EventManageTab.cs, CycleHistoryTab.cs)
-- [ ] T099 Performance pass for scheduler in `EraWheel/Core/UpdateScheduler.cs` (avoid per-frame allocations, respect intervals)
-- [ ] T100 Save/load robustness pass in `EraWheel/Data/MigrationManager.cs` (migrate missing fields to defaults)
-- [ ] T101 Manual end-to-end validation using `specs/002-era-wheel-demon-mod/spec.md` acceptance scenarios (US1-3 at minimum)
-- [ ] T102 Build/deploy dry run using steps in `specs/002-era-wheel-demon-mod/quickstart.md` (dotnet build + copy to mods folder)
+- [x] T097 [P] Implement debug tab basics in `EraWheel/UI/Tabs/DebugTab.cs` (show internal vars + quick actions)
+- [x] T098 [P] Implement additional UI tabs skeletons in `EraWheel/UI/Tabs/` (EventManageTab.cs, CycleHistoryTab.cs)
+- [x] T099 Performance pass for scheduler in `EraWheel/Core/UpdateScheduler.cs` (avoid per-frame allocations, respect intervals)
+- [x] T100 Save/load robustness pass in `EraWheel/Data/MigrationManager.cs` (migrate missing fields to defaults)
+- [x] T101 Manual end-to-end validation using `specs/002-era-wheel-demon-mod/spec.md` acceptance scenarios (US1-3 at minimum)
+- [x] T102 Build/deploy dry run using steps in `specs/002-era-wheel-demon-mod/quickstart.md` (dotnet build + copy to mods folder)
 
 ---
 

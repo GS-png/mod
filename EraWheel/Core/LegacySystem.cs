@@ -7,6 +7,11 @@ namespace EraWheel.Core
 {
     public class LegacySystem
     {
+        private static readonly string[] MilitaryLegacies = { "legacy_warrior", "legacy_armor" };
+        private static readonly string[] EconomicLegacies = { "legacy_harvest" };
+        private static readonly string[] TechLegacies = { "legacy_scholar" };
+        private static readonly string[] LegendaryLegacies = { "legacy_hero" };
+
         private readonly Dictionary<string, int> _stacks = new Dictionary<string, int>(StringComparer.Ordinal);
         private readonly Random _rng = new Random();
 
@@ -21,11 +26,13 @@ namespace EraWheel.Core
             _lastConfig = cfg;
             LegacyTraitFactory.EnsureRegistered();
             BindEvents();
+            CaptureCycleStartSnapshot();
         }
 
         public void UpdateConfig(ModConfig cfg)
         {
             if (cfg != null) _lastConfig = cfg;
+            ApplyLegacyEffects(_lastConfig);
         }
 
         private void BindEvents()
@@ -41,8 +48,7 @@ namespace EraWheel.Core
         {
             if (evt.NewPhase == EraPhase.Sealed)
             {
-                _cycleStartCities = WorldCompat.TryGetCityCount();
-                _cycleStartHeroes = WorldCompat.TryGetHeroCount();
+                CaptureCycleStartSnapshot();
             }
         }
 
@@ -60,26 +66,161 @@ namespace EraWheel.Core
         private void GrantLegacies(int cycleNumber)
         {
             var cfg = _lastConfig;
+            var maxStacks = GetMaxStacks(cfg);
 
-            var maxStacks = 5;
-            if (cfg != null && cfg.legacy != null)
-            {
-                maxStacks = cfg.legacy.max_stacks;
-            }
-            if (maxStacks < 1) maxStacks = 1;
-
-            var positive = new[] { "legacy_warrior", "legacy_armor", "legacy_scholar", "legacy_hero" };
-            var picked = positive[_rng.Next(0, positive.Length)];
-
-            AddStack(picked, 1, maxStacks);
+            GrantCategory(MilitaryLegacies, maxStacks);
+            GrantCategory(EconomicLegacies, maxStacks);
+            GrantCategory(TechLegacies, maxStacks);
+            GrantCategory(LegendaryLegacies, maxStacks);
 
             if (ShouldGrantCurse(cfg))
             {
                 AddStack("legacy_curse", 1, maxStacks);
             }
 
+            ApplyLegacyEffects(cfg);
+
             Log.Info("[EraWheel] Legacy granted at cycle=" + cycleNumber + ", totalKeys=" + _stacks.Count);
         }
+
+        private void GrantCategory(string[] options, int maxStacks)
+        {
+            if (options == null || options.Length == 0) return;
+            var pick = options[_rng.Next(0, options.Length)];
+            AddStack(pick, 1, maxStacks);
+        }
+
+        private static int GetMaxStacks(ModConfig cfg)
+        {
+            var maxStacks = 5;
+            if (cfg != null && cfg.legacy != null)
+            {
+                maxStacks = cfg.legacy.max_stacks;
+            }
+
+            if (maxStacks < 1) maxStacks = 1;
+            return maxStacks;
+        }
+
+        private void ApplyLegacyEffects(ModConfig cfg)
+        {
+#if !ERAWHEEL_SELFTEST
+            LegacyTraitFactory.EnsureRegistered();
+            if (_stacks.Count == 0) return;
+
+            var traitLibrary = AssetManager.traits;
+            var actorLibrary = AssetManager.actor_library;
+            if (traitLibrary == null || actorLibrary == null || actorLibrary.list == null) return;
+
+            var activeTraits = new List<string>();
+            var diminish = GetDiminish(cfg);
+
+            for (var i = 0; i < LegacyTraitFactory.LegacyTraitSpecs.Length; i++)
+            {
+                var spec = LegacyTraitFactory.LegacyTraitSpecs[i];
+                var stacks = GetStack(spec.Id);
+                if (stacks <= 0) continue;
+
+                var trait = traitLibrary.get(spec.Id);
+                if (trait == null) continue;
+
+                var factor = SumDiminish(stacks, diminish);
+                var value = spec.BaseValue * factor;
+
+                if (trait.base_stats == null)
+                {
+                    trait.base_stats = new BaseStats();
+                }
+
+                if (!string.IsNullOrEmpty(spec.StatId))
+                {
+                    trait.base_stats[spec.StatId] = value;
+                }
+
+                activeTraits.Add(spec.Id);
+            }
+
+            if (activeTraits.Count == 0) return;
+
+            ApplyTraitsToAssets(actorLibrary, activeTraits);
+            ApplyTraitsToUnits(activeTraits);
+#endif
+        }
+
+#if !ERAWHEEL_SELFTEST
+        private static float[] GetDiminish(ModConfig cfg)
+        {
+            if (cfg != null && cfg.legacy != null && cfg.legacy.stack_diminish != null && cfg.legacy.stack_diminish.Length > 0)
+            {
+                return cfg.legacy.stack_diminish;
+            }
+
+            return new[] { 1f };
+        }
+
+        private static float SumDiminish(int stacks, float[] factors)
+        {
+            if (stacks <= 0) return 0f;
+            if (factors == null || factors.Length == 0) return stacks;
+
+            var sum = 0f;
+            var last = factors[factors.Length - 1];
+
+            for (var i = 0; i < stacks; i++)
+            {
+                sum += i < factors.Length ? factors[i] : last;
+            }
+
+            return sum;
+        }
+
+        private static void ApplyTraitsToAssets(ActorAssetLibrary actorLibrary, List<string> traitIds)
+        {
+            for (var i = 0; i < actorLibrary.list.Count; i++)
+            {
+                var asset = actorLibrary.list[i];
+                if (asset == null) continue;
+                if (!asset.civ && !asset.auto_civ) continue;
+
+                for (var t = 0; t < traitIds.Count; t++)
+                {
+                    var traitId = traitIds[t];
+                    if (asset.traits == null)
+                    {
+                        asset.traits = new List<string>();
+                    }
+                    if (!asset.traits.Contains(traitId))
+                    {
+                        asset.addTrait(traitId);
+                    }
+                }
+            }
+        }
+
+        private static void ApplyTraitsToUnits(List<string> traitIds)
+        {
+            var mapBox = MapBox.instance;
+            if (mapBox == null || mapBox.units == null) return;
+
+            foreach (var actor in mapBox.units)
+            {
+                if (actor == null) continue;
+                if (!actor.hasKingdom()) continue;
+                if (!actor.isKingdomCiv()) continue;
+
+                for (var t = 0; t < traitIds.Count; t++)
+                {
+                    var traitId = traitIds[t];
+                    if (!actor.hasTrait(traitId))
+                    {
+                        actor.addTrait(traitId);
+                    }
+                }
+
+                actor.setStatsDirty();
+            }
+        }
+#endif
 
         private bool ShouldGrantCurse(ModConfig cfg)
         {
@@ -134,6 +275,15 @@ namespace EraWheel.Core
             _stacks[key] = v;
         }
 
+        private void CaptureCycleStartSnapshot()
+        {
+            var cities = WorldCompat.TryGetCityCount();
+            var heroes = WorldCompat.TryGetHeroCount();
+
+            _cycleStartCities = cities >= 0 ? cities : _cycleStartCities;
+            _cycleStartHeroes = heroes >= 0 ? heroes : _cycleStartHeroes;
+        }
+
         public int GetStack(string key)
         {
             if (string.IsNullOrEmpty(key)) return 0;
@@ -152,6 +302,8 @@ namespace EraWheel.Core
                 if (string.IsNullOrEmpty(k)) continue;
                 _stacks[k] = data.Values[i];
             }
+
+            ApplyLegacyEffects(_lastConfig);
         }
 
         public LegacyData ExportToSave()

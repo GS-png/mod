@@ -15,6 +15,7 @@
 | `UnityEngine.CoreModule.dll` | Unity 核心模块 | ✅ 必需 |
 | `UnityEngine.UI.dll` | Unity UI 系统 | ✅ 必需 |
 | `UnityEngine.IMGUIModule.dll` | Unity IMGUI 模块 | ✅ 必需 |
+| `UnityEngine.JSONSerializeModule.dll` | Unity JSON 序列化 | ✅ 必需 |
 | `NeoModLoader.dll` | MOD 加载器 | ✅ 必需 |
 
 ### 复制 DLL 步骤
@@ -29,6 +30,7 @@ Copy-Item "$worldboxPath\WorldBox_Data\Managed\UnityEngine.dll" $libPath
 Copy-Item "$worldboxPath\WorldBox_Data\Managed\UnityEngine.CoreModule.dll" $libPath
 Copy-Item "$worldboxPath\WorldBox_Data\Managed\UnityEngine.UI.dll" $libPath
 Copy-Item "$worldboxPath\WorldBox_Data\Managed\UnityEngine.IMGUIModule.dll" $libPath
+Copy-Item "$worldboxPath\WorldBox_Data\Managed\UnityEngine.JSONSerializeModule.dll" $libPath
 Copy-Item "$worldboxPath\Mods\NeoModLoader\NeoModLoader.dll" $libPath
 ```
 
@@ -38,6 +40,30 @@ Copy-Item "$worldboxPath\Mods\NeoModLoader\NeoModLoader.dll" $libPath
 cd /mnt/c/Users/14745/Desktop/mod
 dotnet build EraWheel/EraWheel.csproj
 ```
+
+## API 文档生成（可选）
+
+用于生成本地 API 索引，方便编写 MOD 时查询类/方法/字段名。
+
+```bash
+dotnet run --project tools/EraWheel.ApiDoc/EraWheel.ApiDoc.csproj
+```
+
+输出文件：`docs/api/index.md` + `docs/api/*.md`（按 DLL 分文件）
+
+默认生成的 DLL（可按需调整）：
+`Assembly-CSharp.dll`、`NeoModLoader.dll`、`UnityEngine.CoreModule.dll`、`UnityEngine.IMGUIModule.dll`、`UnityEngine.JSONSerializeModule.dll`、`UnityEngine.UI.dll`、`UnityEngine.UIModule.dll`、`UnityEngine.TextRenderingModule.dll`、`UnityEngine.InputLegacyModule.dll`
+
+可选增强（需要时再加）：
+`UnityEngine.dll`、`UnityEngine.ParticleSystemModule.dll`、`UnityEngine.AnimationModule.dll`、`UnityEngine.TilemapModule.dll`、`UnityEngine.UnityWebRequestModule.dll`
+
+常用参数：
+- 全量生成：`--all`
+- 指定 DLL：`--dll Assembly-CSharp --dll NeoModLoader`
+- 修改输出：`--out docs/api/index.md`
+- 单文件输出：`--single`
+
+如果提示缺少 DLL，请从 `C:\Users\14745\Desktop\worldbox\worldbox\worldbox_Data\Managed` 复制到 `EraWheel/lib/` 再生成。
 
 ## 部署到游戏
 

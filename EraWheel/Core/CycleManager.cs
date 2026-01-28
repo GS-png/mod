@@ -18,7 +18,9 @@ namespace EraWheel.Core
         public int AwakeningTargetYears { get; private set; } = 20;
 
         public float DemonHealthPercent { get; private set; } = 100f;
+        public bool DemonSpawned { get; private set; }
         private long _lastDemonHealthWorldAge;
+        private bool _useExternalDemonHealth;
 
         public SealSystem SealSystem { get; } = new SealSystem();
         public ProsperityTracker ProsperityTracker { get; } = new ProsperityTracker();
@@ -48,6 +50,8 @@ namespace EraWheel.Core
 
             DemonHealthPercent = 100f;
             _lastDemonHealthWorldAge = WorldAge;
+            _useExternalDemonHealth = false;
+            DemonSpawned = false;
         }
 
         public void Update(ModConfig cfg)
@@ -69,13 +73,14 @@ namespace EraWheel.Core
                 ProsperityTracker.Update(cfg);
             }
 
+            var prosperityDataReady = ProsperityTracker.HasUsableSnapshot;
             var prosperityReached = ProsperityTracker.ProsperityReached;
-            if (CurrentPhase == EraPhase.Sealed && !ProsperityTracker.HasUsableSnapshot)
+            if (CurrentPhase == EraPhase.Sealed && !prosperityDataReady)
             {
                 prosperityReached = false;
             }
 
-            if (_stateMachine.TryTransition(this, cfg, prosperityReached, DemonHealthPercent))
+            if (_stateMachine.TryTransition(this, cfg, prosperityReached, prosperityDataReady, DemonHealthPercent, DemonSpawned))
             {
                 if (CurrentPhase == EraPhase.Resealed)
                 {
@@ -111,6 +116,8 @@ namespace EraWheel.Core
 
                 DemonHealthPercent = 100f;
                 _lastDemonHealthWorldAge = WorldAge;
+                _useExternalDemonHealth = false;
+                DemonSpawned = false;
             }
             else
             {
@@ -134,10 +141,16 @@ namespace EraWheel.Core
 
         private void UpdateSimulatedDemonHealth()
         {
+            if (_useExternalDemonHealth)
+            {
+                return;
+            }
+
             var deltaYears = WorldAge - _lastDemonHealthWorldAge;
             if (deltaYears <= 0) return;
 
             _lastDemonHealthWorldAge = WorldAge;
+            _useExternalDemonHealth = false;
 
             var decayPerYear = 0f;
             switch (CurrentPhase)
@@ -302,8 +315,13 @@ namespace EraWheel.Core
             WorldAge = WorldCompat.GetWorldAge();
             SealSystem.Reset(cfg, WorldAge);
             SealSystem.SetSealStrength(data.SealStrength);
+            if (CurrentPhase == EraPhase.Weakening)
+            {
+                SealSystem.MarkWeakeningStart(PhaseStartWorldAge);
+            }
 
             _lastDemonHealthWorldAge = WorldAge;
+            DemonSpawned = false;
 
             if (CurrentPhase == EraPhase.Sealed)
             {
@@ -327,32 +345,13 @@ namespace EraWheel.Core
 
         public float GetDemonStrengthMultiplier(ModConfig cfg)
         {
-            var cycleMultiplier = 0.25f;
-            var min = 0.6f;
-            var max = 3.0f;
-
-            if (cfg != null && cfg.demon_lord != null && cfg.demon_lord.growth != null)
-            {
-                cycleMultiplier = cfg.demon_lord.growth.cycle_multiplier;
-                min = cfg.demon_lord.growth.strength_min;
-                max = cfg.demon_lord.growth.strength_max;
-            }
-
-            if (min <= 0f) min = 0.6f;
-            if (max < min) max = min;
-
-            var multiplier = 1f + CycleCount * cycleMultiplier;
-            if (multiplier < min) multiplier = min;
-            if (multiplier > max) multiplier = max;
-            return multiplier;
+            return DemonGrowthCalculator.ComputeStrengthMultiplier(cfg, CycleCount);
         }
 
         public void ForcePhase(EraPhase phase)
         {
-            var prev = CurrentPhase;
-            CurrentPhase = phase;
-            PhaseStartWorldAge = WorldAge;
-            PublishPhaseChanged(prev, CurrentPhase, "调试强制切换阶段");
+            WorldAge = WorldCompat.GetWorldAge();
+            TransitionTo(phase, "调试强制切换阶段");
         }
 
         public void ForceCycleCount(int count)
@@ -385,6 +384,33 @@ namespace EraWheel.Core
         public void ResetSealStrength()
         {
             SealSystem.Reset(_lastConfig, WorldAge);
+        }
+
+        public void ForceDemonHealthPercent(float percent)
+        {
+            if (percent < 0f) percent = 0f;
+            if (percent > 100f) percent = 100f;
+            DemonHealthPercent = percent;
+            _lastDemonHealthWorldAge = WorldAge;
+        }
+
+        public void SetExternalDemonHealthPercent(float percent)
+        {
+            _useExternalDemonHealth = true;
+            ForceDemonHealthPercent(percent);
+            DemonSpawned = true;
+            _lastDemonHealthWorldAge = WorldAge;
+        }
+
+        public void ClearExternalDemonHealth()
+        {
+            _useExternalDemonHealth = false;
+            _lastDemonHealthWorldAge = WorldAge;
+        }
+
+        internal void SetDemonSpawned(bool spawned)
+        {
+            DemonSpawned = spawned;
         }
 
         private static EraPhase GetNextPhase(EraPhase current)

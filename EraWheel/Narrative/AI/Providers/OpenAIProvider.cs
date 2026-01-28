@@ -1,61 +1,92 @@
 using System;
-using EraWheel.Core;
+using System.Globalization;
+using System.Text;
 
 namespace EraWheel.Narrative.AI.Providers
 {
-    public class OpenAIProvider : ILLMProvider
+    public class OpenAIProvider : HttpProviderBase
     {
-        public string ProviderId => "openai";
-        public LLMProviderType ProviderType => LLMProviderType.OpenAI;
-        public bool IsAvailable => !string.IsNullOrEmpty(_apiKey) && !string.IsNullOrEmpty(_apiUrl);
+        public override string ProviderId => "openai";
+        public override LLMProviderType ProviderType => LLMProviderType.OpenAI;
+        public override bool IsAvailable => !string.IsNullOrEmpty(ApiKey) && !string.IsNullOrEmpty(ApiUrl);
 
-        private string _apiUrl = "https://api.openai.com/v1/chat/completions";
-        private string _model = "gpt-4";
-        private string _apiKey;
+        protected override string DefaultApiUrl => "https://api.openai.com/v1/chat/completions";
+        protected override string DefaultModel => "gpt-4";
 
-        public void Configure(string apiUrl, string model, string apiKey)
+        protected override void AddRequestHeaders(System.Collections.Generic.Dictionary<string, string> headers)
         {
-            if (!string.IsNullOrEmpty(apiUrl))
-                _apiUrl = apiUrl;
-            if (!string.IsNullOrEmpty(model))
-                _model = model;
-            _apiKey = apiKey;
-        }
-
-        public void GenerateAsync(LLMRequest request, Action<LLMResponse> callback)
-        {
-            if (!IsAvailable)
+            if (!string.IsNullOrEmpty(ApiKey))
             {
-                callback?.Invoke(LLMResponse.Error("OpenAI provider not configured"));
-                return;
-            }
-
-            try
-            {
-                Log.Info($"[OpenAIProvider] 发送请求到 {_apiUrl}, 模型: {_model}");
-                callback?.Invoke(LLMResponse.Error("HTTP请求需要Unity协程支持，当前为占位实现"));
-            }
-            catch (Exception ex)
-            {
-                callback?.Invoke(LLMResponse.Error($"请求失败: {ex.Message}"));
+                headers["Authorization"] = "Bearer " + ApiKey;
             }
         }
 
-        public void TestConnection(Action<bool, string> callback)
+        protected override string BuildRequestJson(LLMRequest request)
         {
-            if (!IsAvailable)
+            var sb = new StringBuilder(512);
+            sb.Append('{');
+            sb.Append("\"model\":\"").Append(JsonText.Escape(Model)).Append('"');
+            sb.Append(",\"messages\":[");
+
+            var hasSystem = !string.IsNullOrEmpty(request.SystemPrompt);
+            if (hasSystem)
             {
-                callback?.Invoke(false, "API Key未配置");
-                return;
+                sb.Append("{\"role\":\"system\",\"content\":\"")
+                    .Append(JsonText.Escape(request.SystemPrompt))
+                    .Append("\"},");
             }
 
-            Log.Info("[OpenAIProvider] 测试连接...");
-            callback?.Invoke(false, "HTTP请求需要Unity协程支持");
+            sb.Append("{\"role\":\"user\",\"content\":\"")
+                .Append(JsonText.Escape(request.Prompt))
+                .Append("\"}]");
+
+            sb.Append(",\"max_tokens\":").Append(Math.Max(1, request.MaxTokens));
+            sb.Append(",\"temperature\":").Append(request.Temperature.ToString(CultureInfo.InvariantCulture));
+
+            if (request.StopSequences != null && request.StopSequences.Length > 0)
+            {
+                sb.Append(",\"stop\":[");
+                for (var i = 0; i < request.StopSequences.Length; i++)
+                {
+                    if (i > 0) sb.Append(',');
+                    sb.Append('"').Append(JsonText.Escape(request.StopSequences[i])).Append('"');
+                }
+                sb.Append(']');
+            }
+
+            sb.Append('}');
+            return sb.ToString();
         }
 
-        public void Cancel()
+        protected override bool TryParseResponse(string json, out string content, out int tokensUsed, out string errorMessage)
         {
-            Log.Info("[OpenAIProvider] 取消请求");
+            content = null;
+            tokensUsed = 0;
+            errorMessage = null;
+
+            if (string.IsNullOrEmpty(json))
+            {
+                errorMessage = "Empty response";
+                return false;
+            }
+
+            if (!JsonText.TryExtractString(json, "content", out content))
+            {
+                JsonText.TryExtractString(json, "text", out content);
+            }
+
+            if (JsonText.TryExtractInt(json, "total_tokens", out var totalTokens))
+            {
+                tokensUsed = totalTokens;
+            }
+
+            if (string.IsNullOrEmpty(content))
+            {
+                errorMessage = ExtractErrorMessage(json);
+                return false;
+            }
+
+            return true;
         }
     }
 }

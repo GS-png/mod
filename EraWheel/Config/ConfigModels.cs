@@ -5,13 +5,14 @@ namespace EraWheel.Config
     [Serializable]
     public class ModConfig
     {
-        public string config_version = "1.0.0";
+        public string config_version = "1.0.5";
         public CycleConfig cycle = new CycleConfig();
         public DemonLordRootConfig demon_lord = new DemonLordRootConfig();
         public CivilizationRootConfig civilization = new CivilizationRootConfig();
         public LegacyRootConfig legacy = new LegacyRootConfig();
         public AdaptiveDifficultyRootConfig adaptive_difficulty = new AdaptiveDifficultyRootConfig();
         public NarrativeRootConfig narrative = new NarrativeRootConfig();
+        public ExpansionRootConfig expansion = new ExpansionRootConfig();
         public PerformanceRootConfig performance = new PerformanceRootConfig();
         public UiRootConfig ui = new UiRootConfig();
         public DebugRootConfig debug = new DebugRootConfig();
@@ -29,6 +30,7 @@ namespace EraWheel.Config
     public class CycleTriggerConfig
     {
         public string first_cycle_mode = "prosperity";
+        public string prosperity_mode = "any";
         public ProsperityThresholdsConfig prosperity_thresholds = new ProsperityThresholdsConfig();
         public int fixed_age_years = 600;
     }
@@ -84,6 +86,7 @@ namespace EraWheel.Config
         public DemonGrowthConfig growth = new DemonGrowthConfig();
         public DemonGeneralsConfig generals = new DemonGeneralsConfig();
         public DemonLegionConfig legion = new DemonLegionConfig();
+        public DemonUnitStatsConfig stats = new DemonUnitStatsConfig();
         public EnabledLordsConfig enabled_lords = new EnabledLordsConfig();
     }
 
@@ -114,6 +117,57 @@ namespace EraWheel.Config
         public int max_units_per_wave = 100;
         public int max_alive_units = 200;
         public float elite_rate = 0.1f;
+    }
+
+    [Serializable]
+    public class DemonUnitStatsConfig
+    {
+        public DemonLordStatsConfig lords = new DemonLordStatsConfig();
+        public GeneralRoleStatsConfig general_roles = new GeneralRoleStatsConfig();
+        public LegionUnitStatsConfig legion_units = new LegionUnitStatsConfig();
+    }
+
+    [Serializable]
+    public class UnitStatMultiplierConfig
+    {
+        public float health = 1f;
+        public float damage = 1f;
+        public float armor = 1f;
+        public float speed = 1f;
+    }
+
+    [Serializable]
+    public class DemonLordStatsConfig
+    {
+        public UnitStatMultiplierConfig void_lord = new UnitStatMultiplierConfig();
+        public UnitStatMultiplierConfig plague_lord = new UnitStatMultiplierConfig();
+        public UnitStatMultiplierConfig machine_lord = new UnitStatMultiplierConfig();
+        public UnitStatMultiplierConfig time_lord = new UnitStatMultiplierConfig();
+        public UnitStatMultiplierConfig flame_lord = new UnitStatMultiplierConfig();
+        public UnitStatMultiplierConfig abyss_lord = new UnitStatMultiplierConfig();
+        public UnitStatMultiplierConfig death_lord = new UnitStatMultiplierConfig();
+        public UnitStatMultiplierConfig soul_lord = new UnitStatMultiplierConfig();
+        public UnitStatMultiplierConfig nature_lord = new UnitStatMultiplierConfig();
+        public UnitStatMultiplierConfig judgment_lord = new UnitStatMultiplierConfig();
+    }
+
+    [Serializable]
+    public class GeneralRoleStatsConfig
+    {
+        public UnitStatMultiplierConfig vanguard = new UnitStatMultiplierConfig();
+        public UnitStatMultiplierConfig tank = new UnitStatMultiplierConfig();
+        public UnitStatMultiplierConfig dps = new UnitStatMultiplierConfig();
+        public UnitStatMultiplierConfig support = new UnitStatMultiplierConfig();
+        public UnitStatMultiplierConfig elite = new UnitStatMultiplierConfig();
+    }
+
+    [Serializable]
+    public class LegionUnitStatsConfig
+    {
+        public UnitStatMultiplierConfig legion_vanguard = new UnitStatMultiplierConfig();
+        public UnitStatMultiplierConfig legion_main = new UnitStatMultiplierConfig();
+        public UnitStatMultiplierConfig legion_elite = new UnitStatMultiplierConfig();
+        public UnitStatMultiplierConfig legion_ultimate = new UnitStatMultiplierConfig();
     }
 
     [Serializable]
@@ -232,6 +286,29 @@ namespace EraWheel.Config
         public int max_tokens_per_call = 500;
         public int operation_cooldown_minutes = 5;
         public string confirmation_mode = "manual";
+    }
+
+    [Serializable]
+    public class ExpansionRootConfig
+    {
+        public RagnarokExpansionConfig ragnarok = new RagnarokExpansionConfig();
+        public MultiLordExpansionConfig multi_lord = new MultiLordExpansionConfig();
+    }
+
+    [Serializable]
+    public class RagnarokExpansionConfig
+    {
+        public bool enabled = false;
+        public int required_civilizations = 10;
+        public int duration_years = 50;
+    }
+
+    [Serializable]
+    public class MultiLordExpansionConfig
+    {
+        public bool enabled = false;
+        public int min_awaken_count = 2;
+        public int max_awaken_count = 5;
     }
 
     [Serializable]

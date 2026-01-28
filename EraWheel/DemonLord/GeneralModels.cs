@@ -31,6 +31,8 @@ namespace EraWheel.DemonLord
         public GeneralState State = GeneralState.Inactive;
         public int DefeatCount;
         public long NextRespawnWorldAge = -1;
+        public long LastSpawnAttemptWorldAge = -1;
+        public object Actor;
 
         public bool IsActive
         {

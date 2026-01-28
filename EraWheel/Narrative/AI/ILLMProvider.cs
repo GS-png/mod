@@ -31,6 +31,7 @@ namespace EraWheel.Narrative.AI
         public string Prompt;
         public string SystemPrompt;
         public int MaxTokens = 500;
+        public int TimeoutSeconds = 30;
         public float Temperature = 0.7f;
         public string[] StopSequences;
 

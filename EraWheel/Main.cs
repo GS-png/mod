@@ -5,8 +5,11 @@ using EraWheel.Data;
 using EraWheel.DemonLord;
 using EraWheel.Narrative;
 using EraWheel.Narrative.AI;
+using EraWheel.Core.ExtensionModules;
 using EraWheel.UI;
+using EraWheel.UI.Components;
 using NeoModLoader.api;
+using NeoModLoader.General;
 using System;
 
 namespace EraWheel
@@ -19,14 +22,19 @@ namespace EraWheel
 
         public CycleManager CycleManager { get; private set; }
         public DemonLordRegistry DemonLordRegistry { get; private set; }
+        public MultiLordSystem MultiLordSystem { get; private set; }
 
         public LegacySystem LegacySystem { get; private set; }
         public LegionWaveSystem LegionWaveSystem { get; private set; }
+        public RagnarokModule RagnarokModule { get; private set; }
 
         public GeneralSystem GeneralSystem { get; private set; }
         public CivilizationTracker CivilizationTracker { get; private set; }
         public AllianceSystem AllianceSystem { get; private set; }
         public HeroSystem HeroSystem { get; private set; }
+        private bool _uiRegistered;
+        private int _uiRegisterAttempts;
+        private bool _assetsRegistered;
 
         protected override void OnModLoad()
         {
@@ -34,6 +42,8 @@ namespace EraWheel
 
             ConfigManager = new ConfigManager();
             ConfigManager.Load();
+            Localization.Initialize(System.IO.Path.Combine(ConfigManager.ModRootPath, "Localization"));
+            _assetsRegistered = ActorAssetRegistry.EnsureRegistered(ConfigManager.Config);
 
             CycleManager = new CycleManager();
             CycleManager.Initialize(ConfigManager.Config);
@@ -41,12 +51,18 @@ namespace EraWheel
             DemonLordRegistry = new DemonLordRegistry();
             DemonLordRegistry.Initialize(ConfigManager.Config);
 
+            MultiLordSystem = new MultiLordSystem();
+            MultiLordSystem.Initialize(ConfigManager.Config);
+
             LegacySystem = new LegacySystem();
             LegacySystem.Initialize(ConfigManager.Config);
 
             LegionWaveSystem = new LegionWaveSystem();
 
             GeneralSystem = new GeneralSystem();
+
+            RagnarokModule = new RagnarokModule();
+            RagnarokModule.Initialize(ConfigManager.Config);
 
             CivilizationTracker = new CivilizationTracker();
             CivilizationTracker.Initialize(ConfigManager.Config);
@@ -56,6 +72,7 @@ namespace EraWheel
 
             HeroSystem = new HeroSystem();
             HeroSystem.Initialize(ConfigManager.Config);
+            WorldCompat.HeroCountProvider = () => HeroSystem != null ? HeroSystem.AliveHeroCount : 0;
 
             var eventsPath = System.IO.Path.Combine(ConfigManager.ModRootPath, "Resources", "events");
             NarrativeDispatcher.Instance.Initialize(ConfigManager.Config, eventsPath);
@@ -72,12 +89,28 @@ namespace EraWheel
                 }
             };
 
+            UpdateScheduler.Reset();
+            UpdateScheduler.OnCycle = () =>
+            {
+                try
+                {
+                    var cfg = GetModConfig();
+                    CycleManager?.Update(cfg);
+                    RagnarokModule?.Update(cfg, CycleManager);
+                }
+                catch
+                {
+                }
+            };
+
             UpdateScheduler.OnDemonLord = () =>
             {
                 try
                 {
-                    DemonLordRegistry?.Update(ConfigManager != null ? ConfigManager.Config : null, CycleManager);
-                    GeneralSystem?.Update(ConfigManager != null ? ConfigManager.Config : null, CycleManager, DemonLordRegistry);
+                    var cfg = GetModConfig();
+                    DemonLordRegistry?.Update(cfg, CycleManager);
+                    GeneralSystem?.Update(cfg, CycleManager, DemonLordRegistry);
+                    MultiLordSystem?.Update(cfg, CycleManager, DemonLordRegistry);
                 }
                 catch
                 {
@@ -88,7 +121,7 @@ namespace EraWheel
             {
                 try
                 {
-                    LegionWaveSystem?.Update(ConfigManager != null ? ConfigManager.Config : null, CycleManager);
+                    LegionWaveSystem?.Update(GetModConfig(), CycleManager);
                 }
                 catch
                 {
@@ -99,8 +132,9 @@ namespace EraWheel
             {
                 try
                 {
-                    CivilizationTracker?.Update(ConfigManager != null ? ConfigManager.Config : null);
-                    AllianceSystem?.Update(ConfigManager != null ? ConfigManager.Config : null, CycleManager);
+                    var cfg = GetModConfig();
+                    CivilizationTracker?.Update(cfg);
+                    AllianceSystem?.Update(cfg, CycleManager);
                 }
                 catch
                 {
@@ -111,7 +145,7 @@ namespace EraWheel
             {
                 try
                 {
-                    HeroSystem?.Update(ConfigManager != null ? ConfigManager.Config : null, CycleManager);
+                    HeroSystem?.Update(GetModConfig(), CycleManager);
                 }
                 catch
                 {
@@ -123,15 +157,29 @@ namespace EraWheel
                 try
                 {
                     var ctx = WorldContext.Capture();
-                    ctx.CurrentPhase = CycleManager?.CurrentPhase ?? EraPhase.Sealed;
-                    ctx.CycleCount = CycleManager?.CycleCount ?? 0;
-                    ctx.SealStrength = CycleManager?.SealStrength ?? 100f;
-                    ctx.DemonHealthPercent = CycleManager?.DemonHealthPercent ?? 100f;
+                    var cycle = CycleManager;
+                    var activeDemon = DemonLordRegistry?.ActiveDemonLord;
+
+                    ctx.CurrentPhase = cycle?.CurrentPhase ?? EraPhase.Sealed;
+                    ctx.CycleCount = cycle?.CycleCount ?? 0;
+                    ctx.SealStrength = cycle?.SealStrength ?? 100f;
+                    ctx.DemonHealthPercent = cycle?.DemonHealthPercent ?? 100f;
+                    ctx.PhaseDuration = cycle != null ? (int)Math.Max(0, cycle.WorldAge - cycle.PhaseStartWorldAge) : 0;
+
+                    ctx.DemonLordActive = activeDemon != null && activeDemon.Enabled;
+                    ctx.ActiveDemonLordId = activeDemon?.Id;
+                    ctx.ActiveDemonLordType = activeDemon?.Definition?.Type.ToString();
+
+                    ctx.DemonKillCount = CivilizationTracker?.DemonKillCount ?? 0;
+                    ctx.GeneralsActive = GeneralSystem != null ? GeneralSystem.ActiveCount : 0;
+
+                    ctx.Csi = CivilizationTracker?.CSI ?? 0f;
                     ctx.AntiDemonLevel = CivilizationTracker?.AntiDemonLevel ?? 0;
                     ctx.AllianceFormed = AllianceSystem?.State?.Formed ?? false;
-                    ctx.ActiveDemonLordId = DemonLordRegistry?.ActiveDemonLord?.Id;
+                    ctx.HeroCount = HeroSystem != null ? HeroSystem.AliveHeroCount : ctx.HeroCount;
+                    ctx.DestinedHeroExists = HeroSystem != null && HeroSystem.HasDestinedHero;
 
-                    NarrativeDispatcher.Instance.Update(ConfigManager?.Config, ctx);
+                    NarrativeDispatcher.Instance.Update(GetModConfig(), ctx);
                 }
                 catch
                 {
@@ -142,20 +190,63 @@ namespace EraWheel
             EraWheel.Data.SaveManager.OnSave += OnGameSave;
             EraWheel.Data.SaveManager.OnLoad += OnGameLoad;
 
-            TrySubscribeUpdateCallback();
+            _uiRegistered = TryRegisterUIButton();
+            _uiRegisterAttempts = _uiRegistered ? 0 : 1;
+        }
+
+        private void Update()
+        {
+            var cfg = GetModConfig();
+            if (!_assetsRegistered)
+            {
+                _assetsRegistered = ActorAssetRegistry.EnsureRegistered(GetModConfig());
+                if (_assetsRegistered)
+                {
+                    DemonLordRegistry?.ApplyStatOverrides(GetModConfig());
+                }
+            }
+            UpdateScheduler.Update(cfg);
+            EraWheel.Data.SaveManager.Update();
 
             try
             {
-                TryRegisterUIButton();
+                if (UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.F8))
+                {
+                    ControlPanel.Instance.Toggle();
+                }
             }
             catch
             {
             }
+
+            if (_uiRegistered || _uiRegisterAttempts <= 0) return;
+
+            if (UnityEngine.Time.frameCount % 60 != 0) return;
+            if (_uiRegisterAttempts >= 60)
+            {
+                _uiRegisterAttempts = 0;
+                return;
+            }
+
+            _uiRegisterAttempts++;
+            if (TryRegisterUIButton())
+            {
+                _uiRegistered = true;
+                _uiRegisterAttempts = 0;
+            }
         }
 
-        private void OnUpdate()
+        private void OnGUI()
         {
-            UpdateScheduler.Update(ConfigManager != null ? ConfigManager.Config : null);
+            try
+            {
+                ControlPanel.Instance.OnGUI();
+                ConfirmDialog.Instance.OnGUI();
+            }
+            catch (Exception ex)
+            {
+                Log.Error("[EraWheel] Main.OnGUI error: " + ex.Message);
+            }
         }
 
         private void OnGameSave()
@@ -190,9 +281,9 @@ namespace EraWheel
 
             try
             {
-                CycleManager?.LoadSaveData(saveData.CycleData, ConfigManager != null ? ConfigManager.Config : null);
+                CycleManager?.LoadSaveData(saveData.CycleData, GetModConfig());
                 CycleManager?.LoadHistory(saveData.CycleHistory);
-                DemonLordRegistry?.LoadSaveData(saveData.DemonLordData, ConfigManager != null ? ConfigManager.Config : null);
+                DemonLordRegistry?.LoadSaveData(saveData.DemonLordData, GetModConfig());
                 GeneralSystem?.LoadFromSave(saveData.GeneralData);
 
                 if (CivilizationTracker != null)
@@ -212,7 +303,7 @@ namespace EraWheel
 
                 if (LegacySystem != null)
                 {
-                    LegacySystem.UpdateConfig(ConfigManager != null ? ConfigManager.Config : null);
+                    LegacySystem.UpdateConfig(GetModConfig());
                     LegacySystem.LoadFromSave(saveData.Legacy);
                 }
 
@@ -245,39 +336,44 @@ namespace EraWheel
             return "1.0.0";
         }
 
-        private void TrySubscribeUpdateCallback()
+        private EraWheel.Config.ModConfig GetModConfig()
         {
-            try
-            {
-                var t = CompatReflection.FindTypeByName("WorldBehaviourUpdateManager");
-                if (t == null) return;
-
-                CompatReflection.InvokeStatic(t, "addUpdateCallback", new object[] { (Action)OnUpdate });
-            }
-            catch
-            {
-            }
+            return ConfigManager != null ? ConfigManager.Config : null;
         }
 
-        private void TryRegisterUIButton()
+        private bool TryRegisterUIButton()
         {
             try
             {
-                var powerButtons = CompatReflection.FindTypeByName("PowerButtons");
-                var toolBox = CompatReflection.FindTypeByName("ToolBox");
-                if (powerButtons == null || toolBox == null) return;
-
-                var sprite = CompatReflection.InvokeStatic(toolBox, "LoadSprite", new object[] { "mods/EraWheel/icon.png" });
-                CompatReflection.InvokeStatic(powerButtons, "CreateButton", new object[]
+                var tab = PowerButtonCreator.GetTab(PowerTabNames.Other);
+                if (tab == null)
                 {
+                    tab = PowerButtonCreator.GetTab("Tab_" + PowerTabNames.Other);
+                }
+                if (tab == null) return false;
+
+                var existing = tab.transform.Find("era_wheel_panel");
+                if (existing != null) return true;
+
+                var iconPath = System.IO.Path.Combine(ConfigManager.ModRootPath, "icon.png");
+                var sprite = Toolbox.LoadSprite(iconPath);
+                if (sprite == null)
+                {
+                    Log.Warning("[EraWheel] Icon not found: " + iconPath);
+                }
+
+                var button = PowerButtonCreator.CreateSimpleButton(
                     "era_wheel_panel",
-                    sprite,
-                    "打开纪元之轮控制面板",
-                    (Action)(() => ControlPanel.Instance.Toggle())
-                });
+                    () => ControlPanel.Instance.Toggle(),
+                    sprite
+                );
+
+                PowerButtonCreator.AddButtonToTab(button, tab);
+                return true;
             }
             catch
             {
+                return false;
             }
         }
     }

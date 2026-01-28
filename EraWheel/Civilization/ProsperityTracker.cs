@@ -1,3 +1,4 @@
+using System;
 using EraWheel.Config;
 using EraWheel.Core;
 
@@ -59,33 +60,44 @@ namespace EraWheel.Civilization
             if (t == null) return;
 
             var anyKnown = false;
-            var ok = true;
+            var anyMet = false;
+            var allMet = true;
+            var requireAll = string.Equals(cfg.cycle.trigger.prosperity_mode, "all", StringComparison.OrdinalIgnoreCase) ||
+                             string.Equals(cfg.cycle.trigger.prosperity_mode, "and", StringComparison.OrdinalIgnoreCase);
 
             if (LastPopulation >= 0)
             {
                 anyKnown = true;
-                ok &= LastPopulation >= t.population;
+                var met = LastPopulation >= t.population;
+                anyMet |= met;
+                allMet &= met;
             }
 
             if (LastCities >= 0)
             {
                 anyKnown = true;
-                ok &= LastCities >= t.cities;
+                var met = LastCities >= t.cities;
+                anyMet |= met;
+                allMet &= met;
             }
 
             if (LastHeroes >= 0)
             {
                 anyKnown = true;
-                ok &= LastHeroes >= t.heroes;
+                var met = LastHeroes >= t.heroes;
+                anyMet |= met;
+                allMet &= met;
             }
 
             if (LastTechLevel >= 0)
             {
                 anyKnown = true;
-                ok &= LastTechLevel >= t.tech_level;
+                var met = LastTechLevel >= t.tech_level;
+                anyMet |= met;
+                allMet &= met;
             }
 
-            if (anyKnown && ok)
+            if (anyKnown && (requireAll ? allMet : anyMet))
             {
                 ProsperityReached = true;
             }

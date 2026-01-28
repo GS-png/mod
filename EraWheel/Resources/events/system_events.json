@@ -1,91 +1,82 @@
 {
-  "Version": "1.0.0",
-  "Events": [
+  "version": "1.0.0",
+  "events": [
     {
-      "Id": "system_cycle_complete",
-      "Category": "System",
-      "Priority": "Critical",
-      "Weight": 100,
-      "TitleKey": "event.cycle_complete.title",
-      "DescriptionKey": "event.cycle_complete.desc",
-      "Conditions": [
-        { "Type": "phase", "Operator": "eq", "Value": "Resealed" }
+      "id": "system_cycle_complete",
+      "name_key": "event.system.system_cycle_complete.name",
+      "category": "System",
+      "priority": 100,
+      "conditions": [
+        { "type": "era_phase", "operator": "eq", "value": "Resealed" }
       ],
-      "Effects": [
-        { "Type": "log", "Value": "轮回完成，新的纪元开始" }
+      "description_key": "event.system.system_cycle_complete.desc",
+      "effects": [
+        { "type": "add_chronicle", "value": "system_cycle_complete" }
       ],
-      "CooldownYears": 0,
-      "Unique": false,
-      "Tags": ["cycle", "completion"]
+      "cooldown": 10,
+      "repeatable": true
     },
     {
-      "Id": "system_alliance_formed",
-      "Category": "Alliance",
-      "Priority": "High",
-      "Weight": 90,
-      "TitleKey": "event.alliance_formed.title",
-      "DescriptionKey": "event.alliance_formed.desc",
-      "Conditions": [
-        { "Type": "alliance_formed", "Operator": "eq", "Value": "true" }
+      "id": "system_alliance_formed",
+      "name_key": "event.civilization.system_alliance_formed.name",
+      "category": "Civilization",
+      "priority": 90,
+      "conditions": [
+        { "type": "alliance_formed", "operator": "eq", "value": "true" }
       ],
-      "Effects": [
-        { "Type": "log", "Value": "反魔联盟成立" }
+      "description_key": "event.civilization.system_alliance_formed.desc",
+      "effects": [
+        { "type": "add_chronicle", "value": "system_alliance_formed" }
       ],
-      "CooldownYears": 200,
-      "Unique": true,
-      "Tags": ["alliance", "formation"]
+      "cooldown": 200,
+      "repeatable": false,
+      "max_triggers": 1
     },
     {
-      "Id": "system_legacy_granted",
-      "Category": "Legacy",
-      "Priority": "High",
-      "Weight": 85,
-      "TitleKey": "event.legacy_granted.title",
-      "DescriptionKey": "event.legacy_granted.desc",
-      "Conditions": [
-        { "Type": "cycle_count", "Operator": "ge", "Value": "1" }
+      "id": "system_legacy_granted",
+      "name_key": "event.system.system_legacy_granted.name",
+      "category": "System",
+      "priority": 85,
+      "conditions": [
+        { "type": "cycle_count", "operator": "gte", "value": "1" }
       ],
-      "Effects": [
-        { "Type": "log", "Value": "纪元遗产被授予" }
+      "description_key": "event.system.system_legacy_granted.desc",
+      "effects": [
+        { "type": "add_chronicle", "value": "system_legacy_granted" }
       ],
-      "CooldownYears": 0,
-      "Unique": false,
-      "Tags": ["legacy", "reward"]
+      "cooldown": 100,
+      "repeatable": true
     },
     {
-      "Id": "system_anti_demon_levelup",
-      "Category": "System",
-      "Priority": "Normal",
-      "Weight": 70,
-      "TitleKey": "event.anti_demon_up.title",
-      "DescriptionKey": "event.anti_demon_up.desc",
-      "Conditions": [
-        { "Type": "anti_demon_level", "Operator": "ge", "Value": "1" }
+      "id": "system_anti_demon_levelup",
+      "name_key": "event.civilization.system_anti_demon_levelup.name",
+      "category": "Civilization",
+      "priority": 70,
+      "conditions": [
+        { "type": "anti_demon_level", "operator": "gte", "value": "1" }
       ],
-      "Effects": [
-        { "Type": "log", "Value": "文明抗魔等级提升" }
+      "description_key": "event.civilization.system_anti_demon_levelup.desc",
+      "effects": [
+        { "type": "add_chronicle", "value": "system_anti_demon_levelup" }
       ],
-      "CooldownYears": 50,
-      "Unique": false,
-      "Tags": ["civilization", "growth"]
+      "cooldown": 80,
+      "repeatable": true
     },
     {
-      "Id": "system_prosperity_reached",
-      "Category": "System",
-      "Priority": "Normal",
-      "Weight": 75,
-      "TitleKey": "event.prosperity.title",
-      "DescriptionKey": "event.prosperity.desc",
-      "Conditions": [
-        { "Type": "phase", "Operator": "eq", "Value": "Sealed" },
-        { "Type": "population", "Operator": "ge", "Value": "3000" }
+      "id": "system_prosperity_reached",
+      "name_key": "event.civilization.system_prosperity_reached.name",
+      "category": "Civilization",
+      "priority": 75,
+      "conditions": [
+        { "type": "era_phase", "operator": "eq", "value": "Sealed" },
+        { "type": "total_population", "operator": "gte", "value": "3000" }
       ],
-      "Effects": [
-        { "Type": "log", "Value": "文明繁荣达到触发阈值" }
+      "description_key": "event.civilization.system_prosperity_reached.desc",
+      "effects": [
+        { "type": "add_chronicle", "value": "system_prosperity_reached" }
       ],
-      "CooldownYears": 100,
-      "Unique": false,
-      "Tags": ["prosperity", "trigger"]
+      "cooldown": 100,
+      "repeatable": true
     }
   ]
 }

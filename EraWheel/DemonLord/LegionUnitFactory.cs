@@ -4,6 +4,19 @@ namespace EraWheel.DemonLord
 {
     public static class LegionUnitFactory
     {
+        private static readonly string[] _unitIds = new[]
+        {
+            "legion_vanguard",
+            "legion_main",
+            "legion_elite",
+            "legion_ultimate"
+        };
+
+        public static string[] GetAllUnitIds()
+        {
+            return (string[])_unitIds.Clone();
+        }
+
         public static string PickUnitIdForWave(int wave, float eliteRate, Random rng)
         {
             if (wave < 1) wave = 1;
@@ -38,5 +51,6 @@ namespace EraWheel.DemonLord
 
             return LegionTier.Vanguard;
         }
+
     }
 }

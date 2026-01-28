@@ -18,6 +18,12 @@ namespace EraWheel.DemonLord
                 return DemonLordState.Awakening;
             }
 
+            if (eraPhase == EraPhase.Weakening)
+            {
+                if (healthPercent <= 0f) return DemonLordState.Defeated;
+                return DemonLordState.Weakened;
+            }
+
             if (eraPhase == EraPhase.Resealed)
             {
                 return DemonLordState.Defeated;

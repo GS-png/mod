@@ -1,57 +1,55 @@
 {
-  "Version": "1.0.0",
-  "Events": [
+  "version": "1.0.0",
+  "events": [
     {
-      "Id": "hero_destined_born",
-      "Category": "Hero",
-      "Priority": "Critical",
-      "Weight": 100,
-      "TitleKey": "event.hero_born.title",
-      "DescriptionKey": "event.hero_born.desc",
-      "Conditions": [
-        { "Type": "phase", "Operator": "in", "Value": "Omen,Awakening,Invasion" }
+      "id": "hero_destined_born",
+      "name_key": "event.hero.hero_destined_born.name",
+      "category": "Hero",
+      "priority": 90,
+      "conditions": [
+        { "type": "era_phase", "operator": "in", "value": "Omen,Awakening,Invasion" },
+        { "type": "destined_hero_exists", "operator": "eq", "value": "false" },
+        { "type": "random_chance", "operator": "success", "value": "0.05" }
       ],
-      "Effects": [
-        { "Type": "log", "Value": "命定英雄诞生" }
+      "description_key": "event.hero.hero_destined_born.desc",
+      "effects": [
+        { "type": "add_chronicle", "value": "hero_destined_born" }
       ],
-      "CooldownYears": 100,
-      "Unique": false,
-      "Tags": ["hero", "birth"]
+      "cooldown": 120,
+      "repeatable": true
     },
     {
-      "Id": "hero_challenge_demon",
-      "Category": "Hero",
-      "Priority": "High",
-      "Weight": 70,
-      "TitleKey": "event.hero_challenge.title",
-      "DescriptionKey": "event.hero_challenge.desc",
-      "Conditions": [
-        { "Type": "phase", "Operator": "in", "Value": "Invasion,Peak" },
-        { "Type": "hero_count", "Operator": "ge", "Value": "1" }
+      "id": "hero_challenge_demon",
+      "name_key": "event.hero.hero_challenge_demon.name",
+      "category": "Hero",
+      "priority": 75,
+      "conditions": [
+        { "type": "era_phase", "operator": "in", "value": "Invasion,Peak,Weakening" },
+        { "type": "hero_count", "operator": "gte", "value": "1" },
+        { "type": "demon_lord_active", "operator": "eq", "value": "true" }
       ],
-      "Effects": [
-        { "Type": "log", "Value": "英雄向魔王发起挑战" }
+      "description_key": "event.hero.hero_challenge_demon.desc",
+      "effects": [
+        { "type": "add_chronicle", "value": "hero_challenge_demon" }
       ],
-      "CooldownYears": 30,
-      "Unique": false,
-      "Tags": ["hero", "battle"]
+      "cooldown": 60,
+      "repeatable": true
     },
     {
-      "Id": "hero_inheritance",
-      "Category": "Hero",
-      "Priority": "Normal",
-      "Weight": 50,
-      "TitleKey": "event.hero_inherit.title",
-      "DescriptionKey": "event.hero_inherit.desc",
-      "Conditions": [
-        { "Type": "cycle_count", "Operator": "ge", "Value": "1" }
+      "id": "hero_inheritance",
+      "name_key": "event.hero.hero_inheritance.name",
+      "category": "Hero",
+      "priority": 60,
+      "conditions": [
+        { "type": "cycle_count", "operator": "gte", "value": "1" },
+        { "type": "random_chance", "operator": "success", "value": "0.30" }
       ],
-      "Effects": [
-        { "Type": "log", "Value": "英雄之魂传承给了后人" }
+      "description_key": "event.hero.hero_inheritance.desc",
+      "effects": [
+        { "type": "add_chronicle", "value": "hero_inheritance" }
       ],
-      "CooldownYears": 80,
-      "Unique": false,
-      "Tags": ["hero", "legacy"]
+      "cooldown": 80,
+      "repeatable": true
     }
   ]
 }

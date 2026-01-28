@@ -27,7 +27,10 @@ namespace EraWheel.UI.Tabs
             CycleManager cycle,
             DemonLordRegistry registry,
             CivilizationTracker civTracker,
-            AllianceSystem alliance)
+            AllianceSystem alliance,
+            LegionWaveSystem legion,
+            GeneralSystem generals,
+            HeroSystem heroes)
         {
             _config = cfg;
             if (_config?.narrative?.ai_engine != null && !_aiEnabled)
@@ -79,7 +82,11 @@ namespace EraWheel.UI.Tabs
             {
                 _aiEnabled = newEnabled;
                 AIStoryEngine.Instance.Enabled = newEnabled;
-                NarrativeDispatcher.Instance.AIEnabled = newEnabled;
+                NarrativeDispatcher.Instance.AIEnabled = newEnabled && AIStoryEngine.Instance.IsAvailable;
+                if (_config?.narrative?.ai_engine != null)
+                {
+                    _config.narrative.ai_engine.enabled = newEnabled;
+                }
             }
             UnityEngine.GUILayout.EndHorizontal();
 
@@ -144,6 +151,7 @@ namespace EraWheel.UI.Tabs
                 _config.narrative.ai_engine.provider = _selectedProvider;
                 _config.narrative.ai_engine.api_url = _apiUrl;
                 _config.narrative.ai_engine.model = _model;
+                _config.narrative.ai_engine.permission_level = _permissionLevel;
             }
 
             Log.Info("[AIControlTab] AI设置已应用");
@@ -261,9 +269,9 @@ namespace EraWheel.UI.Tabs
 
     public static class UIStyles
     {
-        public static object HeaderStyle => null;
-        public static object SubHeaderStyle => null;
-        public static object InfoStyle => null;
+        public static UnityEngine.GUIStyle HeaderStyle => UnityEngine.GUI.skin != null ? UnityEngine.GUI.skin.label : new UnityEngine.GUIStyle();
+        public static UnityEngine.GUIStyle SubHeaderStyle => UnityEngine.GUI.skin != null ? UnityEngine.GUI.skin.label : new UnityEngine.GUIStyle();
+        public static UnityEngine.GUIStyle InfoStyle => UnityEngine.GUI.skin != null ? UnityEngine.GUI.skin.label : new UnityEngine.GUIStyle();
 
         public static void DrawHeader(string text)
         {

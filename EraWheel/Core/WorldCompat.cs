@@ -1,202 +1,258 @@
 using System;
-using System.Collections;
 using System.Reflection;
 
 namespace EraWheel.Core
 {
     public static class WorldCompat
     {
-        public static bool MockEnabled;
-        public static long MockWorldAge;
-        public static int MockPopulation = -1;
-        public static int MockCities = -1;
-        public static int MockHeroes = -1;
-        public static int MockTechLevel = -1;
+        public static bool MockEnabled { get; set; }
+        public static long MockWorldAge { get; set; }
+        public static int MockPopulation { get; set; }
+        public static int MockCities { get; set; }
+        public static int MockCivilizations { get; set; }
+        public static int MockHeroes { get; set; }
+        public static int MockTechLevel { get; set; }
+        public static Func<int> HeroCountProvider { get; set; }
+
+        private static bool _heroUnsupportedLogged;
+        private static bool _techUnsupportedLogged;
+#if !ERAWHEEL_SELFTEST
+        private static bool _worldTipLogged;
+#endif
 
         public static long GetWorldAge()
         {
             if (MockEnabled) return MockWorldAge;
 
+#if !ERAWHEEL_SELFTEST
+            var mapBox = MapBox.instance;
+            if (mapBox == null) return 0;
+
             try
             {
-                var worldType = CompatReflection.FindTypeByName("World");
-                if (worldType == null) return 0;
-
-                var flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
-                var worldField = worldType.GetField("world", flags);
-                var worldObj = worldField != null ? worldField.GetValue(null) : null;
-                if (worldObj == null) return 0;
-
-                return ReadLongMember(worldObj, "worldAge", "age", "world_age");
+                var worldTime = mapBox.getCurWorldTime();
+                var year = Date.getYear(worldTime);
+                return year > 0 ? year : 0;
             }
             catch
             {
                 return 0;
             }
+#else
+            return 0;
+#endif
         }
 
         public static int TryGetTotalPopulation()
         {
             if (MockEnabled) return MockPopulation;
 
+#if !ERAWHEEL_SELFTEST
+            var mapBox = MapBox.instance;
+            if (mapBox == null) return -1;
+
             try
             {
-                var worldType = CompatReflection.FindTypeByName("World");
-                if (worldType == null) return -1;
-
-                var flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
-                var worldField = worldType.GetField("world", flags);
-                var worldObj = worldField != null ? worldField.GetValue(null) : null;
-                if (worldObj == null) return -1;
-
-                var v = ReadIntMember(worldObj, "population", "totalPopulation", "total_population");
-                if (v >= 0) return v;
-
-                var m = worldObj.GetType().GetMethod("getPopulation", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                if (m != null)
-                {
-                    var o = m.Invoke(worldObj, null);
-                    return Convert.ToInt32(o);
-                }
-
-                return -1;
+                return mapBox.getCivWorldPopulation();
             }
             catch
             {
                 return -1;
             }
+#else
+            return -1;
+#endif
+        }
+
+        public static int GetTotalPopulation()
+        {
+            var value = TryGetTotalPopulation();
+            return value >= 0 ? value : 0;
         }
 
         public static int TryGetCityCount()
         {
             if (MockEnabled) return MockCities;
 
+#if !ERAWHEEL_SELFTEST
+            var mapBox = MapBox.instance;
+            if (mapBox == null || mapBox.cities == null) return -1;
+
             try
             {
-                var worldType = CompatReflection.FindTypeByName("World");
-                if (worldType == null) return -1;
-
-                var flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
-                var worldField = worldType.GetField("world", flags);
-                var worldObj = worldField != null ? worldField.GetValue(null) : null;
-                if (worldObj == null) return -1;
-
-                var v = ReadIntMember(worldObj, "citiesCount", "cityCount", "cities_count");
-                if (v >= 0) return v;
-
-                var citiesObj = ReadObjectMember(worldObj, "cities", "list_cities");
-                if (citiesObj is ICollection col) return col.Count;
-                if (citiesObj is IEnumerable en)
-                {
-                    var c = 0;
-                    var it = en.GetEnumerator();
-                    while (it.MoveNext()) c++;
-                    return c;
-                }
-
-                return -1;
+                return mapBox.cities.Count;
             }
             catch
             {
                 return -1;
             }
+#else
+            return -1;
+#endif
+        }
+
+        public static int GetTotalCities()
+        {
+            var value = TryGetCityCount();
+            return value >= 0 ? value : 0;
+        }
+
+        public static int TryGetCivilizationCount()
+        {
+            if (MockEnabled) return MockCivilizations;
+
+#if !ERAWHEEL_SELFTEST
+            var mapBox = MapBox.instance;
+            if (mapBox == null || mapBox.kingdoms == null) return -1;
+
+            try
+            {
+                return mapBox.kingdoms.Count;
+            }
+            catch
+            {
+                return -1;
+            }
+#else
+            return -1;
+#endif
+        }
+
+        public static int GetTotalCivilizations()
+        {
+            var value = TryGetCivilizationCount();
+            return value >= 0 ? value : 0;
         }
 
         public static int TryGetHeroCount()
         {
             if (MockEnabled) return MockHeroes;
 
-            try
+            if (HeroCountProvider != null)
             {
-                var worldType = CompatReflection.FindTypeByName("World");
-                if (worldType == null) return -1;
-
-                var flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
-                var worldField = worldType.GetField("world", flags);
-                var worldObj = worldField != null ? worldField.GetValue(null) : null;
-                if (worldObj == null) return -1;
-
-                var v = ReadIntMember(worldObj, "heroesCount", "heroCount", "heroes_count");
-                if (v >= 0) return v;
-
-                return -1;
+                try
+                {
+                    return HeroCountProvider();
+                }
+                catch
+                {
+                }
             }
-            catch
+
+            if (!_heroUnsupportedLogged)
             {
-                return -1;
+                _heroUnsupportedLogged = true;
+                Log.Info("[EraWheel] Hero count is not available in current WorldBox API.");
             }
+            return -1;
+        }
+
+        public static int GetHeroCount()
+        {
+            var value = TryGetHeroCount();
+            return value >= 0 ? value : 0;
         }
 
         public static int TryGetTechLevel()
         {
             if (MockEnabled) return MockTechLevel;
 
+            if (!_techUnsupportedLogged)
+            {
+                _techUnsupportedLogged = true;
+                Log.Info("[EraWheel] Tech level is not available in current WorldBox API.");
+            }
+            return -1;
+        }
+
+        public static bool TryGetActorHealthPercent(object actor, out float percent)
+        {
+            percent = 0f;
+            if (actor == null) return false;
+
+            if (MockEnabled && TryGetMockHealthPercent(actor, out percent))
+            {
+                return true;
+            }
+
+#if !ERAWHEEL_SELFTEST
+            var typed = actor as Actor;
+            if (typed == null) return false;
+
             try
             {
-                var worldType = CompatReflection.FindTypeByName("World");
-                if (worldType == null) return -1;
-
-                var flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
-                var worldField = worldType.GetField("world", flags);
-                var worldObj = worldField != null ? worldField.GetValue(null) : null;
-                if (worldObj == null) return -1;
-
-                var v = ReadIntMember(worldObj, "techLevel", "tech_level", "tech");
-                if (v >= 0) return v;
-
-                return -1;
+                var ratio = typed.getHealthRatio();
+                percent = ratio * 100f;
+                if (percent < 0f) percent = 0f;
+                if (percent > 100f) percent = 100f;
+                return true;
             }
             catch
             {
-                return -1;
+                return false;
             }
+#else
+            return false;
+#endif
         }
 
-        private static object ReadObjectMember(object obj, params string[] names)
+        public static void ShowNotification(string message)
         {
-            if (obj == null || names == null) return null;
+            if (string.IsNullOrEmpty(message)) return;
 
-            var flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-            for (var i = 0; i < names.Length; i++)
+            if (MockEnabled)
             {
-                var n = names[i];
-                if (string.IsNullOrEmpty(n)) continue;
-
-                var f = obj.GetType().GetField(n, flags);
-                if (f != null) return f.GetValue(obj);
-
-                var p = obj.GetType().GetProperty(n, flags);
-                if (p != null && p.CanRead) return p.GetValue(obj, null);
+                Log.Info("[EraWheel] " + message);
+                return;
             }
 
-            return null;
-        }
-
-        private static int ReadIntMember(object obj, params string[] names)
-        {
+#if !ERAWHEEL_SELFTEST
             try
             {
-                var o = ReadObjectMember(obj, names);
-                if (o == null) return -1;
-                return Convert.ToInt32(o);
+                WorldTip.showNow(message, false, "center", 3f, "#F3961F");
+                return;
             }
             catch
             {
-                return -1;
             }
+
+            if (!_worldTipLogged)
+            {
+                _worldTipLogged = true;
+                Log.Info("[EraWheel] WorldTip.showNow failed, falling back to log.");
+            }
+
+            Log.Info("[EraWheel] " + message);
+#else
+            Log.Info("[EraWheel] " + message);
+#endif
         }
 
-        private static long ReadLongMember(object obj, params string[] names)
+        private static bool TryGetMockHealthPercent(object actor, out float percent)
         {
+            percent = 0f;
+
             try
             {
-                var o = ReadObjectMember(obj, names);
-                if (o == null) return 0;
-                return Convert.ToInt64(o);
+                var actorType = actor.GetType();
+                var healthField = actorType.GetField("health", BindingFlags.Public | BindingFlags.Instance);
+                var maxField = actorType.GetField("maxHealth", BindingFlags.Public | BindingFlags.Instance);
+                if (healthField == null || maxField == null) return false;
+
+                var healthObj = healthField.GetValue(actor);
+                var maxObj = maxField.GetValue(actor);
+                var health = Convert.ToSingle(healthObj);
+                var max = Convert.ToSingle(maxObj);
+                if (max <= 0f) return false;
+
+                percent = (health / max) * 100f;
+                if (percent < 0f) percent = 0f;
+                if (percent > 100f) percent = 100f;
+                return true;
             }
             catch
             {
-                return 0;
+                return false;
             }
         }
     }

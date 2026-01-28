@@ -57,9 +57,7 @@ namespace EraWheel.DemonLord.Lords
 
         public override void OnSelectedForAwakening(int cycleCount)
         {
-            _spawn.LogSpawnAttempt(Id);
-            _spawn.TrySpawnPlaceholder(Id);
-            _stronghold.CreateStronghold(Id);
+            SpawnWithStronghold(_spawn, _stronghold);
 
             _timeDistortion = 0f;
             _ageAbsorbed = 0;

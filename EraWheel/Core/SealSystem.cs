@@ -9,12 +9,16 @@ namespace EraWheel.Core
         private long _lastWorldAge;
         private long _weakeningStartWorldAge;
         private float _allianceSealProgress;
+        private bool _ritualCompleted;
 
         public void Reset(ModConfig cfg, long worldAge)
         {
             try
             {
+                EventBus.Unsubscribe<AllianceSealProgressEvent>(OnAllianceSealProgress);
+                EventBus.Unsubscribe<SealRitualCompletedEvent>(OnSealRitualCompleted);
                 EventBus.Subscribe<AllianceSealProgressEvent>(OnAllianceSealProgress);
+                EventBus.Subscribe<SealRitualCompletedEvent>(OnSealRitualCompleted);
             }
             catch
             {
@@ -24,6 +28,7 @@ namespace EraWheel.Core
             _lastWorldAge = worldAge;
             _weakeningStartWorldAge = -1;
             _allianceSealProgress = 0f;
+            _ritualCompleted = false;
         }
 
         private void OnAllianceSealProgress(AllianceSealProgressEvent evt)
@@ -32,6 +37,11 @@ namespace EraWheel.Core
             if (p < 0f) p = 0f;
             if (p > 100f) p = 100f;
             _allianceSealProgress = p;
+        }
+
+        private void OnSealRitualCompleted(SealRitualCompletedEvent evt)
+        {
+            _ritualCompleted = true;
         }
 
         public void SetSealStrength(float strength)
@@ -99,6 +109,11 @@ namespace EraWheel.Core
                     var duration = worldAge - _weakeningStartWorldAge;
                     if (duration >= 50) return true;
                 }
+            }
+
+            if (vc.ritual)
+            {
+                if (_ritualCompleted) return true;
             }
 
             if (vc.alliance)

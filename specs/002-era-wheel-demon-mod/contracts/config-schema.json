@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "era-wheel-config-v1.0.0",
+  "$id": "era-wheel-config-v1.0.3",
   "title": "Era Wheel MOD Configuration",
   "description": "纪元之轮：魔王轮回 MOD 配置文件 Schema",
   "type": "object",
@@ -26,6 +26,12 @@
               "enum": ["prosperity", "fixed_age", "manual"],
               "default": "prosperity",
               "description": "第1轮回触发模式"
+            },
+            "prosperity_mode": {
+              "type": "string",
+              "enum": ["any", "all"],
+              "default": "any",
+              "description": "繁荣条件判定模式：any=满足任意条件，all=满足所有已知条件"
             },
             "prosperity_thresholds": {
               "type": "object",
@@ -227,6 +233,46 @@
               "minimum": 0,
               "maximum": 0.3,
               "default": 0.1
+            }
+          }
+        },
+        "stats": {
+          "type": "object",
+          "description": "单位数值倍率配置",
+          "properties": {
+            "lords": {
+              "type": "object",
+              "properties": {
+                "void_lord": { "$ref": "#/definitions/unit_stat_multiplier" },
+                "plague_lord": { "$ref": "#/definitions/unit_stat_multiplier" },
+                "machine_lord": { "$ref": "#/definitions/unit_stat_multiplier" },
+                "time_lord": { "$ref": "#/definitions/unit_stat_multiplier" },
+                "flame_lord": { "$ref": "#/definitions/unit_stat_multiplier" },
+                "abyss_lord": { "$ref": "#/definitions/unit_stat_multiplier" },
+                "death_lord": { "$ref": "#/definitions/unit_stat_multiplier" },
+                "soul_lord": { "$ref": "#/definitions/unit_stat_multiplier" },
+                "nature_lord": { "$ref": "#/definitions/unit_stat_multiplier" },
+                "judgment_lord": { "$ref": "#/definitions/unit_stat_multiplier" }
+              }
+            },
+            "general_roles": {
+              "type": "object",
+              "properties": {
+                "vanguard": { "$ref": "#/definitions/unit_stat_multiplier" },
+                "tank": { "$ref": "#/definitions/unit_stat_multiplier" },
+                "dps": { "$ref": "#/definitions/unit_stat_multiplier" },
+                "support": { "$ref": "#/definitions/unit_stat_multiplier" },
+                "elite": { "$ref": "#/definitions/unit_stat_multiplier" }
+              }
+            },
+            "legion_units": {
+              "type": "object",
+              "properties": {
+                "legion_vanguard": { "$ref": "#/definitions/unit_stat_multiplier" },
+                "legion_main": { "$ref": "#/definitions/unit_stat_multiplier" },
+                "legion_elite": { "$ref": "#/definitions/unit_stat_multiplier" },
+                "legion_ultimate": { "$ref": "#/definitions/unit_stat_multiplier" }
+              }
             }
           }
         },
@@ -446,6 +492,49 @@
         }
       }
     },
+
+    "expansion": {
+      "type": "object",
+      "description": "扩展模块配置",
+      "properties": {
+        "ragnarok": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean", "default": false },
+            "required_civilizations": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10
+            },
+            "duration_years": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500,
+              "default": 50
+            }
+          }
+        },
+        "multi_lord": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean", "default": false },
+            "min_awaken_count": {
+              "type": "integer",
+              "minimum": 2,
+              "maximum": 10,
+              "default": 2
+            },
+            "max_awaken_count": {
+              "type": "integer",
+              "minimum": 2,
+              "maximum": 10,
+              "default": 5
+            }
+          }
+        }
+      }
+    },
     
     "performance": {
       "type": "object",
@@ -513,6 +602,17 @@
           "enum": ["debug", "info", "warning", "error"],
           "default": "info"
         }
+      }
+    }
+  },
+  "definitions": {
+    "unit_stat_multiplier": {
+      "type": "object",
+      "properties": {
+        "health": { "type": "number", "minimum": 0.1, "maximum": 20, "default": 1.0 },
+        "damage": { "type": "number", "minimum": 0.1, "maximum": 20, "default": 1.0 },
+        "armor": { "type": "number", "minimum": 0.1, "maximum": 20, "default": 1.0 },
+        "speed": { "type": "number", "minimum": 0.1, "maximum": 20, "default": 1.0 }
       }
     }
   }

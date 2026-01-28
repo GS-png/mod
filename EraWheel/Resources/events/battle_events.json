@@ -1,107 +1,96 @@
 {
-  "Version": "1.0.0",
-  "Events": [
+  "version": "1.0.0",
+  "events": [
     {
-      "Id": "battle_demon_awakens",
-      "Category": "Demon",
-      "Priority": "Critical",
-      "Weight": 100,
-      "TitleKey": "event.demon_awaken.title",
-      "DescriptionKey": "event.demon_awaken.desc",
-      "Conditions": [
-        { "Type": "phase", "Operator": "eq", "Value": "Awakening" }
+      "id": "battle_demon_awakens",
+      "name_key": "event.battle.battle_demon_awakens.name",
+      "category": "Battle",
+      "priority": 90,
+      "conditions": [
+        { "type": "era_phase", "operator": "eq", "value": "Awakening" }
       ],
-      "Effects": [
-        { "Type": "log", "Value": "魔王从沉睡中苏醒" }
+      "description_key": "event.battle.battle_demon_awakens.desc",
+      "effects": [
+        { "type": "add_chronicle", "value": "battle_demon_awakens" }
       ],
-      "CooldownYears": 0,
-      "Unique": false,
-      "Tags": ["demon", "awakening"]
+      "cooldown": 30,
+      "repeatable": true
     },
     {
-      "Id": "battle_invasion_begins",
-      "Category": "Battle",
-      "Priority": "Critical",
-      "Weight": 100,
-      "TitleKey": "event.invasion_start.title",
-      "DescriptionKey": "event.invasion_start.desc",
-      "Conditions": [
-        { "Type": "phase", "Operator": "eq", "Value": "Invasion" }
+      "id": "battle_invasion_begins",
+      "name_key": "event.battle.battle_invasion_begins.name",
+      "category": "Battle",
+      "priority": 95,
+      "conditions": [
+        { "type": "era_phase", "operator": "eq", "value": "Invasion" }
       ],
-      "Effects": [
-        { "Type": "log", "Value": "魔王大军开始入侵" }
+      "description_key": "event.battle.battle_invasion_begins.desc",
+      "effects": [
+        { "type": "add_chronicle", "value": "battle_invasion_begins" }
       ],
-      "CooldownYears": 0,
-      "Unique": false,
-      "Tags": ["battle", "invasion"]
+      "cooldown": 30,
+      "repeatable": true
     },
     {
-      "Id": "battle_demon_peak",
-      "Category": "Battle",
-      "Priority": "High",
-      "Weight": 90,
-      "TitleKey": "event.demon_peak.title",
-      "DescriptionKey": "event.demon_peak.desc",
-      "Conditions": [
-        { "Type": "phase", "Operator": "eq", "Value": "Peak" }
+      "id": "battle_demon_peak",
+      "name_key": "event.battle.battle_demon_peak.name",
+      "category": "Battle",
+      "priority": 85,
+      "conditions": [
+        { "type": "era_phase", "operator": "eq", "value": "Peak" }
       ],
-      "Effects": [
-        { "Type": "log", "Value": "魔王势力达到巅峰" }
+      "description_key": "event.battle.battle_demon_peak.desc",
+      "effects": [
+        { "type": "add_chronicle", "value": "battle_demon_peak" }
       ],
-      "CooldownYears": 0,
-      "Unique": false,
-      "Tags": ["demon", "peak"]
+      "cooldown": 30,
+      "repeatable": true
     },
     {
-      "Id": "battle_demon_weakening",
-      "Category": "Battle",
-      "Priority": "High",
-      "Weight": 85,
-      "TitleKey": "event.demon_weaken.title",
-      "DescriptionKey": "event.demon_weaken.desc",
-      "Conditions": [
-        { "Type": "phase", "Operator": "eq", "Value": "Weakening" }
+      "id": "battle_demon_weakening",
+      "name_key": "event.battle.battle_demon_weakening.name",
+      "category": "Battle",
+      "priority": 80,
+      "conditions": [
+        { "type": "era_phase", "operator": "eq", "value": "Weakening" }
       ],
-      "Effects": [
-        { "Type": "log", "Value": "魔王力量开始衰退" }
+      "description_key": "event.battle.battle_demon_weakening.desc",
+      "effects": [
+        { "type": "add_chronicle", "value": "battle_demon_weakening" }
       ],
-      "CooldownYears": 0,
-      "Unique": false,
-      "Tags": ["demon", "weakening"]
+      "cooldown": 30,
+      "repeatable": true
     },
     {
-      "Id": "battle_general_appears",
-      "Category": "Battle",
-      "Priority": "High",
-      "Weight": 70,
-      "TitleKey": "event.general_appear.title",
-      "DescriptionKey": "event.general_appear.desc",
-      "Conditions": [
-        { "Type": "phase", "Operator": "in", "Value": "Invasion,Peak" }
+      "id": "battle_general_appears",
+      "name_key": "event.battle.battle_general_appears.name",
+      "category": "Battle",
+      "priority": 70,
+      "conditions": [
+        { "type": "era_phase", "operator": "in", "value": "Invasion,Peak" },
+        { "type": "generals_active", "operator": "gte", "value": "1" }
       ],
-      "Effects": [
-        { "Type": "log", "Value": "魔王麾下将领出现在战场" }
+      "description_key": "event.battle.battle_general_appears.desc",
+      "effects": [
+        { "type": "add_chronicle", "value": "battle_general_appears" }
       ],
-      "CooldownYears": 40,
-      "Unique": false,
-      "Tags": ["general", "battle"]
+      "cooldown": 40,
+      "repeatable": true
     },
     {
-      "Id": "battle_legion_wave",
-      "Category": "Battle",
-      "Priority": "Normal",
-      "Weight": 60,
-      "TitleKey": "event.legion_wave.title",
-      "DescriptionKey": "event.legion_wave.desc",
-      "Conditions": [
-        { "Type": "phase", "Operator": "in", "Value": "Invasion,Peak" }
+      "id": "battle_legion_wave",
+      "name_key": "event.battle.battle_legion_wave.name",
+      "category": "Battle",
+      "priority": 60,
+      "conditions": [
+        { "type": "era_phase", "operator": "in", "value": "Invasion,Peak" }
       ],
-      "Effects": [
-        { "Type": "log", "Value": "新一波军团抵达" }
+      "description_key": "event.battle.battle_legion_wave.desc",
+      "effects": [
+        { "type": "add_chronicle", "value": "battle_legion_wave" }
       ],
-      "CooldownYears": 15,
-      "Unique": false,
-      "Tags": ["legion", "wave"]
+      "cooldown": 20,
+      "repeatable": true
     }
   ]
 }

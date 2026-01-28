@@ -18,10 +18,7 @@ namespace EraWheel.Civilization
             _lastConfig = cfg;
             BindEvents();
 
-            if (State.CycleStartCities < 0)
-            {
-                State.CycleStartCities = WorldCompat.TryGetCityCount();
-            }
+            EnsureCycleStartCities();
 
             if (_lastWorldAge < 0)
             {
@@ -64,6 +61,7 @@ namespace EraWheel.Civilization
             if (deltaYears < 0) deltaYears = 0;
             _lastWorldAge = worldAge;
 
+            EnsureCycleStartCities();
             if (!State.Formed)
             {
                 TryAutoForm(cfg, cycle);
@@ -119,6 +117,17 @@ namespace EraWheel.Civilization
             }
 
             Log.Info("[EraWheel] Alliance formed: destroyedCityPercent=" + destroyedPercent.ToString("0.00"));
+        }
+
+        private void EnsureCycleStartCities()
+        {
+            if (State.CycleStartCities > 0) return;
+
+            var current = WorldCompat.TryGetCityCount();
+            if (current > 0)
+            {
+                State.CycleStartCities = current;
+            }
         }
 
         private void TryCouncil(ModConfig cfg, CycleManager cycle)

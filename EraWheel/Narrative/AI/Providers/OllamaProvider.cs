@@ -1,61 +1,72 @@
 using System;
-using EraWheel.Core;
+using System.Globalization;
+using System.Text;
 
 namespace EraWheel.Narrative.AI.Providers
 {
-    public class OllamaProvider : ILLMProvider
+    public class OllamaProvider : HttpProviderBase
     {
-        public string ProviderId => "ollama";
-        public LLMProviderType ProviderType => LLMProviderType.Ollama;
-        public bool IsAvailable => !string.IsNullOrEmpty(_apiUrl);
+        public override string ProviderId => "ollama";
+        public override LLMProviderType ProviderType => LLMProviderType.Ollama;
+        public override bool IsAvailable => !string.IsNullOrEmpty(ApiUrl);
 
-        private string _apiUrl = "http://localhost:11434/api/generate";
-        private string _model = "llama2";
-        private string _apiKey;
+        protected override string DefaultApiUrl => "http://localhost:11434/api/generate";
+        protected override string DefaultModel => "llama2";
 
-        public void Configure(string apiUrl, string model, string apiKey)
+        protected override string BuildRequestJson(LLMRequest request)
         {
-            if (!string.IsNullOrEmpty(apiUrl))
-                _apiUrl = apiUrl;
-            if (!string.IsNullOrEmpty(model))
-                _model = model;
-            _apiKey = apiKey;
+            var sb = new StringBuilder(512);
+            sb.Append('{');
+            sb.Append("\"model\":\"").Append(JsonText.Escape(Model)).Append('"');
+            sb.Append(",\"prompt\":\"").Append(JsonText.Escape(request.Prompt)).Append('"');
+            sb.Append(",\"stream\":false");
+
+            if (!string.IsNullOrEmpty(request.SystemPrompt))
+            {
+                sb.Append(",\"system\":\"").Append(JsonText.Escape(request.SystemPrompt)).Append('"');
+            }
+
+            sb.Append(",\"options\":{");
+            sb.Append("\"temperature\":").Append(request.Temperature.ToString(CultureInfo.InvariantCulture));
+            sb.Append(",\"num_predict\":").Append(Math.Max(1, request.MaxTokens));
+
+            if (request.StopSequences != null && request.StopSequences.Length > 0)
+            {
+                sb.Append(",\"stop\":[");
+                for (var i = 0; i < request.StopSequences.Length; i++)
+                {
+                    if (i > 0) sb.Append(',');
+                    sb.Append('"').Append(JsonText.Escape(request.StopSequences[i])).Append('"');
+                }
+                sb.Append(']');
+            }
+
+            sb.Append("}}");
+            return sb.ToString();
         }
 
-        public void GenerateAsync(LLMRequest request, Action<LLMResponse> callback)
+        protected override bool TryParseResponse(string json, out string content, out int tokensUsed, out string errorMessage)
         {
-            if (!IsAvailable)
+            content = null;
+            tokensUsed = 0;
+            errorMessage = null;
+
+            if (string.IsNullOrEmpty(json))
             {
-                callback?.Invoke(LLMResponse.Error("Ollama provider not configured"));
-                return;
+                errorMessage = "Empty response";
+                return false;
             }
 
-            try
-            {
-                Log.Info($"[OllamaProvider] 发送请求到 {_apiUrl}, 模型: {_model}");
-                callback?.Invoke(LLMResponse.Error("HTTP请求需要Unity协程支持，当前为占位实现"));
-            }
-            catch (Exception ex)
-            {
-                callback?.Invoke(LLMResponse.Error($"请求失败: {ex.Message}"));
-            }
-        }
+            JsonText.TryExtractString(json, "response", out content);
+            JsonText.TryExtractInt(json, "eval_count", out tokensUsed);
 
-        public void TestConnection(Action<bool, string> callback)
-        {
-            if (!IsAvailable)
+            if (string.IsNullOrEmpty(content))
             {
-                callback?.Invoke(false, "Ollama URL未配置");
-                return;
+                errorMessage = ExtractErrorMessage(json);
+                return false;
             }
 
-            Log.Info("[OllamaProvider] 测试连接...");
-            callback?.Invoke(false, "HTTP请求需要Unity协程支持");
-        }
-
-        public void Cancel()
-        {
-            Log.Info("[OllamaProvider] 取消请求");
+            return true;
         }
     }
 }

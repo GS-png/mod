@@ -14,7 +14,12 @@ namespace EraWheel.Narrative
 
             try
             {
-                var val = GetContextValue(condition.Type, ctx);
+                if (string.Equals(condition.Type, NarrativeCondition.Types.RandomChance, StringComparison.OrdinalIgnoreCase))
+                {
+                    return EvaluateRandom(condition.Operator, condition.Value);
+                }
+
+                var val = GetContextValue(condition.Type, condition.Target, condition.Value, ctx);
                 return Compare(val, condition.Operator, condition.Value);
             }
             catch
@@ -23,25 +28,41 @@ namespace EraWheel.Narrative
             }
         }
 
-        public static bool EvaluateAll(NarrativeCondition[] conditions, WorldContext ctx)
+        public static bool EvaluateAll(NarrativeCondition[] conditions, WorldContext ctx, string conditionMode)
         {
             if (conditions == null || conditions.Length == 0)
                 return true;
 
-            foreach (var c in conditions)
+            var useOr = string.Equals(conditionMode, "OR", StringComparison.OrdinalIgnoreCase);
+            if (useOr)
             {
-                if (!Evaluate(c, ctx))
+                for (var i = 0; i < conditions.Length; i++)
+                {
+                    if (Evaluate(conditions[i], ctx))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            for (var i = 0; i < conditions.Length; i++)
+            {
+                if (!Evaluate(conditions[i], ctx))
+                {
                     return false;
+                }
             }
 
             return true;
         }
 
-        private static object GetContextValue(string type, WorldContext ctx)
+        private static object GetContextValue(string type, string target, string value, WorldContext ctx)
         {
-            switch (type)
+            var normalizedType = type != null ? type.ToLowerInvariant() : "";
+            switch (normalizedType)
             {
-                case NarrativeCondition.Types.Phase:
+                case NarrativeCondition.Types.EraPhase:
                     return ctx.CurrentPhase.ToString();
 
                 case NarrativeCondition.Types.CycleCount:
@@ -50,14 +71,32 @@ namespace EraWheel.Narrative
                 case NarrativeCondition.Types.SealStrength:
                     return ctx.SealStrength;
 
-                case NarrativeCondition.Types.DemonHealth:
+                case NarrativeCondition.Types.PhaseDuration:
+                    return ctx.PhaseDuration;
+
+                case NarrativeCondition.Types.DemonLordActive:
+                    return ctx.DemonLordActive;
+
+                case NarrativeCondition.Types.DemonLordType:
+                    return ctx.ActiveDemonLordType;
+
+                case NarrativeCondition.Types.DemonHealthPercent:
                     return ctx.DemonHealthPercent;
 
-                case NarrativeCondition.Types.Population:
+                case NarrativeCondition.Types.DemonKillCount:
+                    return ctx.DemonKillCount;
+
+                case NarrativeCondition.Types.GeneralsActive:
+                    return ctx.GeneralsActive;
+
+                case NarrativeCondition.Types.TotalPopulation:
                     return ctx.Population;
 
                 case NarrativeCondition.Types.CityCount:
                     return ctx.CityCount;
+
+                case NarrativeCondition.Types.CivCount:
+                    return ctx.CivCount;
 
                 case NarrativeCondition.Types.HeroCount:
                     return ctx.HeroCount;
@@ -65,11 +104,29 @@ namespace EraWheel.Narrative
                 case NarrativeCondition.Types.AntiDemonLevel:
                     return ctx.AntiDemonLevel;
 
+                case NarrativeCondition.Types.Csi:
+                    return ctx.Csi;
+
                 case NarrativeCondition.Types.AllianceFormed:
                     return ctx.AllianceFormed;
 
-                case NarrativeCondition.Types.Random:
-                    return Rng.NextDouble() * 100.0;
+                case NarrativeCondition.Types.DestinedHeroExists:
+                    return ctx.DestinedHeroExists;
+
+                case NarrativeCondition.Types.HeroLevel:
+                    return ctx.HeroLevel;
+
+                case NarrativeCondition.Types.WorldAge:
+                    return ctx.WorldAge;
+
+                case NarrativeCondition.Types.EventTriggered:
+                    return IsEventTriggered(target, value, ctx);
+
+                case NarrativeCondition.Types.NpcExists:
+                    return CheckNpcExists(target, value);
+
+                case NarrativeCondition.Types.BuildingExists:
+                    return CheckBuildingExists(target, value);
 
                 default:
                     return null;
@@ -80,6 +137,8 @@ namespace EraWheel.Narrative
         {
             if (leftValue == null)
                 return false;
+
+            op = op != null ? op.ToLowerInvariant() : "";
 
             if (leftValue is bool boolVal)
             {
@@ -103,8 +162,6 @@ namespace EraWheel.Narrative
                         return string.Equals(strVal, rightStr, StringComparison.OrdinalIgnoreCase);
                     case NarrativeCondition.Operators.NotEquals:
                         return !string.Equals(strVal, rightStr, StringComparison.OrdinalIgnoreCase);
-                    case NarrativeCondition.Operators.Contains:
-                        return strVal.IndexOf(rightStr, StringComparison.OrdinalIgnoreCase) >= 0;
                     case NarrativeCondition.Operators.In:
                         var parts = rightStr.Split(',');
                         foreach (var p in parts)
@@ -113,6 +170,14 @@ namespace EraWheel.Narrative
                                 return true;
                         }
                         return false;
+                    case NarrativeCondition.Operators.NotIn:
+                        var items = rightStr.Split(',');
+                        foreach (var p in items)
+                        {
+                            if (string.Equals(strVal, p.Trim(), StringComparison.OrdinalIgnoreCase))
+                                return false;
+                        }
+                        return true;
                     default:
                         return false;
                 }
@@ -139,6 +204,92 @@ namespace EraWheel.Narrative
                     return false;
             }
         }
+
+        private static bool EvaluateRandom(string op, string value)
+        {
+            if (!string.Equals(op, NarrativeCondition.Operators.Success, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            var chance = ParseDouble(value);
+            if (chance <= 1.0)
+            {
+                return Rng.NextDouble() <= chance;
+            }
+
+            return Rng.NextDouble() * 100.0 <= chance;
+        }
+
+        private static bool IsEventTriggered(string target, string value, WorldContext ctx)
+        {
+            if (ctx == null || ctx.TriggeredEvents == null)
+            {
+                return false;
+            }
+
+            var id = !string.IsNullOrEmpty(target) ? target : value;
+            if (string.IsNullOrEmpty(id))
+            {
+                return false;
+            }
+
+            return ctx.TriggeredEvents.Contains(id);
+        }
+
+#if !ERAWHEEL_SELFTEST
+        private static bool CheckNpcExists(string target, string value)
+        {
+            var id = !string.IsNullOrEmpty(target) ? target : value;
+            if (string.IsNullOrEmpty(id)) return false;
+
+            var mapBox = MapBox.instance;
+            if (mapBox == null || mapBox.units == null) return false;
+
+            var list = mapBox.units.units_only_alive;
+            if (list == null) return false;
+
+            for (var i = 0; i < list.Count; i++)
+            {
+                var actor = list[i];
+                if (actor == null) continue;
+                var asset = actor.asset;
+                if (asset == null || string.IsNullOrEmpty(asset.id)) continue;
+                if (string.Equals(asset.id, id, StringComparison.OrdinalIgnoreCase)) return true;
+            }
+
+            return false;
+        }
+
+        private static bool CheckBuildingExists(string target, string value)
+        {
+            var id = !string.IsNullOrEmpty(target) ? target : value;
+            if (string.IsNullOrEmpty(id)) return false;
+
+            var mapBox = MapBox.instance;
+            if (mapBox == null || mapBox.buildings == null) return false;
+
+            foreach (var building in mapBox.buildings)
+            {
+                if (building == null) continue;
+                var data = building.getData() as BuildingData;
+                if (data == null || string.IsNullOrEmpty(data.asset_id)) continue;
+                if (string.Equals(data.asset_id, id, StringComparison.OrdinalIgnoreCase)) return true;
+            }
+
+            return false;
+        }
+#else
+        private static bool CheckNpcExists(string target, string value)
+        {
+            return false;
+        }
+
+        private static bool CheckBuildingExists(string target, string value)
+        {
+            return false;
+        }
+#endif
 
         private static double ToDouble(object val)
         {

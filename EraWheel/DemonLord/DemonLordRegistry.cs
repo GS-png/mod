@@ -11,6 +11,8 @@ namespace EraWheel.DemonLord
     {
         private readonly Dictionary<string, DemonLordBase> _lords = new Dictionary<string, DemonLordBase>(StringComparer.Ordinal);
         private readonly Random _rng = new Random();
+        private readonly SpawnSystem _spawn = new SpawnSystem();
+        private long _lastRebindWorldAge = -1;
 
         private ModConfig _lastConfig;
 
@@ -47,6 +49,7 @@ namespace EraWheel.DemonLord
             }
 
             ApplyEnabledFlags(cfg);
+            ApplyStatOverrides(cfg);
         }
 
         public void ApplyEnabledFlags(ModConfig cfg)
@@ -60,9 +63,33 @@ namespace EraWheel.DemonLord
             foreach (var kv in _lords)
             {
                 var id = kv.Key;
-                var enabled = IsEnabledByConfig(cfg, id);
+                var enabled = DemonLordConfigHelper.IsEnabled(cfg.demon_lord.enabled_lords, id);
                 kv.Value.SetEnabled(enabled);
             }
+        }
+
+        public void ApplyStatOverrides(ModConfig cfg)
+        {
+            if (cfg != null) _lastConfig = cfg;
+
+#if !ERAWHEEL_SELFTEST
+            var library = AssetManager.actor_library;
+            if (library == null) return;
+
+            foreach (var kv in _lords)
+            {
+                var lord = kv.Value;
+                if (lord == null || string.IsNullOrEmpty(lord.Id)) continue;
+                if (!library.has(lord.Id)) continue;
+
+                var asset = library.get(lord.Id);
+                var stats = asset != null ? asset.base_stats : null;
+                if (stats == null || !stats.hasStat("health")) continue;
+
+                var baseHealth = stats.get("health");
+                lord.OverrideBaseHealth(baseHealth);
+            }
+#endif
         }
 
         public void Update(ModConfig cfg, CycleManager cycle)
@@ -70,14 +97,46 @@ namespace EraWheel.DemonLord
             if (cfg != null) _lastConfig = cfg;
             ApplyEnabledFlags(cfg);
 
+            if (Active != null && !Active.Enabled)
+            {
+                Active.ClearActor();
+                Active = null;
+                _lastRebindWorldAge = -1;
+
+                if (cycle != null)
+                {
+                    cycle.ClearExternalDemonHealth();
+                    cycle.SetDemonSpawned(false);
+                }
+            }
+
             if (cycle == null) return;
 
             if (Active != null)
             {
+                TryRebindActiveActor(cycle);
+
+                cycle.SetDemonSpawned(Active.HasActor);
+
+                if (Active.TryGetActorHealthPercent(out var actorPercent))
+                {
+                    cycle.SetExternalDemonHealthPercent(actorPercent);
+                }
+                else
+                {
+                    cycle.ClearExternalDemonHealth();
+                }
+
                 Active.SetHealthPercent(cycle.DemonHealthPercent);
+                Active.ApplyGrowth(DemonGrowthCalculator.ComputeStrengthMultiplier(cfg, cycle.CycleCount));
                 var s = DemonLordStateMachine.ComputeState(Active.Enabled, cycle.CurrentPhase, Active.CurrentHealthPercent);
-                Active.ForceState(s);
+                Active.UpdateStateFromSystem(s);
                 Active.Update(cfg, cycle.CurrentPhase);
+            }
+            else
+            {
+                cycle.ClearExternalDemonHealth();
+                cycle.SetDemonSpawned(false);
             }
 
             if (cycle.CurrentPhase == EraPhase.Awakening && Active == null)
@@ -89,6 +148,7 @@ namespace EraWheel.DemonLord
             {
                 Active.ResetForNewCycle();
                 Active = null;
+                _lastRebindWorldAge = -1;
             }
         }
 
@@ -132,7 +192,7 @@ namespace EraWheel.DemonLord
 
                 if (cfg != null)
                 {
-                    l.SetEnabled(IsEnabledByConfig(cfg, l.Id));
+                    l.SetEnabled(DemonLordConfigHelper.IsEnabled(cfg.demon_lord?.enabled_lords, l.Id));
                 }
 
                 if (!l.Enabled) continue;
@@ -148,27 +208,27 @@ namespace EraWheel.DemonLord
 
             var picked = candidates[_rng.Next(0, candidates.Count)];
             Active = picked;
-            Active.OnSelectedForAwakening(cycleCount);
+            Active.ClearForcedState();
+            Active.UpdateStateFromSystem(DemonLordState.Awakening);
+            Active.ApplyGrowth(DemonGrowthCalculator.ComputeStrengthMultiplier(cfg, cycleCount));
+            Active.OnAwaken(cycleCount);
         }
 
-        private static bool IsEnabledByConfig(ModConfig cfg, string id)
+        private void TryRebindActiveActor(CycleManager cycle)
         {
-            if (cfg == null || cfg.demon_lord == null || cfg.demon_lord.enabled_lords == null) return true;
+            if (Active == null || Active.HasActor || cycle == null) return;
 
-            var e = cfg.demon_lord.enabled_lords;
-            switch (id)
+            var phase = cycle.CurrentPhase;
+            if (phase == EraPhase.Sealed || phase == EraPhase.Omen) return;
+
+            var worldAge = cycle.WorldAge;
+            if (_lastRebindWorldAge == worldAge) return;
+            _lastRebindWorldAge = worldAge;
+
+            var actor = _spawn.TryFindActorByAssetId(Active.Id);
+            if (actor != null)
             {
-                case "void_lord": return e.void_lord;
-                case "plague_lord": return e.plague_lord;
-                case "machine_lord": return e.machine_lord;
-                case "time_lord": return e.time_lord;
-                case "flame_lord": return e.flame_lord;
-                case "abyss_lord": return e.abyss_lord;
-                case "death_lord": return e.death_lord;
-                case "soul_lord": return e.soul_lord;
-                case "nature_lord": return e.nature_lord;
-                case "judgment_lord": return e.judgment_lord;
-                default: return true;
+                Active.BindActor(actor);
             }
         }
 
@@ -199,6 +259,7 @@ namespace EraWheel.DemonLord
 
             if (data == null) return;
 
+            DemonLordBase activeCandidate = null;
             for (var i = 0; i < data.Length; i++)
             {
                 var d = data[i];
@@ -207,8 +268,16 @@ namespace EraWheel.DemonLord
 
                 l.SetEnabled(d.Enabled);
                 l.SetHealthPercent(d.CurrentHealth);
-                l.ForceState(d.State);
+                l.ClearForcedState();
+                l.UpdateStateFromSystem(d.State);
+
+                if (activeCandidate == null && d.State != DemonLordState.Sealed && d.State != DemonLordState.Disabled)
+                {
+                    activeCandidate = l;
+                }
             }
+
+            Active = activeCandidate;
         }
     }
 }

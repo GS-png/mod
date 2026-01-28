@@ -2,7 +2,7 @@ using EraWheel.Config;
 using EraWheel.Core;
 using EraWheel.DemonLord;
 using EraWheel.Civilization;
-using EraWheel.Data;
+using EraWheel.UI.Components;
 
 namespace EraWheel.UI.Tabs
 {
@@ -11,15 +11,16 @@ namespace EraWheel.UI.Tabs
         private UnityEngine.Vector2 _scrollPos;
         private bool _showInternalVars = true;
         private bool _showQuickActions = true;
-        private bool _confirmPending;
-        private string _pendingAction;
 
         public void Draw(
             ModConfig cfg,
             CycleManager cycle,
             DemonLordRegistry registry,
             CivilizationTracker civTracker,
-            AllianceSystem alliance)
+            AllianceSystem alliance,
+            LegionWaveSystem legion,
+            GeneralSystem generals,
+            HeroSystem heroes)
         {
             _scrollPos = UnityEngine.GUILayout.BeginScrollView(_scrollPos);
 
@@ -44,11 +45,6 @@ namespace EraWheel.UI.Tabs
             UnityEngine.GUILayout.Space(10);
 
             DrawQuickActions(cycle, registry);
-
-            if (_confirmPending)
-            {
-                DrawConfirmDialog(cycle, registry);
-            }
 
             UnityEngine.GUILayout.EndScrollView();
         }
@@ -101,19 +97,27 @@ namespace EraWheel.UI.Tabs
 
             UnityEngine.GUILayout.BeginVertical("box");
 
-            UnityEngine.GUILayout.Label("⚠️ 危险操作 - 可能破坏游戏状态");
+            UnityEngine.GUILayout.Label("危险操作 - 可能破坏游戏状态");
             UnityEngine.GUILayout.Space(5);
 
             UnityEngine.GUILayout.BeginHorizontal();
 
             if (UnityEngine.GUILayout.Button("跳过到下一阶段"))
             {
-                RequestConfirm("skip_phase");
+                ConfirmDanger("确认跳到下一阶段?", () =>
+                {
+                    cycle?.ForceNextPhase();
+                    Log.Info("[EraWheel] Debug: Forced phase transition");
+                });
             }
 
             if (UnityEngine.GUILayout.Button("强制触发轮回"))
             {
-                RequestConfirm("force_cycle");
+                ConfirmDanger("确认强制触发轮回?", () =>
+                {
+                    cycle?.ForceCompleteCycle();
+                    Log.Info("[EraWheel] Debug: Forced cycle completion");
+                });
             }
 
             UnityEngine.GUILayout.EndHorizontal();
@@ -122,7 +126,17 @@ namespace EraWheel.UI.Tabs
 
             if (UnityEngine.GUILayout.Button("重置封印强度"))
             {
-                RequestConfirm("reset_seal");
+                ConfirmDanger("确认重置封印强度?", () =>
+                {
+                    cycle?.ResetSealStrength();
+                    Log.Info("[EraWheel] Debug: Reset seal strength");
+                });
+            }
+
+            if (UnityEngine.GUILayout.Button("模拟封印仪式完成"))
+            {
+                EventBus.Publish(new SealRitualCompletedEvent { WorldTime = cycle?.WorldAge ?? 0 });
+                Log.Info("[EraWheel] Debug: Ritual seal completed");
             }
 
             if (UnityEngine.GUILayout.Button("模拟击杀魔物 x100"))
@@ -136,61 +150,6 @@ namespace EraWheel.UI.Tabs
             UnityEngine.GUILayout.EndVertical();
         }
 
-        private void RequestConfirm(string action)
-        {
-            _confirmPending = true;
-            _pendingAction = action;
-        }
-
-        private void DrawConfirmDialog(CycleManager cycle, DemonLordRegistry registry)
-        {
-            UnityEngine.GUILayout.Space(10);
-            UnityEngine.GUILayout.BeginVertical("box");
-
-            UnityEngine.GUILayout.Label("⚠️ 确认执行危险操作?", UnityEngine.GUI.skin.label);
-            UnityEngine.GUILayout.Label($"操作: {_pendingAction}");
-
-            UnityEngine.GUILayout.BeginHorizontal();
-
-            if (UnityEngine.GUILayout.Button("确认"))
-            {
-                ExecutePendingAction(cycle, registry);
-                _confirmPending = false;
-            }
-
-            if (UnityEngine.GUILayout.Button("取消"))
-            {
-                _confirmPending = false;
-            }
-
-            UnityEngine.GUILayout.EndHorizontal();
-
-            UnityEngine.GUILayout.EndVertical();
-        }
-
-        private void ExecutePendingAction(CycleManager cycle, DemonLordRegistry registry)
-        {
-            if (string.IsNullOrEmpty(_pendingAction)) return;
-
-            switch (_pendingAction)
-            {
-                case "skip_phase":
-                    cycle?.ForceNextPhase();
-                    Log.Info("[EraWheel] Debug: Forced phase transition");
-                    break;
-
-                case "force_cycle":
-                    cycle?.ForceCompleteCycle();
-                    Log.Info("[EraWheel] Debug: Forced cycle completion");
-                    break;
-
-                case "reset_seal":
-                    cycle?.ResetSealStrength();
-                    Log.Info("[EraWheel] Debug: Reset seal strength");
-                    break;
-            }
-        }
-
         private bool DrawFoldout(string label, bool current)
         {
             var icon = current ? "▼" : "▶";
@@ -199,6 +158,11 @@ namespace EraWheel.UI.Tabs
                 return !current;
             }
             return current;
+        }
+
+        private static void ConfirmDanger(string message, System.Action onConfirm)
+        {
+            ConfirmDialog.Instance.Show("危险操作确认", message, onConfirm);
         }
     }
 }

@@ -12,7 +12,7 @@ namespace EraWheel.Data
     [Serializable]
     public class ModSaveData
     {
-        public string ModVersion = "1.0.0";
+        public string ModVersion = "1.0.3";
         public CycleData CycleData = new CycleData();
         public DemonLordSaveData[] DemonLordData = new DemonLordSaveData[0];
         public GeneralSaveData[] GeneralData = new GeneralSaveData[0];
@@ -67,6 +67,7 @@ namespace EraWheel.Data
     {
         public int DemonKillCount;
         public int AntiDemonLevel;
+        public int SealCount;
         public float CSI;
     }
 

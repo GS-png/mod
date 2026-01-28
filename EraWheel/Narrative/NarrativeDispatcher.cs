@@ -1,4 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Text;
 using EraWheel.Config;
 using EraWheel.Core;
 
@@ -77,14 +81,15 @@ namespace EraWheel.Narrative
         {
             if (evt == null) return;
 
-            var title = Localization.Get(evt.TitleKey, evt.TitleKey);
+            var titleKey = !string.IsNullOrEmpty(evt.NameKey) ? evt.NameKey : evt.TitleKey;
+            var title = Localization.Get(titleKey, titleKey);
             var desc = Localization.Get(evt.DescriptionKey, evt.DescriptionKey);
 
             Log.Info($"[NarrativeDispatcher] 触发事件: {evt.Id} - {title}");
 
             try
             {
-                ShowNotification(title, desc, evt.Category);
+                ShowNotification(title, desc, ParseCategory(evt.Category));
             }
             catch (Exception ex)
             {
@@ -102,7 +107,7 @@ namespace EraWheel.Narrative
             EventBus.Publish(new NarrativeEventTriggeredEvent
             {
                 EventId = evt.Id,
-                Category = evt.Category,
+                Category = ParseCategory(evt.Category),
                 WorldAge = ctx.WorldAge
             });
         }
@@ -115,12 +120,12 @@ namespace EraWheel.Narrative
             {
                 switch (effect.Type)
                 {
-                    case NarrativeEffect.Types.Notification:
+                    case NarrativeEffect.Types.ShowNotification:
                         var msg = Localization.Get(effect.Value, effect.Value);
                         ShowNotification("系统", msg, NarrativeEventCategory.System);
                         break;
 
-                    case NarrativeEffect.Types.Log:
+                    case NarrativeEffect.Types.AddChronicle:
                         Log.Info($"[NarrativeEffect] {effect.Value}");
                         break;
                 }
@@ -234,6 +239,21 @@ namespace EraWheel.Narrative
             _frameCounter = 0;
             _lastCheckWorldAge = 0;
         }
+
+        private static NarrativeEventCategory ParseCategory(string category)
+        {
+            if (string.IsNullOrEmpty(category))
+            {
+                return NarrativeEventCategory.Unknown;
+            }
+
+            if (Enum.TryParse(category, true, out NarrativeEventCategory parsed))
+            {
+                return parsed;
+            }
+
+            return NarrativeEventCategory.Unknown;
+        }
     }
 
     [Serializable]
@@ -246,12 +266,166 @@ namespace EraWheel.Narrative
 
     public static class Localization
     {
+        private static readonly Dictionary<string, string> Entries = new Dictionary<string, string>(StringComparer.Ordinal);
+        private static string _basePath;
+        private static string _localeId = "zh_CN";
+        private static bool _loaded;
+
+        public static void Initialize(string basePath, string localeId = null)
+        {
+            if (!string.IsNullOrEmpty(basePath))
+            {
+                _basePath = basePath;
+            }
+
+            if (!string.IsNullOrEmpty(localeId))
+            {
+                _localeId = localeId;
+            }
+
+            LoadLocale();
+        }
+
         public static string Get(string key, string fallback = null)
         {
             if (string.IsNullOrEmpty(key))
                 return fallback ?? "";
 
+            if (!_loaded)
+            {
+                LoadLocale();
+            }
+
+            if (Entries.TryGetValue(key, out var value))
+            {
+                return value;
+            }
+
             return fallback ?? key;
+        }
+
+        private static void LoadLocale()
+        {
+            if (string.IsNullOrEmpty(_basePath))
+            {
+                return;
+            }
+
+            var path = Path.Combine(_basePath, _localeId + ".json");
+            if (!File.Exists(path))
+            {
+                path = Path.Combine(_basePath, "en.json");
+                if (!File.Exists(path))
+                {
+                    return;
+                }
+            }
+
+            try
+            {
+                var json = File.ReadAllText(path);
+                ParseFlatJson(json, Entries);
+                _loaded = true;
+            }
+            catch
+            {
+            }
+        }
+
+        private static void ParseFlatJson(string json, Dictionary<string, string> dest)
+        {
+            dest.Clear();
+            if (string.IsNullOrEmpty(json)) return;
+
+            var index = 0;
+            SkipWhitespace(json, ref index);
+            if (index >= json.Length || json[index] != '{') return;
+            index++;
+
+            while (index < json.Length)
+            {
+                SkipWhitespace(json, ref index);
+                if (index >= json.Length) break;
+                if (json[index] == '}') break;
+
+                if (!TryReadString(json, ref index, out var key)) break;
+                SkipWhitespace(json, ref index);
+                if (index >= json.Length || json[index] != ':') break;
+                index++;
+                SkipWhitespace(json, ref index);
+                if (!TryReadString(json, ref index, out var value)) break;
+
+                dest[key] = value;
+
+                SkipWhitespace(json, ref index);
+                if (index < json.Length && json[index] == ',')
+                {
+                    index++;
+                }
+            }
+        }
+
+        private static void SkipWhitespace(string json, ref int index)
+        {
+            while (index < json.Length && char.IsWhiteSpace(json[index]))
+            {
+                index++;
+            }
+        }
+
+        private static bool TryReadString(string json, ref int index, out string value)
+        {
+            value = "";
+            if (index >= json.Length || json[index] != '\"') return false;
+
+            index++;
+            var sb = new StringBuilder();
+            while (index < json.Length)
+            {
+                var ch = json[index++];
+                if (ch == '\"')
+                {
+                    value = sb.ToString();
+                    return true;
+                }
+
+                if (ch == '\\' && index < json.Length)
+                {
+                    var esc = json[index++];
+                    switch (esc)
+                    {
+                        case '\"': sb.Append('\"'); break;
+                        case '\\': sb.Append('\\'); break;
+                        case '/': sb.Append('/'); break;
+                        case 'b': sb.Append('\b'); break;
+                        case 'f': sb.Append('\f'); break;
+                        case 'n': sb.Append('\n'); break;
+                        case 'r': sb.Append('\r'); break;
+                        case 't': sb.Append('\t'); break;
+                        case 'u':
+                            if (index + 4 <= json.Length)
+                            {
+                                var hex = json.Substring(index, 4);
+                                if (int.TryParse(hex, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var code))
+                                {
+                                    sb.Append((char)code);
+                                }
+                                index += 4;
+                            }
+                            break;
+                        default:
+                            sb.Append(esc);
+                            break;
+                    }
+                }
+                else
+                {
+                    sb.Append(ch);
+                }
+            }
+
+            value = sb.ToString();
+            return false;
         }
     }
 }

@@ -10,35 +10,41 @@ namespace EraWheel.Civilization
             SelfPreserve,
             ChallengeDemonLord,
             HuntGenerals,
-            ProtectCivilization
+            Train
         }
 
-        public static Priority GetCurrentPriority(HeroData hero, CycleManager cycle, ModConfig cfg)
+        public static Priority GetCurrentPriority(HeroData hero, CycleManager cycle, ModConfig cfg, float? healthRatio = null)
         {
             if (hero == null || cycle == null) return Priority.SelfPreserve;
 
-            var phase = cycle.CurrentPhase;
-
-            if (phase == EraPhase.Weakening)
+            var hp = healthRatio ?? 1f;
+            if (hp < 0.3f)
             {
-                return Priority.ChallengeDemonLord;
-            }
-
-            if (phase == EraPhase.Peak)
-            {
-                if (hero.GeneralsDefeated < 3)
-                {
-                    return Priority.HuntGenerals;
-                }
                 return Priority.SelfPreserve;
             }
 
-            if (phase == EraPhase.Invasion)
+            var phase = cycle.CurrentPhase;
+
+            var demonActive = phase == EraPhase.Invasion || phase == EraPhase.Peak || phase == EraPhase.Weakening;
+            if (demonActive)
             {
-                return Priority.ProtectCivilization;
+                var heroStrength = GetHeroStrengthScore(hero, hp);
+                var demonStrength = cycle.DemonHealthPercent / 100f;
+                if (demonStrength < 0f) demonStrength = 0f;
+                if (demonStrength > 1f) demonStrength = 1f;
+
+                if (heroStrength >= demonStrength * 0.5f)
+                {
+                    return Priority.ChallengeDemonLord;
+                }
             }
 
-            return Priority.SelfPreserve;
+            if (demonActive && hero.GeneralsDefeated < 3)
+            {
+                return Priority.HuntGenerals;
+            }
+
+            return Priority.Train;
         }
 
         public static void ExecutePriority(HeroData hero, Priority priority, CycleManager cycle)
@@ -56,8 +62,8 @@ namespace EraWheel.Civilization
                     Log.Info("[EraWheel] Hero " + hero.Id + " hunting generals");
                     break;
 
-                case Priority.ProtectCivilization:
-                    Log.Info("[EraWheel] Hero " + hero.Id + " protecting civilization");
+                case Priority.Train:
+                    Log.Info("[EraWheel] Hero " + hero.Id + " training");
                     break;
 
                 case Priority.SelfPreserve:
@@ -78,7 +84,7 @@ namespace EraWheel.Civilization
             {
                 for (var i = 0; i < hero.InheritedTraits.Length; i++)
                 {
-                    if (hero.InheritedTraits[i] == "legacy_hero_blood")
+                    if (hero.InheritedTraits[i] == HeroConstants.BloodlineTraitId)
                     {
                         multiplier += 0.2f;
                     }
@@ -86,6 +92,35 @@ namespace EraWheel.Civilization
             }
 
             return multiplier;
+        }
+
+        private static float GetHeroStrengthScore(HeroData hero, float healthRatio)
+        {
+            if (hero == null) return healthRatio;
+
+            var score = healthRatio;
+
+            if (hero.IsDestined)
+            {
+                score += 0.2f;
+            }
+
+            if (hero.InheritedTraits != null)
+            {
+                var extra = 0f;
+                for (var i = 0; i < hero.InheritedTraits.Length; i++)
+                {
+                    if (!string.IsNullOrEmpty(hero.InheritedTraits[i]))
+                    {
+                        extra += 0.05f;
+                    }
+                }
+                score += extra;
+            }
+
+            if (score < 0f) score = 0f;
+            if (score > 1f) score = 1f;
+            return score;
         }
     }
 }

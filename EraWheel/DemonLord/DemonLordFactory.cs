@@ -31,7 +31,7 @@ namespace EraWheel.DemonLord
 
             foreach (var lord in all)
             {
-                if (IsLordEnabled(lord.Id, cfg))
+                if (DemonLordConfigHelper.IsEnabled(cfg, lord.Id))
                 {
                     enabled.Add(lord);
                 }
@@ -43,24 +43,6 @@ namespace EraWheel.DemonLord
 
             Log.Info($"[DemonLordFactory] 启用魔王数: {enabled.Count}/{all.Length}");
             return enabled.ToArray();
-        }
-
-        private static bool IsLordEnabled(string lordId, EnabledLordsConfig cfg)
-        {
-            switch (lordId)
-            {
-                case "void_lord": return cfg.void_lord;
-                case "plague_lord": return cfg.plague_lord;
-                case "machine_lord": return cfg.machine_lord;
-                case "time_lord": return cfg.time_lord;
-                case "flame_lord": return cfg.flame_lord;
-                case "abyss_lord": return cfg.abyss_lord;
-                case "death_lord": return cfg.death_lord;
-                case "soul_lord": return cfg.soul_lord;
-                case "nature_lord": return cfg.nature_lord;
-                case "judgment_lord": return cfg.judgment_lord;
-                default: return true;
-            }
         }
 
         public static DemonLordBase CreateById(string lordId)

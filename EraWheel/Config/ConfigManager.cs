@@ -20,6 +20,9 @@ namespace EraWheel.Config
             }
         }
 
+        public string DefaultConfigPath => GetDefaultConfigPath();
+        public string UserConfigPath => GetUserConfigPath();
+
         public string ModRootPath { get; private set; }
 
         public ConfigManager()
@@ -33,12 +36,12 @@ namespace EraWheel.Config
             ConfigSchema.ValidateAndClamp(DefaultConfig);
 
             var userPath = GetUserConfigPath();
-            if (!File.Exists(userPath))
+            UserConfig = LoadMergedFromFile(userPath, DefaultConfig);
+            if (UserConfig == null)
             {
-                SaveToFile(userPath, DefaultConfig);
+                UserConfig = CloneConfig(DefaultConfig);
+                SaveToFile(userPath, UserConfig);
             }
-
-            UserConfig = LoadFromFile(userPath) ?? DefaultConfig;
             ConfigSchema.ValidateAndClamp(UserConfig);
         }
 
@@ -69,6 +72,26 @@ namespace EraWheel.Config
             SaveUserConfig();
         }
 
+        public bool ExportUserConfig(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return false;
+            var cfg = UserConfig ?? DefaultConfig;
+            if (cfg == null) return false;
+            SaveToFile(path, cfg);
+            return true;
+        }
+
+        public bool ImportUserConfig(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return false;
+            var cfg = LoadMergedFromFile(path, DefaultConfig);
+            if (cfg == null) return false;
+            ConfigSchema.ValidateAndClamp(cfg);
+            UserConfig = cfg;
+            SaveUserConfig();
+            return true;
+        }
+
         private ModConfig LoadFromFile(string path)
         {
             try
@@ -76,6 +99,28 @@ namespace EraWheel.Config
                 if (!File.Exists(path)) return null;
                 var json = File.ReadAllText(path);
                 if (string.IsNullOrEmpty(json)) return null;
+                return JsonCompat.FromJson<ModConfig>(json);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private ModConfig LoadMergedFromFile(string path, ModConfig fallback)
+        {
+            try
+            {
+                if (!File.Exists(path)) return null;
+                var json = File.ReadAllText(path);
+                if (string.IsNullOrEmpty(json)) return null;
+
+                var baseConfig = CloneConfig(fallback ?? new ModConfig());
+                if (JsonCompat.TryOverwriteJson(json, baseConfig))
+                {
+                    return baseConfig;
+                }
+
                 return JsonCompat.FromJson<ModConfig>(json);
             }
             catch
@@ -102,6 +147,14 @@ namespace EraWheel.Config
             }
         }
 
+        private static ModConfig CloneConfig(ModConfig cfg)
+        {
+            if (cfg == null) return new ModConfig();
+            var json = JsonCompat.ToJson(cfg, false);
+            var clone = JsonCompat.FromJson<ModConfig>(json);
+            return clone ?? new ModConfig();
+        }
+
         private string GetDefaultConfigPath()
         {
             return Path.Combine(ModRootPath, "Config", "DefaultConfig.json");
@@ -114,6 +167,19 @@ namespace EraWheel.Config
 
         private static string ResolveModRootPath()
         {
+            try
+            {
+                var asm = System.Reflection.Assembly.GetExecutingAssembly();
+                if (NeoModLoader.api.ModDeclareExtensions.TryGetDeclaration(asm, out var decl))
+                {
+                    var folder = decl != null ? decl.FolderPath : null;
+                    if (!string.IsNullOrEmpty(folder)) return folder;
+                }
+            }
+            catch
+            {
+            }
+
             try
             {
                 var loc = System.Reflection.Assembly.GetExecutingAssembly().Location;

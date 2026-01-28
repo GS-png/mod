@@ -1,6 +1,6 @@
 # Quick Start Guide: 纪元之轮：魔王轮回 MOD
 
-**Version**: 1.0.0  
+**Version**: 1.0.3  
 **Date**: 2026-01-19
 
 ---
@@ -29,6 +29,7 @@ cp worldbox_Data/Managed/Assembly-CSharp.dll ./lib/
 cp worldbox_Data/Managed/UnityEngine.dll ./lib/
 cp worldbox_Data/Managed/UnityEngine.CoreModule.dll ./lib/
 cp worldbox_Data/Managed/UnityEngine.UI.dll ./lib/
+cp worldbox_Data/Managed/UnityEngine.JSONSerializeModule.dll ./lib/
 ```
 
 ### 3. NeoModLoader 依赖
@@ -60,7 +61,7 @@ mkdir -p Config Core DemonLord Civilization Narrative UI Data Localization Resou
 <!-- EraWheel.csproj -->
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>net48</TargetFramework>
     <AssemblyName>EraWheel</AssemblyName>
     <OutputType>Library</OutputType>
     <LangVersion>9.0</LangVersion>
@@ -81,6 +82,14 @@ mkdir -p Config Core DemonLord Civilization Narrative UI Data Localization Resou
     </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>lib/UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.JSONSerializeModule">
+      <HintPath>lib/UnityEngine.JSONSerializeModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule" Condition="Exists('lib/UnityEngine.IMGUIModule.dll')">
+      <HintPath>lib/UnityEngine.IMGUIModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="NeoModLoader">
@@ -112,7 +121,7 @@ mkdir -p Config Core DemonLord Civilization Narrative UI Data Localization Resou
 {
   "name": "Era Wheel - Demon Lord Reincarnation",
   "author": "Your Name",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "纪元之轮：魔王轮回 - 将WorldBox变为自我演化的史诗叙事引擎",
   "iconPath": "icon.png",
   "targetGameVersion": "0.51.2",
@@ -239,6 +248,8 @@ namespace EraWheel
     }
 }
 ```
+
+---
 
 ### 2. 轮回管理器骨架 (Core/CycleManager.cs)
 
@@ -420,10 +431,10 @@ dotnet build -c Release
 ```bash
 # 复制到 MOD 目录
 # Windows
-cp -r bin/Release/net472/* "%APPDATA%/LocalLow/maxim/worldbox/mods/EraWheel/"
+cp -r bin/Release/net48/* "%APPDATA%/LocalLow/maxim/worldbox/mods/EraWheel/"
 
 # Mac
-cp -r bin/Release/net472/* ~/Library/Application\ Support/maxim/worldbox/mods/EraWheel/
+cp -r bin/Release/net48/* ~/Library/Application\ Support/maxim/worldbox/mods/EraWheel/
 ```
 
 ### 3. 测试清单

@@ -1,61 +1,89 @@
 using System;
-using EraWheel.Core;
+using System.Globalization;
+using System.Text;
 
 namespace EraWheel.Narrative.AI.Providers
 {
-    public class ClaudeProvider : ILLMProvider
+    public class ClaudeProvider : HttpProviderBase
     {
-        public string ProviderId => "claude";
-        public LLMProviderType ProviderType => LLMProviderType.Claude;
-        public bool IsAvailable => !string.IsNullOrEmpty(_apiKey) && !string.IsNullOrEmpty(_apiUrl);
+        public override string ProviderId => "claude";
+        public override LLMProviderType ProviderType => LLMProviderType.Claude;
+        public override bool IsAvailable => !string.IsNullOrEmpty(ApiKey) && !string.IsNullOrEmpty(ApiUrl);
 
-        private string _apiUrl = "https://api.anthropic.com/v1/messages";
-        private string _model = "claude-3-opus-20240229";
-        private string _apiKey;
+        protected override string DefaultApiUrl => "https://api.anthropic.com/v1/messages";
+        protected override string DefaultModel => "claude-3-opus-20240229";
 
-        public void Configure(string apiUrl, string model, string apiKey)
+        protected override void AddRequestHeaders(System.Collections.Generic.Dictionary<string, string> headers)
         {
-            if (!string.IsNullOrEmpty(apiUrl))
-                _apiUrl = apiUrl;
-            if (!string.IsNullOrEmpty(model))
-                _model = model;
-            _apiKey = apiKey;
+            if (!string.IsNullOrEmpty(ApiKey))
+            {
+                headers["x-api-key"] = ApiKey;
+            }
+            headers["anthropic-version"] = "2023-06-01";
         }
 
-        public void GenerateAsync(LLMRequest request, Action<LLMResponse> callback)
+        protected override string BuildRequestJson(LLMRequest request)
         {
-            if (!IsAvailable)
+            var sb = new StringBuilder(512);
+            sb.Append('{');
+            sb.Append("\"model\":\"").Append(JsonText.Escape(Model)).Append('"');
+            sb.Append(",\"max_tokens\":").Append(Math.Max(1, request.MaxTokens));
+            sb.Append(",\"temperature\":").Append(request.Temperature.ToString(CultureInfo.InvariantCulture));
+
+            if (!string.IsNullOrEmpty(request.SystemPrompt))
             {
-                callback?.Invoke(LLMResponse.Error("Claude provider not configured"));
-                return;
+                sb.Append(",\"system\":\"").Append(JsonText.Escape(request.SystemPrompt)).Append('"');
             }
 
-            try
+            sb.Append(",\"messages\":[{\"role\":\"user\",\"content\":\"")
+                .Append(JsonText.Escape(request.Prompt))
+                .Append("\"}]");
+
+            if (request.StopSequences != null && request.StopSequences.Length > 0)
             {
-                Log.Info($"[ClaudeProvider] 发送请求到 {_apiUrl}, 模型: {_model}");
-                callback?.Invoke(LLMResponse.Error("HTTP请求需要Unity协程支持，当前为占位实现"));
+                sb.Append(",\"stop_sequences\":[");
+                for (var i = 0; i < request.StopSequences.Length; i++)
+                {
+                    if (i > 0) sb.Append(',');
+                    sb.Append('"').Append(JsonText.Escape(request.StopSequences[i])).Append('"');
+                }
+                sb.Append(']');
             }
-            catch (Exception ex)
-            {
-                callback?.Invoke(LLMResponse.Error($"请求失败: {ex.Message}"));
-            }
+
+            sb.Append('}');
+            return sb.ToString();
         }
 
-        public void TestConnection(Action<bool, string> callback)
+        protected override bool TryParseResponse(string json, out string content, out int tokensUsed, out string errorMessage)
         {
-            if (!IsAvailable)
+            content = null;
+            tokensUsed = 0;
+            errorMessage = null;
+
+            if (string.IsNullOrEmpty(json))
             {
-                callback?.Invoke(false, "API Key未配置");
-                return;
+                errorMessage = "Empty response";
+                return false;
             }
 
-            Log.Info("[ClaudeProvider] 测试连接...");
-            callback?.Invoke(false, "HTTP请求需要Unity协程支持");
-        }
+            JsonText.TryExtractString(json, "text", out content);
 
-        public void Cancel()
-        {
-            Log.Info("[ClaudeProvider] 取消请求");
+            if (JsonText.TryExtractInt(json, "output_tokens", out var outTokens))
+            {
+                tokensUsed = outTokens;
+            }
+            else if (JsonText.TryExtractInt(json, "input_tokens", out var inTokens))
+            {
+                tokensUsed = inTokens;
+            }
+
+            if (string.IsNullOrEmpty(content))
+            {
+                errorMessage = ExtractErrorMessage(json);
+                return false;
+            }
+
+            return true;
         }
     }
 }

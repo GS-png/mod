@@ -13,7 +13,10 @@ namespace EraWheel.UI.Tabs
             CycleManager cycle,
             DemonLordRegistry registry,
             CivilizationTracker civTracker,
-            AllianceSystem alliance)
+            AllianceSystem alliance,
+            LegionWaveSystem legion,
+            GeneralSystem generals,
+            HeroSystem heroes)
         {
             UnityEngine.GUILayout.Label("=== 轮回状态 ===", UnityEngine.GUI.skin.label);
             UnityEngine.GUILayout.Space(5);

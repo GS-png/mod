@@ -1,76 +1,68 @@
 {
-  "Version": "1.0.0",
-  "Events": [
+  "version": "1.0.0",
+  "events": [
     {
-      "Id": "omen_started",
-      "Category": "Omen",
-      "Priority": "Critical",
-      "Weight": 100,
-      "TitleKey": "event.omen_started.title",
-      "DescriptionKey": "event.omen_started.desc",
-      "Conditions": [
-        { "Type": "phase", "Operator": "eq", "Value": "Omen" }
+      "id": "omen_started",
+      "name_key": "event.omen.omen_started.name",
+      "category": "Omen",
+      "priority": 95,
+      "conditions": [
+        { "type": "era_phase", "operator": "eq", "value": "Omen" }
       ],
-      "Effects": [
-        { "Type": "log", "Value": "预兆阶段开始，封印开始衰减" }
+      "description_key": "event.omen.omen_started.desc",
+      "effects": [
+        { "type": "add_chronicle", "value": "omen_started" }
       ],
-      "CooldownYears": 0,
-      "Unique": false,
-      "Tags": ["omen", "phase_change"]
+      "cooldown": 50,
+      "repeatable": true
     },
     {
-      "Id": "omen_darkness_spreads",
-      "Category": "Omen",
-      "Priority": "High",
-      "Weight": 80,
-      "TitleKey": "event.omen_darkness.title",
-      "DescriptionKey": "event.omen_darkness.desc",
-      "Conditions": [
-        { "Type": "phase", "Operator": "eq", "Value": "Omen" },
-        { "Type": "seal_strength", "Operator": "lt", "Value": "80" }
+      "id": "omen_darkness_spreads",
+      "name_key": "event.omen.omen_darkness_spreads.name",
+      "category": "Omen",
+      "priority": 75,
+      "conditions": [
+        { "type": "era_phase", "operator": "eq", "value": "Omen" },
+        { "type": "seal_strength", "operator": "lt", "value": "80" }
       ],
-      "Effects": [
-        { "Type": "log", "Value": "黑暗蔓延，不祥之兆显现" }
+      "description_key": "event.omen.omen_darkness_spreads.desc",
+      "effects": [
+        { "type": "add_chronicle", "value": "omen_darkness_spreads" }
       ],
-      "CooldownYears": 30,
-      "Unique": false,
-      "Tags": ["omen", "atmosphere"]
+      "cooldown": 30,
+      "repeatable": true
     },
     {
-      "Id": "omen_prophetic_dream",
-      "Category": "Omen",
-      "Priority": "Normal",
-      "Weight": 60,
-      "TitleKey": "event.omen_dream.title",
-      "DescriptionKey": "event.omen_dream.desc",
-      "Conditions": [
-        { "Type": "phase", "Operator": "eq", "Value": "Omen" },
-        { "Type": "hero_count", "Operator": "ge", "Value": "1" }
+      "id": "omen_prophetic_dream",
+      "name_key": "event.omen.omen_prophetic_dream.name",
+      "category": "Omen",
+      "priority": 60,
+      "conditions": [
+        { "type": "era_phase", "operator": "eq", "value": "Omen" },
+        { "type": "hero_count", "operator": "gte", "value": "1" }
       ],
-      "Effects": [
-        { "Type": "log", "Value": "英雄在梦中看到了可怕的预言" }
+      "description_key": "event.omen.omen_prophetic_dream.desc",
+      "effects": [
+        { "type": "add_chronicle", "value": "omen_prophetic_dream" }
       ],
-      "CooldownYears": 50,
-      "Unique": false,
-      "Tags": ["omen", "hero", "prophecy"]
+      "cooldown": 50,
+      "repeatable": true
     },
     {
-      "Id": "omen_seal_warning",
-      "Category": "System",
-      "Priority": "High",
-      "Weight": 90,
-      "TitleKey": "event.seal_warning.title",
-      "DescriptionKey": "event.seal_warning.desc",
-      "Conditions": [
-        { "Type": "seal_strength", "Operator": "lt", "Value": "50" },
-        { "Type": "seal_strength", "Operator": "gt", "Value": "30" }
+      "id": "omen_seal_warning",
+      "name_key": "event.omen.omen_seal_warning.name",
+      "category": "Omen",
+      "priority": 80,
+      "conditions": [
+        { "type": "seal_strength", "operator": "lt", "value": "50" },
+        { "type": "seal_strength", "operator": "gt", "value": "30" }
       ],
-      "Effects": [
-        { "Type": "log", "Value": "封印强度跌破50%，魔王即将苏醒" }
+      "description_key": "event.omen.omen_seal_warning.desc",
+      "effects": [
+        { "type": "add_chronicle", "value": "omen_seal_warning" }
       ],
-      "CooldownYears": 20,
-      "Unique": false,
-      "Tags": ["seal", "warning"]
+      "cooldown": 20,
+      "repeatable": true
     }
   ]
 }

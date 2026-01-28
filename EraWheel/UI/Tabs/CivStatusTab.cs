@@ -15,7 +15,10 @@ namespace EraWheel.UI.Tabs
             CycleManager cycle,
             DemonLordRegistry registry,
             CivilizationTracker civTracker,
-            AllianceSystem alliance)
+            AllianceSystem alliance,
+            LegionWaveSystem legion,
+            GeneralSystem generals,
+            HeroSystem heroes)
         {
             _scrollPos = UnityEngine.GUILayout.BeginScrollView(_scrollPos);
 

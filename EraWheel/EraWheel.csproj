@@ -4,6 +4,9 @@
     <AssemblyName>EraWheel</AssemblyName>
     <OutputType>Library</OutputType>
     <LangVersion>9.0</LangVersion>
+    <Version>1.0.3</Version>
+    <AssemblyVersion>1.0.3.0</AssemblyVersion>
+    <FileVersion>1.0.3.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,11 +25,24 @@
     <Reference Include="UnityEngine.UI">
       <HintPath>lib/UnityEngine.UI.dll</HintPath>
       <Private>false</Private>
+     </Reference>
+    <Reference Include="UnityEngine.JSONSerializeModule" Condition="Exists('lib/UnityEngine.JSONSerializeModule.dll')">
+      <HintPath>lib/UnityEngine.JSONSerializeModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule" Condition="Exists('lib/UnityEngine.IMGUIModule.dll')">
+      <HintPath>lib/UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule" Condition="Exists('lib/UnityEngine.InputLegacyModule.dll')">
+      <HintPath>lib/UnityEngine.InputLegacyModule.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="NeoModLoader">
       <HintPath>lib/NeoModLoader.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
 
   <ItemGroup>

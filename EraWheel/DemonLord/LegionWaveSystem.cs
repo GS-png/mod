@@ -8,6 +8,18 @@ namespace EraWheel.DemonLord
     {
         private readonly LegionWaveState _state = new LegionWaveState();
         private readonly Random _rng = new Random();
+        private readonly SpawnSystem _spawn = new SpawnSystem();
+
+#if !ERAWHEEL_SELFTEST
+        private struct LegionUnitHandle
+        {
+            public Actor Actor;
+            public string UnitId;
+        }
+
+        private readonly System.Collections.Generic.Dictionary<long, LegionUnitHandle> _trackedUnits =
+            new System.Collections.Generic.Dictionary<long, LegionUnitHandle>();
+#endif
 
         private EraPhase _lastPhase = EraPhase.Sealed;
         private long _lastWorldAge = -1;
@@ -19,6 +31,10 @@ namespace EraWheel.DemonLord
             _state.Reset();
             _lastPhase = EraPhase.Sealed;
             _lastWorldAge = -1;
+#if !ERAWHEEL_SELFTEST
+            ClearTrackedUnits();
+            _trackedUnits.Clear();
+#endif
         }
 
         public void Update(ModConfig cfg, CycleManager cycle)
@@ -39,6 +55,9 @@ namespace EraWheel.DemonLord
                 {
                     _state.Reset();
                     _state.LastWaveWorldAge = worldAge;
+#if !ERAWHEEL_SELFTEST
+                    SyncActiveUnitsFromTracked();
+#endif
                 }
 
                 _lastPhase = phase;
@@ -54,7 +73,10 @@ namespace EraWheel.DemonLord
             if (deltaYears > 0)
             {
                 _lastWorldAge = worldAge;
-                ApplyAttritionPerYear(worldAge, (int)deltaYears);
+                if (WorldCompat.MockEnabled)
+                {
+                    ApplyAttritionPerYear(worldAge, (int)deltaYears);
+                }
             }
 
             var conf = ReadConfig(cfg);
@@ -64,8 +86,9 @@ namespace EraWheel.DemonLord
                 _state.LastWaveWorldAge = worldAge;
             }
 
+            var interval = GetEffectiveWaveInterval(conf, phase);
             var sinceLastWave = worldAge - _state.LastWaveWorldAge;
-            if (sinceLastWave < conf.WaveIntervalYears) return;
+            if (sinceLastWave < interval) return;
 
             var strengthMultiplier = cycle.GetDemonStrengthMultiplier(cfg);
             SpawnWave(conf, worldAge, strengthMultiplier);
@@ -93,6 +116,22 @@ namespace EraWheel.DemonLord
             return c;
         }
 
+        private static int GetEffectiveWaveInterval(LegionConfig conf, EraPhase phase)
+        {
+            if (conf == null) return 1;
+
+            var interval = conf.WaveIntervalYears;
+            if (interval < 1) interval = 1;
+
+            if (phase == EraPhase.Peak && interval > 1)
+            {
+                interval = (int)Math.Round(interval * 0.5f, MidpointRounding.AwayFromZero);
+                if (interval < 1) interval = 1;
+            }
+
+            return interval;
+        }
+
         private void SpawnWave(LegionConfig conf, long worldAge, float strengthMultiplier)
         {
             _state.CurrentWave++;
@@ -116,6 +155,7 @@ namespace EraWheel.DemonLord
             var spawnCount = desired;
             if (spawnCount > canSpawn) spawnCount = canSpawn;
 
+#if ERAWHEEL_SELFTEST
             for (var i = 0; i < spawnCount; i++)
             {
                 var unitId = LegionUnitFactory.PickUnitIdForWave(_state.CurrentWave, conf.EliteRate, _rng);
@@ -131,6 +171,19 @@ namespace EraWheel.DemonLord
             _state.AliveUnits += spawnCount;
 
             Log.Info("[EraWheel] Legion wave spawned: wave=" + _state.CurrentWave + " spawn=" + spawnCount + " desired=" + desired + " alive=" + _state.AliveUnits + "/" + conf.MaxAliveUnits);
+#else
+            var success = SpawnUnitsInWorld(conf, spawnCount);
+            if (success <= 0)
+            {
+                Log.Warning("[EraWheel] Legion wave spawn failed: wave=" + _state.CurrentWave + " desired=" + desired);
+                return;
+            }
+
+            _state.TotalUnitsSpawned += success;
+            _state.AliveUnits += success;
+
+            Log.Info("[EraWheel] Legion wave spawned: wave=" + _state.CurrentWave + " spawn=" + success + " desired=" + desired + " alive=" + _state.AliveUnits + "/" + conf.MaxAliveUnits);
+#endif
         }
 
         private void ApplyAttritionPerYear(long worldAge, int years)
@@ -168,5 +221,115 @@ namespace EraWheel.DemonLord
                 }
             }
         }
+
+#if !ERAWHEEL_SELFTEST
+        private int SpawnUnitsInWorld(LegionConfig conf, int spawnCount)
+        {
+            if (spawnCount <= 0) return 0;
+
+            var anchorActor = global::EraWheel.Main.Instance?.DemonLordRegistry?.Active?.Actor;
+            var success = 0;
+
+            for (var i = 0; i < spawnCount; i++)
+            {
+                var unitId = LegionUnitFactory.PickUnitIdForWave(_state.CurrentWave, conf.EliteRate, _rng);
+                var tile = _spawn.TryPickSpawnTile(anchorActor, 6) as WorldTile;
+                if (tile == null) continue;
+
+                var actor = _spawn.TrySpawnUnit(unitId, tile) as Actor;
+                if (actor == null) continue;
+
+                success++;
+                _state.ActiveUnitIds.Add(unitId);
+                TrackUnit(actor, unitId);
+
+                if (string.Equals(unitId, "legion_ultimate", StringComparison.Ordinal))
+                {
+                    _state.EverSpawnedUltimate = true;
+                }
+            }
+
+            return success;
+        }
+
+        private void TrackUnit(Actor actor, string unitId)
+        {
+            if (actor == null || string.IsNullOrEmpty(unitId)) return;
+            var id = actor.getID();
+            if (id <= 0 || _trackedUnits.ContainsKey(id)) return;
+
+            _trackedUnits[id] = new LegionUnitHandle
+            {
+                Actor = actor,
+                UnitId = unitId
+            };
+            DemonActorRegistry.Register(actor);
+            actor.callbacks_on_death += OnLegionUnitDeath;
+        }
+
+        private void OnLegionUnitDeath(Actor deadActor)
+        {
+            if (deadActor == null) return;
+            var id = deadActor.getID();
+            if (!_trackedUnits.TryGetValue(id, out var handle)) return;
+
+            _trackedUnits.Remove(id);
+            deadActor.callbacks_on_death -= OnLegionUnitDeath;
+            DemonActorRegistry.Unregister(deadActor);
+
+            _state.AliveUnits = Math.Max(0, _state.AliveUnits - 1);
+            RemoveActiveUnitId(handle.UnitId);
+
+            try
+            {
+                EventBus.Publish(new DemonKillEvent
+                {
+                    Count = 1,
+                    WorldTime = WorldCompat.GetWorldAge()
+                });
+            }
+            catch
+            {
+            }
+        }
+
+        private void RemoveActiveUnitId(string unitId)
+        {
+            if (string.IsNullOrEmpty(unitId) || _state.ActiveUnitIds == null) return;
+            var idx = _state.ActiveUnitIds.IndexOf(unitId);
+            if (idx >= 0) _state.ActiveUnitIds.RemoveAt(idx);
+        }
+
+        private void ClearTrackedUnits()
+        {
+            foreach (var handle in _trackedUnits.Values)
+            {
+                var actor = handle.Actor;
+                if (actor == null) continue;
+                actor.callbacks_on_death -= OnLegionUnitDeath;
+                DemonActorRegistry.Unregister(actor);
+            }
+        }
+
+        private void SyncActiveUnitsFromTracked()
+        {
+            _state.AliveUnits = 0;
+            _state.ActiveUnitIds.Clear();
+            _state.EverSpawnedUltimate = false;
+
+            foreach (var handle in _trackedUnits.Values)
+            {
+                var unitId = handle.UnitId;
+                if (string.IsNullOrEmpty(unitId)) continue;
+                _state.ActiveUnitIds.Add(unitId);
+                _state.AliveUnits++;
+
+                if (string.Equals(unitId, "legion_ultimate", StringComparison.Ordinal))
+                {
+                    _state.EverSpawnedUltimate = true;
+                }
+            }
+        }
+#endif
     }
 }

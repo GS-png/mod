@@ -21,6 +21,10 @@ namespace EraWheel.Narrative.AI
         private int _retryCount;
         private int _maxRetries = 3;
         private int _timeoutSeconds = 30;
+        private int _maxTokens = 500;
+        private int _cooldownMinutes;
+        private string _confirmationMode = "manual";
+        private DateTime _nextAllowedRequestUtc = DateTime.MinValue;
 
         public bool Enabled { get; set; }
         public bool IsAvailable => _activeProvider?.IsAvailable == true;
@@ -46,6 +50,9 @@ namespace EraWheel.Narrative.AI
                 Enabled = aiCfg.enabled;
                 _maxRetries = aiCfg.retry_count;
                 _timeoutSeconds = aiCfg.timeout_seconds;
+                _maxTokens = aiCfg.max_tokens_per_call;
+                _cooldownMinutes = aiCfg.operation_cooldown_minutes;
+                _confirmationMode = aiCfg.confirmation_mode;
                 _permissionManager.SetLevel(aiCfg.permission_level);
 
                 SetProvider(aiCfg.provider, aiCfg.api_url, aiCfg.model, "");
@@ -53,6 +60,7 @@ namespace EraWheel.Narrative.AI
 
             _initialized = true;
             Log.Info("[AIStoryEngine] 初始化完成");
+            NarrativeDispatcher.Instance.AIEnabled = Enabled && IsAvailable;
         }
 
         private void RegisterProviders()
@@ -72,6 +80,7 @@ namespace EraWheel.Narrative.AI
                 provider.Configure(apiUrl, model, apiKey);
                 _activeProvider = provider;
                 Log.Info($"[AIStoryEngine] 切换到提供者: {providerId}");
+                NarrativeDispatcher.Instance.AIEnabled = Enabled && IsAvailable;
             }
             else
             {
@@ -82,6 +91,19 @@ namespace EraWheel.Narrative.AI
         public void GenerateNarrative(WorldContext ctx, string requestType, Action<string> onComplete)
         {
             if (!Enabled || !IsAvailable)
+            {
+                FallbackToEventPool(ctx, requestType, onComplete);
+                return;
+            }
+
+            if (!_permissionManager.CheckPermission(AIPermissionLevel.Narrator))
+            {
+                Log.Warning("[AIStoryEngine] 权限不足，回退到事件池");
+                FallbackToEventPool(ctx, requestType, onComplete);
+                return;
+            }
+
+            if (_cooldownMinutes > 0 && DateTime.UtcNow < _nextAllowedRequestUtc)
             {
                 FallbackToEventPool(ctx, requestType, onComplete);
                 return;
@@ -98,7 +120,8 @@ namespace EraWheel.Narrative.AI
             {
                 Prompt = prompt,
                 SystemPrompt = GetSystemPrompt(),
-                MaxTokens = 500,
+                MaxTokens = _maxTokens > 0 ? _maxTokens : 500,
+                TimeoutSeconds = _timeoutSeconds > 0 ? _timeoutSeconds : 30,
                 Temperature = 0.7f,
                 Context = ctx,
                 RequestType = requestType
@@ -106,6 +129,10 @@ namespace EraWheel.Narrative.AI
 
             _requestInProgress = true;
             _retryCount = 0;
+            if (_cooldownMinutes > 0)
+            {
+                _nextAllowedRequestUtc = DateTime.UtcNow.AddMinutes(_cooldownMinutes);
+            }
 
             SendRequest(request, onComplete);
         }
@@ -160,7 +187,8 @@ namespace EraWheel.Narrative.AI
                 var evt = NarrativeDispatcher.Instance.EventPool.SelectEvent(ctx);
                 if (evt != null)
                 {
-                    var title = Localization.Get(evt.TitleKey, evt.TitleKey);
+                    var titleKey = !string.IsNullOrEmpty(evt.NameKey) ? evt.NameKey : evt.TitleKey;
+                    var title = Localization.Get(titleKey, titleKey);
                     var desc = Localization.Get(evt.DescriptionKey, evt.DescriptionKey);
                     onComplete?.Invoke($"{title}: {desc}");
                     NarrativeDispatcher.Instance.EventPool.MarkTriggered(evt, ctx);

@@ -16,7 +16,7 @@ namespace EraWheel.UI
         private int _currentTab;
 
         private readonly string[] _tabNames = {
-            "总览", "魔王管理", "文明状态", "参数设置", "调试工具"
+            "总览", "魔王管理", "文明状态", "AI叙事", "事件管理", "轮回历史", "参数设置", "调试工具"
         };
 
         private readonly ITab[] _tabs;
@@ -31,6 +31,9 @@ namespace EraWheel.UI
                 new OverviewTab(),
                 new DemonManageTab(),
                 new CivStatusTab(),
+                new AIControlTab(),
+                new EventManageTab(),
+                new CycleHistoryTab(),
                 new SettingsTab(),
                 new DebugTab()
             };
@@ -152,7 +155,10 @@ namespace EraWheel.UI
                     main?.CycleManager,
                     main?.DemonLordRegistry,
                     main?.CivilizationTracker,
-                    main?.AllianceSystem
+                    main?.AllianceSystem,
+                    main?.LegionWaveSystem,
+                    main?.GeneralSystem,
+                    main?.HeroSystem
                 );
             }
 
@@ -169,12 +175,30 @@ namespace EraWheel.UI
             var phase = cycle?.CurrentPhase ?? EraPhase.Sealed;
             var cycleCount = cycle?.CycleCount ?? 0;
 
-            UnityEngine.GUILayout.Label($"轮回: {cycleCount} | 阶段: {phase}");
+            var worldAge = cycle?.WorldAge ?? 0;
+            UnityEngine.GUILayout.Label($"世界年龄: {worldAge}年 | 轮回: {cycleCount} | 阶段: {phase}");
 
             UnityEngine.GUILayout.FlexibleSpace();
-            UnityEngine.GUILayout.Label("v1.0.0");
+            UnityEngine.GUILayout.Label(GetVersionLabel());
 
             UnityEngine.GUILayout.EndHorizontal();
+        }
+
+        private static string GetVersionLabel()
+        {
+            try
+            {
+                var v = typeof(Main).Assembly.GetName().Version;
+                if (v != null)
+                {
+                    return "v" + v;
+                }
+            }
+            catch
+            {
+            }
+
+            return "v1.0.0";
         }
     }
 
@@ -185,7 +209,10 @@ namespace EraWheel.UI
             CycleManager cycle,
             DemonLord.DemonLordRegistry registry,
             Civilization.CivilizationTracker civTracker,
-            Civilization.AllianceSystem alliance
+            Civilization.AllianceSystem alliance,
+            DemonLord.LegionWaveSystem legion,
+            DemonLord.GeneralSystem generals,
+            Civilization.HeroSystem heroes
         );
     }
 }

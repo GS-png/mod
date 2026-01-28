@@ -52,6 +52,15 @@ namespace EraWheel.Core
     }
 
     [Serializable]
+    public struct DemonLordMechanicEvent
+    {
+        public string DemonLordId;
+        public string MechanicId;
+        public float Value;
+        public long WorldTime;
+    }
+
+    [Serializable]
     public struct GeneralBetrayedEvent
     {
         public string DemonLordId;
@@ -95,6 +104,12 @@ namespace EraWheel.Core
     {
         public long WorldTime;
         public float Progress;
+    }
+
+    [Serializable]
+    public struct SealRitualCompletedEvent
+    {
+        public long WorldTime;
     }
 
     [Serializable]

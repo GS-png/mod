@@ -9,9 +9,14 @@ namespace EraWheel.Civilization
     {
         private bool _bound;
         private ModConfig _lastConfig;
+#if !ERAWHEEL_SELFTEST
+        private int _lastAppliedCombatLevel = -1;
+        private bool _pendingCombatApply;
+#endif
 
         public int DemonKillCount { get; private set; }
         public int AntiDemonLevel { get; private set; }
+        public int SealCount { get; private set; }
         public float CSI { get; private set; }
 
         public void Initialize(ModConfig cfg)
@@ -19,12 +24,14 @@ namespace EraWheel.Civilization
             _lastConfig = cfg;
             BindEvents();
             RecomputeAll(cfg);
+            ApplyCombatModifiersIfNeeded(cfg);
         }
 
         public void Update(ModConfig cfg)
         {
             if (cfg != null) _lastConfig = cfg;
             RecomputeCSI(_lastConfig);
+            ApplyCombatModifiersIfNeeded(_lastConfig);
         }
 
         private void BindEvents()
@@ -33,6 +40,7 @@ namespace EraWheel.Civilization
             _bound = true;
 
             EventBus.Subscribe<DemonKillEvent>(OnDemonKill);
+            EventBus.Subscribe<CycleCompletedEvent>(OnCycleCompleted);
         }
 
         private void OnDemonKill(DemonKillEvent evt)
@@ -43,7 +51,9 @@ namespace EraWheel.Civilization
             if (DemonKillCount < 0) DemonKillCount = int.MaxValue;
 
             var prev = AntiDemonLevel;
-            AntiDemonLevel = global::EraWheel.Civilization.AntiDemonLevel.ComputeLevel(_lastConfig, DemonKillCount);
+            var computed = ComputeAntiDemonLevel(_lastConfig);
+            if (computed < prev) computed = prev;
+            AntiDemonLevel = computed;
 
             if (AntiDemonLevel > prev)
             {
@@ -65,13 +75,66 @@ namespace EraWheel.Civilization
             }
 
             RecomputeCSI(_lastConfig);
+            ApplyCombatModifiersIfNeeded(_lastConfig);
+        }
+
+        private void OnCycleCompleted(CycleCompletedEvent evt)
+        {
+            if (evt.CycleNumber <= 0) return;
+
+            if (SealCount < evt.CycleNumber)
+            {
+                SealCount = evt.CycleNumber;
+            }
+
+            var prev = AntiDemonLevel;
+            var computed = ComputeAntiDemonLevel(_lastConfig);
+            if (computed < prev) computed = prev;
+            AntiDemonLevel = computed;
+
+            if (AntiDemonLevel > prev)
+            {
+                try
+                {
+                    EventBus.Publish(new AntiDemonLevelChangedEvent
+                    {
+                        PreviousLevel = prev,
+                        NewLevel = AntiDemonLevel,
+                        DemonKillCount = DemonKillCount,
+                        WorldTime = WorldCompat.GetWorldAge()
+                    });
+                }
+                catch
+                {
+                }
+
+                Log.Info("[EraWheel] AntiDemonLevel increased: " + prev + " -> " + AntiDemonLevel + " seals=" + SealCount);
+            }
+
+            RecomputeCSI(_lastConfig);
+            ApplyCombatModifiersIfNeeded(_lastConfig);
         }
 
         private void RecomputeAll(ModConfig cfg)
         {
             if (cfg != null) _lastConfig = cfg;
-            AntiDemonLevel = global::EraWheel.Civilization.AntiDemonLevel.ComputeLevel(_lastConfig, DemonKillCount);
+            var computed = ComputeAntiDemonLevel(_lastConfig);
+            if (computed < AntiDemonLevel) computed = AntiDemonLevel;
+            AntiDemonLevel = computed;
             RecomputeCSI(_lastConfig);
+        }
+
+        private int ComputeAntiDemonLevel(ModConfig cfg)
+        {
+            var killLevel = global::EraWheel.Civilization.AntiDemonLevel.ComputeLevel(cfg, DemonKillCount);
+            var sealLevel = SealCount;
+            if (sealLevel < 0) sealLevel = 0;
+            if (sealLevel > 10) sealLevel = 10;
+
+            var level = Math.Max(killLevel, sealLevel);
+            if (level < 0) level = 0;
+            if (level > 10) level = 10;
+            return level;
         }
 
         private void RecomputeCSI(ModConfig cfg)
@@ -151,6 +214,7 @@ namespace EraWheel.Civilization
             {
                 DemonKillCount = DemonKillCount,
                 AntiDemonLevel = AntiDemonLevel,
+                SealCount = SealCount,
                 CSI = CSI
             };
         }
@@ -159,8 +223,30 @@ namespace EraWheel.Civilization
         {
             if (data == null) return;
             DemonKillCount = Math.Max(0, data.DemonKillCount);
-            AntiDemonLevel = Math.Max(0, data.AntiDemonLevel);
+            SealCount = Math.Max(0, data.SealCount);
+            var computed = ComputeAntiDemonLevel(_lastConfig);
+            AntiDemonLevel = Math.Max(Math.Max(0, data.AntiDemonLevel), computed);
             CSI = data.CSI;
+#if !ERAWHEEL_SELFTEST
+            _pendingCombatApply = true;
+#endif
+            ApplyCombatModifiersIfNeeded(_lastConfig);
+        }
+
+        private void ApplyCombatModifiersIfNeeded(ModConfig cfg)
+        {
+#if !ERAWHEEL_SELFTEST
+            if (!_pendingCombatApply && _lastAppliedCombatLevel == AntiDemonLevel) return;
+            if (CombatModifiers.ApplyToDemonAssets(cfg, AntiDemonLevel))
+            {
+                _lastAppliedCombatLevel = AntiDemonLevel;
+                _pendingCombatApply = false;
+            }
+            else
+            {
+                _pendingCombatApply = true;
+            }
+#endif
         }
     }
 }

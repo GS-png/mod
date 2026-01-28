@@ -1,147 +1,148 @@
 using System;
-using System.Reflection;
+#if !ERAWHEEL_SELFTEST
+using System.Collections.Generic;
+#endif
 
 namespace EraWheel.Core
 {
     public static class LegacyTraitFactory
     {
         private static bool _registered;
-        private static object _traitsCollection;
+
+#if !ERAWHEEL_SELFTEST
+        internal struct LegacyTraitSpec
+        {
+            public string Id;
+            public TraitType Type;
+            public string GroupId;
+            public string StatId;
+            public float BaseValue;
+        }
+
+        internal static readonly LegacyTraitSpec[] LegacyTraitSpecs =
+        {
+            new LegacyTraitSpec
+            {
+                Id = "legacy_warrior",
+                Type = TraitType.Positive,
+                GroupId = "special",
+                StatId = "multiplier_damage",
+                BaseValue = 0.10f
+            },
+            new LegacyTraitSpec
+            {
+                Id = "legacy_armor",
+                Type = TraitType.Positive,
+                GroupId = "special",
+                StatId = "armor",
+                BaseValue = 15f
+            },
+            new LegacyTraitSpec
+            {
+                Id = "legacy_harvest",
+                Type = TraitType.Positive,
+                GroupId = "special",
+                StatId = "stewardship",
+                BaseValue = 2f
+            },
+            new LegacyTraitSpec
+            {
+                Id = "legacy_scholar",
+                Type = TraitType.Positive,
+                GroupId = "special",
+                StatId = "intelligence",
+                BaseValue = 2f
+            },
+            new LegacyTraitSpec
+            {
+                Id = "legacy_hero",
+                Type = TraitType.Positive,
+                GroupId = "special",
+                StatId = "birth_rate",
+                BaseValue = 1f
+            },
+            new LegacyTraitSpec
+            {
+                Id = "legacy_curse",
+                Type = TraitType.Negative,
+                GroupId = "special",
+                StatId = "multiplier_health",
+                BaseValue = -0.10f
+            }
+        };
+
+        private static readonly Dictionary<string, LegacyTraitSpec> SpecsById =
+            new Dictionary<string, LegacyTraitSpec>(StringComparer.Ordinal);
+
+        static LegacyTraitFactory()
+        {
+            for (var i = 0; i < LegacyTraitSpecs.Length; i++)
+            {
+                var spec = LegacyTraitSpecs[i];
+                if (!string.IsNullOrEmpty(spec.Id))
+                {
+                    SpecsById[spec.Id] = spec;
+                }
+            }
+        }
+
+        internal static bool TryGetSpec(string id, out LegacyTraitSpec spec)
+        {
+            return SpecsById.TryGetValue(id, out spec);
+        }
+#endif
 
         public static void EnsureRegistered()
         {
+#if ERAWHEEL_SELFTEST
+            if (_registered) return;
+            _registered = true;
+            return;
+#else
             if (_registered) return;
 
-            if (!TryResolveTraitsCollection()) return;
+            if (AssetManager.traits == null)
+            {
+                Log.Warning("[EraWheel] ActorTrait library not ready, skip legacy registration.");
+                return;
+            }
+
+            for (var i = 0; i < LegacyTraitSpecs.Length; i++)
+            {
+                RegisterLegacyTrait(LegacyTraitSpecs[i]);
+            }
 
             _registered = true;
-
-            TryRegisterLegacyTrait("legacy_warrior", "战士之魂", "先祖的战斗智慧流淌在血液中", damageMultiplier: 1.10f);
-            TryRegisterLegacyTrait("legacy_armor", "铁甲守护", "坚固的意志化作护甲", armorMultiplier: 1.15f);
-            TryRegisterLegacyTrait("legacy_scholar", "学者智慧", "知识的火种永不熄灭", null, null, null);
-            TryRegisterLegacyTrait("legacy_hero", "英雄血脉", "传奇的血脉代代相传", null, null, null);
-            TryRegisterLegacyTrait("legacy_curse", "瘟疫印记", "魔王的诅咒永远不会消散", healthMultiplier: 0.90f, isNegative: true);
+#endif
         }
 
-        private static bool TryResolveTraitsCollection()
+#if !ERAWHEEL_SELFTEST
+        private static void RegisterLegacyTrait(LegacyTraitSpec spec)
         {
-            if (_traitsCollection != null) return true;
+            if (string.IsNullOrEmpty(spec.Id)) return;
+            if (AssetManager.traits.has(spec.Id)) return;
 
-            try
+            var trait = new ActorTrait
             {
-                var actorTraitType = CompatReflection.FindTypeByName("ActorTrait");
-                if (actorTraitType == null) return false;
+                id = spec.Id,
+                group_id = spec.GroupId,
+                type = spec.Type,
+                rate_birth = 0,
+                rate_inherit = 0,
+                rate_acquire_grow_up = 0,
+                spawn_random_trait_allowed = false,
+                needs_to_be_explored = false,
+                has_description_2 = false,
+                base_stats = new BaseStats()
+            };
 
-                var assetManagerType = CompatReflection.FindTypeByName("AssetManager");
-                if (assetManagerType == null) return false;
-
-                var traitsField = assetManagerType.GetField("traits", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
-                _traitsCollection = traitsField != null ? traitsField.GetValue(null) : null;
-                return _traitsCollection != null;
-            }
-            catch
+            if (!string.IsNullOrEmpty(spec.StatId))
             {
-                return false;
+                trait.base_stats[spec.StatId] = spec.BaseValue;
             }
+
+            AssetManager.traits.add(trait);
         }
-
-        private static void TryRegisterLegacyTrait(string id, string name, string desc, float? damageMultiplier = null, float? armorMultiplier = null,
-            float? healthMultiplier = null, bool isNegative = false)
-        {
-            if (string.IsNullOrEmpty(id)) return;
-
-            if (_traitsCollection == null)
-            {
-                if (!TryResolveTraitsCollection()) return;
-            }
-
-            try
-            {
-                var actorTraitType = CompatReflection.FindTypeByName("ActorTrait");
-                if (actorTraitType == null) return;
-
-                var trait = Activator.CreateInstance(actorTraitType);
-                if (trait == null) return;
-
-                TrySetMember(trait, "id", id);
-                TrySetMember(trait, "nameLocale", name);
-                TrySetMember(trait, "descriptionLocale", desc);
-
-                var traitGroupType = CompatReflection.FindTypeByName("TraitGroup");
-                if (traitGroupType != null && traitGroupType.IsEnum)
-                {
-                    var enumName = isNegative ? "Negative" : "Positive";
-                    try
-                    {
-                        var groupValue = Enum.Parse(traitGroupType, enumName);
-                        TrySetMember(trait, "group", groupValue);
-                    }
-                    catch
-                    {
-                    }
-                }
-
-                var baseStatsObj = TryGetMember(trait, "baseStats");
-                if (baseStatsObj != null)
-                {
-                    if (damageMultiplier.HasValue) TrySetMember(baseStatsObj, "damage", damageMultiplier.Value);
-                    if (armorMultiplier.HasValue) TrySetMember(baseStatsObj, "armor", armorMultiplier.Value);
-                    if (healthMultiplier.HasValue) TrySetMember(baseStatsObj, "health", healthMultiplier.Value);
-                }
-
-                var addMethod = _traitsCollection.GetType().GetMethod("add", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                if (addMethod == null) return;
-
-                addMethod.Invoke(_traitsCollection, new[] { trait });
-            }
-            catch
-            {
-            }
-        }
-
-        private static void TrySetMember(object obj, string name, object value)
-        {
-            if (obj == null || string.IsNullOrEmpty(name)) return;
-
-            var flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-            try
-            {
-                var f = obj.GetType().GetField(name, flags);
-                if (f != null)
-                {
-                    f.SetValue(obj, value);
-                    return;
-                }
-
-                var p = obj.GetType().GetProperty(name, flags);
-                if (p != null && p.CanWrite)
-                {
-                    p.SetValue(obj, value, null);
-                }
-            }
-            catch
-            {
-            }
-        }
-
-        private static object TryGetMember(object obj, string name)
-        {
-            if (obj == null || string.IsNullOrEmpty(name)) return null;
-
-            var flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-            try
-            {
-                var f = obj.GetType().GetField(name, flags);
-                if (f != null) return f.GetValue(obj);
-
-                var p = obj.GetType().GetProperty(name, flags);
-                if (p != null && p.CanRead) return p.GetValue(obj, null);
-            }
-            catch
-            {
-            }
-
-            return null;
-        }
+#endif
     }
 }

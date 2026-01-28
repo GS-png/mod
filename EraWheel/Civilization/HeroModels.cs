@@ -9,6 +9,20 @@ namespace EraWheel.Civilization
         Legendary
     }
 
+    public static class HeroConstants
+    {
+        public const string BloodlineTraitId = "legacy_hero";
+        public const string MightTraitId = "era_hero_might";
+        public const string ResilienceTraitId = "era_hero_resilience";
+
+        public static readonly string[] DefaultHeroTraits =
+        {
+            BloodlineTraitId,
+            MightTraitId,
+            ResilienceTraitId
+        };
+    }
+
     [Serializable]
     public class HeroData
     {
@@ -16,6 +30,8 @@ namespace EraWheel.Civilization
         public string Name;
         public bool IsDestined;
         public HeroState State = HeroState.Alive;
+
+        public long ActorId;
 
         public int DemonLordDamageDealt;
         public int GeneralsDefeated;

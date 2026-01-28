@@ -1,8 +1,9 @@
 {
-  "config_version": "1.0.0",
+  "config_version": "1.0.5",
   "cycle": {
     "trigger": {
       "first_cycle_mode": "prosperity",
+      "prosperity_mode": "any",
       "prosperity_thresholds": {
         "population": 3000,
         "cities": 15,
@@ -51,6 +52,33 @@
       "max_units_per_wave": 100,
       "max_alive_units": 200,
       "elite_rate": 0.1
+    },
+    "stats": {
+      "lords": {
+        "void_lord": { "health": 1.0, "damage": 1.0, "armor": 1.0, "speed": 1.0 },
+        "plague_lord": { "health": 1.0, "damage": 1.0, "armor": 1.0, "speed": 1.0 },
+        "machine_lord": { "health": 1.0, "damage": 1.0, "armor": 1.0, "speed": 1.0 },
+        "time_lord": { "health": 1.0, "damage": 1.0, "armor": 1.0, "speed": 1.0 },
+        "flame_lord": { "health": 1.0, "damage": 1.0, "armor": 1.0, "speed": 1.0 },
+        "abyss_lord": { "health": 1.0, "damage": 1.0, "armor": 1.0, "speed": 1.0 },
+        "death_lord": { "health": 1.0, "damage": 1.0, "armor": 1.0, "speed": 1.0 },
+        "soul_lord": { "health": 1.0, "damage": 1.0, "armor": 1.0, "speed": 1.0 },
+        "nature_lord": { "health": 1.0, "damage": 1.0, "armor": 1.0, "speed": 1.0 },
+        "judgment_lord": { "health": 1.0, "damage": 1.0, "armor": 1.0, "speed": 1.0 }
+      },
+      "general_roles": {
+        "vanguard": { "health": 1.0, "damage": 1.0, "armor": 1.0, "speed": 1.0 },
+        "tank": { "health": 1.0, "damage": 1.0, "armor": 1.0, "speed": 1.0 },
+        "dps": { "health": 1.0, "damage": 1.0, "armor": 1.0, "speed": 1.0 },
+        "support": { "health": 1.0, "damage": 1.0, "armor": 1.0, "speed": 1.0 },
+        "elite": { "health": 1.0, "damage": 1.0, "armor": 1.0, "speed": 1.0 }
+      },
+      "legion_units": {
+        "legion_vanguard": { "health": 0.85, "damage": 0.9, "armor": 0.6, "speed": 1.2 },
+        "legion_main": { "health": 1.0, "damage": 1.0, "armor": 1.0, "speed": 1.0 },
+        "legion_elite": { "health": 1.4, "damage": 1.4, "armor": 1.3, "speed": 1.05 },
+        "legion_ultimate": { "health": 2.2, "damage": 2.0, "armor": 1.8, "speed": 0.95 }
+      }
     },
     "enabled_lords": {
       "void_lord": true,
@@ -122,6 +150,18 @@
       "max_tokens_per_call": 500,
       "operation_cooldown_minutes": 5,
       "confirmation_mode": "manual"
+    }
+  },
+  "expansion": {
+    "ragnarok": {
+      "enabled": false,
+      "required_civilizations": 10,
+      "duration_years": 50
+    },
+    "multi_lord": {
+      "enabled": false,
+      "min_awaken_count": 2,
+      "max_awaken_count": 5
     }
   },
   "performance": {
