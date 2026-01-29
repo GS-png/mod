@@ -1,5 +1,5 @@
 # Assembly: UnityEngine.UI
-- Path: EraWheel/lib/UnityEngine.UI.dll
+- Path: tools/WorldBox.Managed/UnityEngine.UI.dll
 - Types: 204
 
 ## Namespace: (global)

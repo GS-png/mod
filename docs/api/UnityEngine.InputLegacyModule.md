@@ -1,5 +1,5 @@
 # Assembly: UnityEngine.InputLegacyModule
-- Path: EraWheel/lib/UnityEngine.InputLegacyModule.dll
+- Path: tools/WorldBox.Managed/UnityEngine.InputLegacyModule.dll
 - Types: 21
 
 ## Namespace: UnityEngine

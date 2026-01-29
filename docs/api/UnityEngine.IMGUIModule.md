@@ -1,5 +1,5 @@
 # Assembly: UnityEngine.IMGUIModule
-- Path: EraWheel/lib/UnityEngine.IMGUIModule.dll
+- Path: tools/WorldBox.Managed/UnityEngine.IMGUIModule.dll
 - Types: 70
 
 ## Namespace: (global)

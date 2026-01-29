@@ -154,7 +154,7 @@ internal static class Program
 
         Console.WriteLine("Usage: dotnet run --project tools/EraWheel.ApiDoc/EraWheel.ApiDoc.csproj -- [options]");
         Console.WriteLine("Options:");
-        Console.WriteLine("  --lib <dir>    Source dll directory (default: EraWheel/lib)");
+        Console.WriteLine("  --lib <dir>    Source dll directory (default: tools/WorldBox.Managed)");
         Console.WriteLine("  --out <file>   Output markdown file (default: docs/api/index.md)");
         Console.WriteLine("  --dll <name>   Include a specific dll (repeatable)");
         Console.WriteLine("  --all          Include all dlls in lib directory");
@@ -1164,7 +1164,7 @@ internal static class Program
 
     private sealed class Options
     {
-        public string LibDir { get; private set; } = "EraWheel/lib";
+        public string LibDir { get; private set; } = "tools/WorldBox.Managed";
         public string OutputPath { get; private set; } = "docs/api/index.md";
         public List<string> IncludeDlls { get; } = new List<string>();
         public List<string> Warnings { get; } = new List<string>();

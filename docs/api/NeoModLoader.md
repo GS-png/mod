@@ -1,6 +1,6 @@
 # Assembly: NeoModLoader
-- Path: EraWheel/lib/NeoModLoader.dll
-- Types: 334
+- Path: tools/WorldBox.Managed/NeoModLoader.dll
+- Types: 336
 
 ## Namespace: (global)
 
@@ -1371,7 +1371,9 @@
 #### Constructors
 - public AbstractListener<TListener, THandler>()
 
-### <unavailable>
+#### Methods
+- protected static void InsertCallHandleCode(System.Collections.Generic.List<HarmonyLib.CodeInstruction> codes, int pos)
+- public static void RegisterHandler(THandler handler)
 
 ### public class NeoModLoader.General.Event.BaseListener
 
@@ -1486,15 +1488,42 @@
 
 ### private class NeoModLoader.General.Event.Listeners.ActorTryToAttackListener.<>c
 
-### <unavailable>
+#### Fields
+- public static readonly NeoModLoader.General.Event.Listeners.ActorTryToAttackListener.<>c <>9
+- public static System.Predicate<HarmonyLib.CodeInstruction> <>9__1_0
+
+#### Constructors
+- private static ActorTryToAttackListener.<>c()
+- public ActorTryToAttackListener.<>c()
+
+#### Methods
+- internal bool <_tryToAttack_Patch>b__1_0(HarmonyLib.CodeInstruction x)
 
 ### private class NeoModLoader.General.Event.Listeners.PlotStartListener.<>c
 
-### <unavailable>
+#### Fields
+- public static readonly NeoModLoader.General.Event.Listeners.PlotStartListener.<>c <>9
+- public static System.Predicate<HarmonyLib.CodeInstruction> <>9__1_0
+
+#### Constructors
+- private static PlotStartListener.<>c()
+- public PlotStartListener.<>c()
+
+#### Methods
+- internal bool <_newPlot_Patch>b__1_0(HarmonyLib.CodeInstruction code)
 
 ### private class NeoModLoader.General.Event.Listeners.WarStartListener.<>c
 
-### <unavailable>
+#### Fields
+- public static readonly NeoModLoader.General.Event.Listeners.WarStartListener.<>c <>9
+- public static System.Predicate<HarmonyLib.CodeInstruction> <>9__1_0
+
+#### Constructors
+- private static WarStartListener.<>c()
+- public WarStartListener.<>c()
+
+#### Methods
+- internal bool <_newWar_Patch>b__1_0(HarmonyLib.CodeInstruction c)
 
 ### public class NeoModLoader.General.Event.Listeners.ActorTryToAttackListener
 - Base: NeoModLoader.General.Event.AbstractListener<NeoModLoader.General.Event.Listeners.ActorTryToAttackListener, NeoModLoader.General.Event.Handlers.ActorTryToAttackHandler>
@@ -1502,7 +1531,9 @@
 #### Constructors
 - public ActorTryToAttackListener()
 
-### <unavailable>
+#### Methods
+- protected static void HandleAll(Actor pAttacker, BaseSimObject pTarget, CombatActionAsset pCombatActionAsset, AttackData pAttackData)
+- private static System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> _tryToAttack_Patch(System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> instr)
 
 ### public class NeoModLoader.General.Event.Listeners.AllianceCreateListener
 - Base: NeoModLoader.General.Event.AbstractListener<NeoModLoader.General.Event.Listeners.AllianceCreateListener, NeoModLoader.General.Event.Handlers.AllianceCreateHandler>
@@ -1510,7 +1541,9 @@
 #### Constructors
 - public AllianceCreateListener()
 
-### <unavailable>
+#### Methods
+- protected static void HandleAll(Alliance pAlliance, Kingdom pKingdom, Kingdom pKingdom2)
+- private static System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> _newAllianceEvent_Patch(System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> instr)
 
 ### public class NeoModLoader.General.Event.Listeners.CityCreateListener
 - Base: NeoModLoader.General.Event.AbstractListener<NeoModLoader.General.Event.Listeners.CityCreateListener, NeoModLoader.General.Event.Handlers.CityCreateHandler>
@@ -1518,7 +1551,9 @@
 #### Constructors
 - public CityCreateListener()
 
-### <unavailable>
+#### Methods
+- protected static void HandleAll(City pCity)
+- private static System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> _newCityEvent_Patch(System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> instr)
 
 ### public class NeoModLoader.General.Event.Listeners.ClanCreateListener
 - Base: NeoModLoader.General.Event.AbstractListener<NeoModLoader.General.Event.Listeners.ClanCreateListener, NeoModLoader.General.Event.Handlers.ClanCreateHandler>
@@ -1526,7 +1561,10 @@
 #### Constructors
 - public ClanCreateListener()
 
-### <unavailable>
+#### Methods
+- protected static void HandleAll(Clan pClan, Actor pActor)
+- private static System.Reflection.MethodInfo _createHandleAllMethodByIL()
+- private static System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> _newClan_Patch(System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> instr)
 
 ### public class NeoModLoader.General.Event.Listeners.CultureCreateListener
 - Base: NeoModLoader.General.Event.AbstractListener<NeoModLoader.General.Event.Listeners.CultureCreateListener, NeoModLoader.General.Event.Handlers.CultureCreateHandler>
@@ -1534,7 +1572,9 @@
 #### Constructors
 - public CultureCreateListener()
 
-### <unavailable>
+#### Methods
+- protected static void HandleAll(Culture pCulture, Actor pActor, City pCity)
+- private static System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> _createCulture_Patch(System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> instr)
 
 ### public class NeoModLoader.General.Event.Listeners.KingdomSetupListener
 - Base: NeoModLoader.General.Event.AbstractListener<NeoModLoader.General.Event.Listeners.KingdomSetupListener, NeoModLoader.General.Event.Handlers.KingdomSetupHandler>
@@ -1542,7 +1582,9 @@
 #### Constructors
 - public KingdomSetupListener()
 
-### <unavailable>
+#### Methods
+- protected static void HandleAll(Kingdom pKingdom, bool pCiv)
+- private static System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> _setupKingdom_Patch(System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> instr)
 
 ### public class NeoModLoader.General.Event.Listeners.PlotStartListener
 - Base: NeoModLoader.General.Event.AbstractListener<NeoModLoader.General.Event.Listeners.PlotStartListener, NeoModLoader.General.Event.Handlers.PlotStartHandler>
@@ -1550,7 +1592,9 @@
 #### Constructors
 - public PlotStartListener()
 
-### <unavailable>
+#### Methods
+- protected static void HandleAll(Plot pPlot, Actor pActor, PlotAsset pAsset)
+- private static System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> _newPlot_Patch(System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> instr)
 
 ### public class NeoModLoader.General.Event.Listeners.WarEndListener
 - Base: NeoModLoader.General.Event.AbstractListener<NeoModLoader.General.Event.Listeners.WarEndListener, NeoModLoader.General.Event.Handlers.WarEndHandler>
@@ -1558,7 +1602,9 @@
 #### Constructors
 - public WarEndListener()
 
-### <unavailable>
+#### Methods
+- protected static void HandleAll(WarManager pWarManager, War pWar)
+- private static System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> _endWar_Patch(System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> instr)
 
 ### public class NeoModLoader.General.Event.Listeners.WarStartListener
 - Base: NeoModLoader.General.Event.AbstractListener<NeoModLoader.General.Event.Listeners.WarStartListener, NeoModLoader.General.Event.Handlers.WarStartHandler>
@@ -1566,7 +1612,9 @@
 #### Constructors
 - public WarStartListener()
 
-### <unavailable>
+#### Methods
+- protected static void HandleAll(War pWar, Kingdom pAttacker, Kingdom pDefender, WarTypeAsset pWarType)
+- private static System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> _newWar_Patch(System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> instr)
 
 ### public class NeoModLoader.General.Event.Listeners.WorldLogMessageListener
 - Base: NeoModLoader.General.Event.AbstractListener<NeoModLoader.General.Event.Listeners.WorldLogMessageListener, NeoModLoader.General.Event.Handlers.WorldLogMessageHandler>
@@ -1574,7 +1622,9 @@
 #### Constructors
 - public WorldLogMessageListener()
 
-### <unavailable>
+#### Methods
+- protected static string HandleAll(ref WorldLogMessage pMessage, string pCurrentText, UnityEngine.Color pCurrentColor, UnityEngine.UI.Text pTextfield, bool pColorField, bool pColorTags)
+- private static System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> _WorldLogMessage_getFormatedText_Patch(System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> instr)
 
 ## Namespace: NeoModLoader.General.Game.extensions
 
@@ -2090,7 +2140,24 @@
 #### Constructors
 - private static TabManager()
 
-### <unavailable>
+#### Methods
+- internal static string <_checkNewTabs>g__GetTabMainPart|29_0(string name)
+- internal static void <_onDragTabEntry>g__swap|32_0(bool left, ref NeoModLoader.General.UI.Tab.TabManager.<>c__DisplayClass32_0 )
+- public static PowersTab CreateTab(string name, string pTitleKey, string pDescKey, UnityEngine.Sprite pIcon, string pOptionDescKey = "hotkey_tip_tab_other")
+- private static void _addDragEventTo(UnityEngine.UI.Button tab_entry, string pTabName)
+- private static void _addTabEntry(UnityEngine.GameObject pTabEntry, string pTabId)
+- internal static void _checkNewTabs()
+- private static UnityEngine.UI.Button _getNext_Overwrite(PowerTabController instance, string pActiveTab)
+- private static System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> _getNext_Patch(System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> instr)
+- private static UnityEngine.UI.Button _getPrev_Overwrite(PowerTabController instance, string pActiveTab)
+- private static System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> _getPrev_Patch(System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> instr)
+- internal static void _init()
+- private static void _loadPredefinedOrder()
+- private static void _onDragTabEntry(UnityEngine.UI.Button pTabEntry, string pTabName)
+- private static void _savePredefinedOrder()
+- private static void _setToValidPosition(UnityEngine.UI.Button pTabEntry, string pTabName)
+- private static void _updateTabEntryRectAs(UnityEngine.UI.Button tab, int index)
+- private static void _updateTabLayout()
 
 ### public class NeoModLoader.General.UI.Tab.TabNature
 - Base: NeoModLoader.General.UI.Tab.ReconstructedVanillaTab
@@ -2327,14 +2394,29 @@
 
 ### private class NeoModLoader.ncms_compatible_layer.NCMSCompatibleLayer.<>c
 
-### <unavailable>
+#### Fields
+- public static readonly NeoModLoader.ncms_compatible_layer.NCMSCompatibleLayer.<>c <>9
+- public static System.Func<Microsoft.CodeAnalysis.CSharp.Syntax.AttributeListSyntax, bool> <>9__4_0
+- public static System.Func<Microsoft.CodeAnalysis.CSharp.Syntax.AttributeSyntax, bool> <>9__4_1
+
+#### Constructors
+- private static NCMSCompatibleLayer.<>c()
+- public NCMSCompatibleLayer.<>c()
+
+#### Methods
+- internal bool <IsNCMSMod>b__4_0(Microsoft.CodeAnalysis.CSharp.Syntax.AttributeListSyntax a)
+- internal bool <IsNCMSMod>b__4_1(Microsoft.CodeAnalysis.CSharp.Syntax.AttributeSyntax a)
 
 ### internal static class NeoModLoader.ncms_compatible_layer.NCMSCompatibleLayer
 
 #### Fields
 - public static const string modGlobalObject
 
-### <unavailable>
+#### Methods
+- public static NCMS.NCMod GenerateNCMSMod(NeoModLoader.api.ModDeclare modDeclare)
+- public static void Init()
+- public static bool IsNCMSMod(Microsoft.CodeAnalysis.SyntaxTree syntaxTree)
+- public static void PreInit()
 
 ## Namespace: NeoModLoader.services
 
@@ -2355,7 +2437,22 @@
 
 ### private class NeoModLoader.services.ModCompileLoadService.<>c
 
-### <unavailable>
+#### Fields
+- public static readonly NeoModLoader.services.ModCompileLoadService.<>c <>9
+- public static System.Func<string, Microsoft.CodeAnalysis.PortableExecutableReference> <>9__6_0
+- public static System.Func<string, bool> <>9__6_1
+- public static System.Func<string, bool> <>9__6_2
+- public static System.Func<string, bool> <>9__9_0
+
+#### Constructors
+- private static ModCompileLoadService.<>c()
+- public ModCompileLoadService.<>c()
+
+#### Methods
+- internal Microsoft.CodeAnalysis.PortableExecutableReference <compileMod>b__6_0(string inc)
+- internal bool <compileMod>b__6_1(string file_name)
+- internal bool <compileMod>b__6_2(string dir_name)
+- internal bool <compileMod>b__9_0(string file)
 
 ### private class NeoModLoader.services.ModUploadAuthenticationService.<>c
 
@@ -2391,7 +2488,16 @@
 
 ### private class NeoModLoader.services.ModWorkshopServiceUnix.<>c
 
-### <unavailable>
+#### Fields
+- public static readonly NeoModLoader.services.ModWorkshopServiceUnix.<>c <>9
+- public static System.Action<System.Threading.Tasks.Task<Steamworks.Ugc.PublishResult>> <>9__2_0
+
+#### Constructors
+- private static ModWorkshopServiceUnix.<>c()
+- public ModWorkshopServiceUnix.<>c()
+
+#### Methods
+- internal void <UploadModLoader>b__2_0(System.Threading.Tasks.Task<Steamworks.Ugc.PublishResult> taskResult)
 
 ### private class NeoModLoader.services.ModWorkshopServiceWindows.<>c
 
@@ -2431,7 +2537,8 @@
 #### Constructors
 - public ModWorkshopServiceUnix.<>c__DisplayClass3_0()
 
-### <unavailable>
+#### Methods
+- internal void <UploadMod>b__0(System.Threading.Tasks.Task<Steamworks.Ugc.PublishResult> taskResult)
 
 ### private class NeoModLoader.services.ModWorkshopServiceWindows.<>c__DisplayClass3_0
 
@@ -2452,7 +2559,8 @@
 #### Constructors
 - public ModWorkshopServiceUnix.<>c__DisplayClass4_0()
 
-### <unavailable>
+#### Methods
+- internal void <EditMod>b__0(System.Threading.Tasks.Task<Steamworks.Ugc.PublishResult> taskResult)
 
 ### private class NeoModLoader.services.ModWorkshopServiceWindows.<>c__DisplayClass4_0
 
@@ -2518,6 +2626,26 @@
 - private void MoveNext()
 - private void SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine stateMachine)
 
+### private class NeoModLoader.services.ModWorkshopServiceUnix.<FindSubscribedMods>d__5
+- Interfaces: System.Runtime.CompilerServices.IAsyncStateMachine
+
+#### Fields
+- public int <>1__state
+- public NeoModLoader.services.ModWorkshopServiceUnix <>4__this
+- private System.Collections.Generic.List<Steamworks.Ugc.Item> <>s__2
+- private System.Collections.Generic.List<T>.Enumerator<Steamworks.Ugc.Item> <>s__3
+- public System.Runtime.CompilerServices.AsyncVoidMethodBuilder <>t__builder
+- private System.Runtime.CompilerServices.TaskAwaiter<System.Collections.Generic.List<Steamworks.Ugc.Item>> <>u__1
+- private Steamworks.Ugc.Item <item>5__4
+- private System.Collections.Generic.List<Steamworks.Ugc.Item> <items>5__1
+
+#### Constructors
+- public ModWorkshopServiceUnix.<FindSubscribedMods>d__5()
+
+#### Methods
+- private void MoveNext()
+- private void SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine stateMachine)
+
 ### private class NeoModLoader.services.ModWorkshopServiceWindows.<FindSubscribedMods>d__6
 - Interfaces: System.Runtime.CompilerServices.IAsyncStateMachine
 
@@ -2533,6 +2661,29 @@
 
 #### Constructors
 - public ModWorkshopServiceWindows.<FindSubscribedMods>d__6()
+
+#### Methods
+- private void MoveNext()
+- private void SetStateMachine(System.Runtime.CompilerServices.IAsyncStateMachine stateMachine)
+
+### private class NeoModLoader.services.ModWorkshopServiceUnix.<GetSubscribedItems>d__7
+- Interfaces: System.Runtime.CompilerServices.IAsyncStateMachine
+
+#### Fields
+- public int <>1__state
+- private System.Nullable<Steamworks.Ugc.ResultPage> <>s__6
+- private System.Collections.Generic.IEnumerator<Steamworks.Ugc.Item> <>s__7
+- public System.Runtime.CompilerServices.AsyncTaskMethodBuilder<System.Collections.Generic.List<Steamworks.Ugc.Item>> <>t__builder
+- private System.Runtime.CompilerServices.TaskAwaiter<System.Nullable<Steamworks.Ugc.ResultPage>> <>u__1
+- private int <count>5__2
+- private int <curr>5__3
+- private Steamworks.Ugc.Item <entry>5__8
+- private int <page>5__4
+- private Steamworks.Ugc.Query <q>5__1
+- private System.Nullable<Steamworks.Ugc.ResultPage> <resultPage>5__5
+
+#### Constructors
+- public ModWorkshopServiceUnix.<GetSubscribedItems>d__7()
 
 #### Methods
 - private void MoveNext()
@@ -2618,7 +2769,32 @@
 
 ### public static class NeoModLoader.services.ModCompileLoadService
 
-### <unavailable>
+#### Fields
+- private static readonly System.Collections.Generic.Dictionary<string, string> mod_inc_path
+- private static readonly System.Collections.Generic.Dictionary<string, Microsoft.CodeAnalysis.MetadataReference> mod_ref
+- private static Microsoft.CodeAnalysis.MetadataReference[] _default_ref
+- private static string[] _default_ref_path
+- private static readonly System.Collections.Generic.HashSet<string> _loaded_ref
+- private static Microsoft.CodeAnalysis.MetadataReference _publicized_assembly_ref
+
+#### Constructors
+- private static ModCompileLoadService()
+
+#### Methods
+- internal static void <compileMod>g__LoadAddInc|6_3(ref NeoModLoader.services.ModCompileLoadService.<>c__DisplayClass6_0 )
+- internal static void <LoadMod>g__auto_localize|11_0(object mod_component, ref NeoModLoader.services.ModCompileLoadService.<>c__DisplayClass11_0 )
+- private static bool compileMod(NeoModLoader.api.ModDeclare pModDecl, System.Collections.Generic.IEnumerable<Microsoft.CodeAnalysis.MetadataReference> pDefaultInc, string[] pAddInc, System.Collections.Generic.Dictionary<string, Microsoft.CodeAnalysis.MetadataReference> pModInc, bool pForce = false, bool pDisableOptionalDepen = false)
+- public static bool compileMod(NeoModLoader.utils.ModDependencyNode pModNode, bool pForce = false)
+- public static bool IsModLoaded(string uid)
+- public static void loadInfoOfBepInExPlugins()
+- public static void LoadMod(NeoModLoader.api.ModDeclare pMod)
+- public static void loadMods(System.Collections.Generic.List<NeoModLoader.api.ModDeclare> mods_to_load)
+- public static void PostInitMod(NeoModLoader.api.IMod mod)
+- public static void prepareCompile(System.Collections.Generic.List<NeoModLoader.utils.ModDependencyNode> pModNodes)
+- public static void prepareCompileRuntime(NeoModLoader.utils.ModDependencyNode pModNode)
+- public static bool TryCompileAndLoadModAtRuntime(NeoModLoader.api.ModDeclare mod_declare)
+- public static bool TryCompileModAtRuntime(NeoModLoader.api.ModDeclare pModDeclare, bool pForce = false)
+- public static bool TryInitMod(NeoModLoader.api.IMod mod)
 
 ### internal static class NeoModLoader.services.ModDepenSolveService
 
@@ -2665,7 +2841,22 @@
 ### internal class NeoModLoader.services.ModWorkshopServiceUnix
 - Interfaces: NeoModLoader.services.IPlatformSpecificModWorkshopService
 
-### <unavailable>
+#### Fields
+- private static System.Collections.Generic.List<Steamworks.Ugc.Item> subscribedItems
+- private static System.Collections.Generic.Queue<Steamworks.Ugc.Item> subscribedModsQueue
+
+#### Constructors
+- public ModWorkshopServiceUnix()
+- private static ModWorkshopServiceUnix()
+
+#### Methods
+- internal static bool <GetSubscribedItems>g__available|7_0(Steamworks.Ugc.Item item)
+- public RSG.Promise EditMod(ulong fileID, string previewImagePath, string workshopPath, string changelog)
+- public void FindSubscribedMods()
+- public NeoModLoader.api.ModDeclare GetNextModFromWorkshopItem()
+- private static System.Threading.Tasks.Task<System.Collections.Generic.List<Steamworks.Ugc.Item>> GetSubscribedItems()
+- public RSG.Promise UploadMod(string name, string description, string previewImagePath, string workshopPath, string changelog, bool verified)
+- public void UploadModLoader(string changelog)
 
 ### internal class NeoModLoader.services.ModWorkshopServiceWindows
 - Interfaces: NeoModLoader.services.IPlatformSpecificModWorkshopService
@@ -3244,7 +3435,34 @@
 
 ### private class NeoModLoader.utils.ModReloadUtils.<>c
 
-### <unavailable>
+#### Fields
+- public static readonly NeoModLoader.utils.ModReloadUtils.<>c <>9
+- public static System.Func<Mono.Cecil.TypeDefinition, System.Collections.Generic.IEnumerable<Mono.Cecil.MethodDefinition>> <>9__11_0
+- public static System.Func<Mono.Cecil.TypeDefinition, System.Collections.Generic.IEnumerable<Mono.Cecil.MethodDefinition>> <>9__12_0
+- public static System.Func<Mono.Cecil.TypeDefinition, System.Collections.Generic.IEnumerable<Mono.Cecil.TypeDefinition>> <>9__12_1
+- public static System.Func<Mono.Cecil.ParameterDefinition, System.Type> <>9__12_2
+- public static System.Func<Mono.Cecil.ParameterDefinition, System.Type> <>9__12_3
+- public static System.Func<Mono.Cecil.TypeDefinition, System.Collections.Generic.IEnumerable<Mono.Cecil.MethodDefinition>> <>9__17_0
+- public static System.Func<Mono.Cecil.TypeDefinition, System.Collections.Generic.IEnumerable<Mono.Cecil.TypeDefinition>> <>9__17_1
+- public static System.Func<Mono.Cecil.ParameterDefinition, System.Type> <>9__17_2
+- public static System.Func<Mono.Cecil.ParameterDefinition, System.Type> <>9__18_0
+- public static System.Func<Mono.Cecil.ParameterDefinition, System.Type> <>9__21_0
+
+#### Constructors
+- private static ModReloadUtils.<>c()
+- public ModReloadUtils.<>c()
+
+#### Methods
+- internal System.Collections.Generic.IEnumerable<Mono.Cecil.MethodDefinition> <CompileNew>b__11_0(Mono.Cecil.TypeDefinition nested_type)
+- internal System.Type <CreateMethod>b__18_0(Mono.Cecil.ParameterDefinition x)
+- internal System.Collections.Generic.IEnumerable<Mono.Cecil.MethodDefinition> <PatchHotfixMethods>b__12_0(Mono.Cecil.TypeDefinition type)
+- internal System.Collections.Generic.IEnumerable<Mono.Cecil.TypeDefinition> <PatchHotfixMethods>b__12_1(Mono.Cecil.TypeDefinition type)
+- internal System.Type <PatchHotfixMethods>b__12_2(Mono.Cecil.ParameterDefinition x)
+- internal System.Type <PatchHotfixMethods>b__12_3(Mono.Cecil.ParameterDefinition x)
+- internal System.Collections.Generic.IEnumerable<Mono.Cecil.MethodDefinition> <PatchHotfixMethodsNT>b__17_0(Mono.Cecil.TypeDefinition type)
+- internal System.Collections.Generic.IEnumerable<Mono.Cecil.TypeDefinition> <PatchHotfixMethodsNT>b__17_1(Mono.Cecil.TypeDefinition type)
+- internal System.Type <PatchHotfixMethodsNT>b__17_2(Mono.Cecil.ParameterDefinition x)
+- internal System.Type <regenerate>b__21_0(Mono.Cecil.ParameterDefinition x)
 
 ### private class NeoModLoader.utils.ReflectionHelper.<>c
 
@@ -3280,7 +3498,11 @@
 
 ### private class NeoModLoader.utils.HarmonyUtils.<>c__DisplayClass0_0
 
-### <unavailable>
+#### Fields
+- public System.Collections.Generic.List<HarmonyLib.CodeInstruction> pCodes
+
+#### Constructors
+- public HarmonyUtils.<>c__DisplayClass0_0()
 
 ### private class NeoModLoader.utils.ReflectionHelper.<>c__DisplayClass0_0
 
@@ -3318,11 +3540,22 @@
 
 ### private class NeoModLoader.utils.ModReloadUtils.<>c__DisplayClass19_0
 
-### <unavailable>
+#### Fields
+- public Mono.Cecil.MethodDefinition newMethod
+
+#### Constructors
+- public ModReloadUtils.<>c__DisplayClass19_0()
+
+#### Methods
+- internal void <Replace>b__0(MonoMod.Cil.ILContext il)
 
 ### private class NeoModLoader.utils.HarmonyUtils.<>c__DisplayClass1_0
 
-### <unavailable>
+#### Fields
+- public System.Collections.Generic.List<HarmonyLib.CodeInstruction> pCodes
+
+#### Constructors
+- public HarmonyUtils.<>c__DisplayClass1_0()
 
 ### private class NeoModLoader.utils.ModDependencyUtils.<>c__DisplayClass1_0
 
@@ -3414,7 +3647,11 @@
 #### Constructors
 - public AssetPatches()
 
-### <unavailable>
+#### Methods
+- private static BaseStats[] GetCustomStats(ActorTrait trait)
+- private static void MergeCustomStats(Actor __instance)
+- private static System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> MergeWithCustomStats(System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> instructions)
+- private static System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> ShowCustomStats(System.Collections.Generic.IEnumerable<HarmonyLib.CodeInstruction> instructions)
 
 ### internal static class NeoModLoader.utils.BenchUtils
 
@@ -3483,7 +3720,13 @@
 
 ### public static class NeoModLoader.utils.HarmonyUtils
 
-### <unavailable>
+#### Methods
+- public static int FindCodeSnippet(System.Collections.Generic.List<HarmonyLib.CodeInstruction> pCodes, out System.Collections.Generic.List<HarmonyLib.CodeInstruction> pResult, params NeoModLoader.utils.instpredictors.BaseInstPredictor[] pSnippetPredictors)
+- public static int FindCodeSnippetIdx(System.Collections.Generic.List<HarmonyLib.CodeInstruction> pCodes, params NeoModLoader.utils.instpredictors.BaseInstPredictor[] pSnippetPredictors)
+- public static HarmonyLib.CodeInstruction FindInst(System.Collections.Generic.List<HarmonyLib.CodeInstruction> pCodes, NeoModLoader.utils.instpredictors.BaseInstPredictor pPredictor)
+- public static int FindInstIdx<TOperand>(System.Collections.Generic.List<HarmonyLib.CodeInstruction> pCodes, NeoModLoader.utils.instpredictors.BaseInstPredictor pPredictor)
+- public static TOperand FindInstOperand<TOperand>(System.Collections.Generic.List<HarmonyLib.CodeInstruction> pCodes, NeoModLoader.utils.instpredictors.BaseInstPredictor pPredictor)
+- internal static void _init()
 
 ### public static class NeoModLoader.utils.HttpUtils
 
@@ -3600,7 +3843,35 @@
 
 ### internal static class NeoModLoader.utils.ModReloadUtils
 
-### <unavailable>
+#### Fields
+- private static readonly System.Collections.Generic.Dictionary<System.Reflection.MethodInfo, MonoMod.RuntimeDetour.ILHook> _create_hooks
+- private static System.Collections.Generic.Dictionary<System.Type, System.Reflection.MethodInfo> _emit_method_cache
+- private static NeoModLoader.api.IReloadable _mod
+- private static NeoModLoader.api.ModDeclare _mod_declare
+- private static string _new_compiled_dll_path
+- private static string _new_compiled_pdb_path
+- private static Mono.Cecil.AssemblyDefinition _old_assembly_definition
+- private static System.Collections.Generic.Dictionary<string, Mono.Cecil.MethodDefinition> _old_method_definitions
+- private static System.Collections.Generic.Dictionary<Mono.Cecil.Cil.OpCode, System.Reflection.Emit.OpCode> _op_code_map
+- private static System.Collections.Generic.Dictionary<Mono.Cecil.MethodDefinition, System.Reflection.MethodInfo> _regenerated_brand_new_methods
+
+#### Constructors
+- private static ModReloadUtils()
+
+#### Methods
+- public static bool CompileNew()
+- private static void CreateBrandNewMethods(System.Collections.Generic.HashSet<Mono.Cecil.MethodDefinition> pBrandNewMethods)
+- private static System.Reflection.MethodInfo CreateMethod(Mono.Cecil.MethodDefinition newMethod)
+- private static void HotfixMethod(HarmonyLib.Harmony pHarmony, Mono.Cecil.MethodDefinition pNewMethod, System.Reflection.MethodInfo pOldMethod)
+- private static void InitializeOpcodeMap()
+- private static bool NeedHotfix(System.Reflection.MethodInfo pOldMethod, Mono.Cecil.MethodDefinition pNewMethod)
+- public static bool PatchHotfixMethods()
+- public static bool PatchHotfixMethodsNT()
+- public static bool Prepare(NeoModLoader.api.IReloadable pMod, NeoModLoader.api.ModDeclare pModDeclare)
+- private static MonoMod.Utils.DynamicMethodDefinition regenerate(Mono.Cecil.MethodDefinition pMethodDefinition)
+- public static bool Reload()
+- private static void Replace(System.Reflection.MethodInfo oldMethod, Mono.Cecil.MethodDefinition newMethod)
+- private static void ReplaceMethod(System.Reflection.MethodInfo pOldMethod, MonoMod.Utils.DynamicMethodDefinition pNewMethod)
 
 ### private class NeoModLoader.utils.SpriteLoadUtils.NCMSSpritesSettings
 
@@ -3762,7 +4033,24 @@
 
 ### public static class NeoModLoader.utils.SpriteLoadUtils
 
-### <unavailable>
+#### Fields
+- private static NeoModLoader.utils.SpriteLoadUtils.NCMSSpritesSettings.SpecificSetting defaultNCMSSetting
+- private static YamlDotNet.Serialization.IDeserializer deserializer
+- private static System.Collections.Generic.Dictionary<string, NeoModLoader.utils.SpriteLoadUtils.NCMSSpritesSettings> dirNCMSSettings
+- private static System.Collections.Generic.HashSet<string> ignoreNCMSSettingsSearchPath
+- private static System.Collections.Generic.Dictionary<string, UnityEngine.Sprite> singleSpriteCache
+
+#### Constructors
+- private static SpriteLoadUtils()
+
+#### Methods
+- internal static NeoModLoader.utils.SpriteLoadUtils.NCMSSpritesSettings.SpecificSetting <searchUpNCMSSetting>g__getInternalSetting|7_0(string i_path, NeoModLoader.utils.SpriteLoadUtils.NCMSSpritesSettings settings)
+- private static NeoModLoader.utils.TextureImporter loadMeta(string path)
+- public static UnityEngine.Sprite LoadSingleSprite(string path)
+- public static UnityEngine.Sprite[] LoadSprites(string path)
+- private static UnityEngine.Sprite loadSpriteSimply(string path)
+- private static UnityEngine.Sprite[] loadSpriteWithMeta(string path, NeoModLoader.utils.TextureImporter textureImporter)
+- private static NeoModLoader.utils.SpriteLoadUtils.NCMSSpritesSettings.SpecificSetting searchUpNCMSSetting(string path)
 
 ### internal class NeoModLoader.utils.SpriteSheet
 
@@ -4324,7 +4612,8 @@
 #### Constructors
 - public BaseInstPredictor.<>c__DisplayClass3_0()
 
-### <unavailable>
+#### Methods
+- internal bool <.ctor>b__0(HarmonyLib.CodeInstruction inst)
 
 ### private class NeoModLoader.utils.instpredictors.BaseInstPredictor.<>c__DisplayClass4_0
 
@@ -4334,7 +4623,8 @@
 #### Constructors
 - public BaseInstPredictor.<>c__DisplayClass4_0()
 
-### <unavailable>
+#### Methods
+- internal bool <.ctor>b__0(HarmonyLib.CodeInstruction inst)
 
 ### private class NeoModLoader.utils.instpredictors.BaseInstPredictor.<>c__DisplayClass5_0
 
@@ -4345,11 +4635,31 @@
 #### Constructors
 - public BaseInstPredictor.<>c__DisplayClass5_0()
 
-### <unavailable>
+#### Methods
+- internal bool <.ctor>b__0(HarmonyLib.CodeInstruction inst)
 
 ### public class NeoModLoader.utils.instpredictors.BaseInstPredictor
 
-### <unavailable>
+#### Fields
+- private static readonly System.Collections.Generic.Dictionary<System.Reflection.Emit.OpCode, System.Collections.Generic.HashSet<System.Reflection.Emit.OpCode>> equal_opcodes
+- private readonly System.Func<HarmonyLib.CodeInstruction, bool> predicate
+
+#### Constructors
+- protected BaseInstPredictor()
+- private static BaseInstPredictor()
+- public BaseInstPredictor(System.Reflection.Emit.OpCode pOpCode)
+- public BaseInstPredictor(object pOperand)
+- public BaseInstPredictor(System.Func<HarmonyLib.CodeInstruction, bool> pPredicate)
+- public BaseInstPredictor(System.Reflection.Emit.OpCode pOpCode, object pOperand)
+
+#### Methods
+- private static void AddEqualOpCodes(params System.Reflection.Emit.OpCode[] pOpCodes)
+- protected static bool OpcodeEquals(System.Reflection.Emit.OpCode pOpCode, System.Reflection.Emit.OpCode pOpCodeAnother)
+- protected static bool OpcodeEquals(HarmonyLib.CodeInstruction pInst, HarmonyLib.CodeInstruction pInstAnother)
+- protected static bool OpcodeEquals(System.Reflection.Emit.OpCode pOpCode, HarmonyLib.CodeInstruction pInst)
+- protected static bool OpcodeEquals(HarmonyLib.CodeInstruction pInst, System.Reflection.Emit.OpCode pOpCode)
+- public virtual bool Predict(HarmonyLib.CodeInstruction pInst)
+- internal static void _init()
 
 ## Namespace: NeoModLoader.utils.SerializedAssets
 

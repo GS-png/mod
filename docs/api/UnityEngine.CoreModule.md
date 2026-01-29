@@ -1,5 +1,5 @@
 # Assembly: UnityEngine.CoreModule
-- Path: EraWheel/lib/UnityEngine.CoreModule.dll
+- Path: tools/WorldBox.Managed/UnityEngine.CoreModule.dll
 - Types: 1276
 
 ## Namespace: (global)

@@ -1,5 +1,5 @@
 # Assembly: Assembly-CSharp
-- Path: EraWheel/lib/Assembly-CSharp.dll
+- Path: tools/WorldBox.Managed/Assembly-CSharp.dll
 - Types: 2903
 
 ## Namespace: (global)

@@ -1,5 +1,5 @@
 # Assembly: UnityEngine.TextRenderingModule
-- Path: EraWheel/lib/UnityEngine.TextRenderingModule.dll
+- Path: tools/WorldBox.Managed/UnityEngine.TextRenderingModule.dll
 - Types: 16
 
 ## Namespace: UnityEngine

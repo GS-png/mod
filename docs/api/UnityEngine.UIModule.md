@@ -1,5 +1,5 @@
 # Assembly: UnityEngine.UIModule
-- Path: EraWheel/lib/UnityEngine.UIModule.dll
+- Path: tools/WorldBox.Managed/UnityEngine.UIModule.dll
 - Types: 11
 
 ## Namespace: UnityEngine

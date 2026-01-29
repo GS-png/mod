@@ -1,5 +1,5 @@
 # Assembly: UnityEngine.JSONSerializeModule
-- Path: EraWheel/lib/UnityEngine.JSONSerializeModule.dll
+- Path: tools/WorldBox.Managed/UnityEngine.JSONSerializeModule.dll
 - Types: 1
 
 ## Namespace: UnityEngine
