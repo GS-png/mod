@@ -1,0 +1,15 @@
+/mnt/c/Users/14745/Desktop/mod/tools/EraWheel.SelfTest/bin/Release/net8.0/EraWheel.SelfTest
+/mnt/c/Users/14745/Desktop/mod/tools/EraWheel.SelfTest/bin/Release/net8.0/EraWheel.SelfTest.deps.json
+/mnt/c/Users/14745/Desktop/mod/tools/EraWheel.SelfTest/bin/Release/net8.0/EraWheel.SelfTest.runtimeconfig.json
+/mnt/c/Users/14745/Desktop/mod/tools/EraWheel.SelfTest/bin/Release/net8.0/EraWheel.SelfTest.dll
+/mnt/c/Users/14745/Desktop/mod/tools/EraWheel.SelfTest/bin/Release/net8.0/EraWheel.SelfTest.pdb
+/mnt/c/Users/14745/Desktop/mod/tools/EraWheel.SelfTest/obj/Release/net8.0/EraWheel.SelfTest.GeneratedMSBuildEditorConfig.editorconfig
+/mnt/c/Users/14745/Desktop/mod/tools/EraWheel.SelfTest/obj/Release/net8.0/EraWheel.SelfTest.AssemblyInfoInputs.cache
+/mnt/c/Users/14745/Desktop/mod/tools/EraWheel.SelfTest/obj/Release/net8.0/EraWheel.SelfTest.AssemblyInfo.cs
+/mnt/c/Users/14745/Desktop/mod/tools/EraWheel.SelfTest/obj/Release/net8.0/EraWheel.SelfTest.csproj.CoreCompileInputs.cache
+/mnt/c/Users/14745/Desktop/mod/tools/EraWheel.SelfTest/obj/Release/net8.0/EraWheel.SelfTest.sourcelink.json
+/mnt/c/Users/14745/Desktop/mod/tools/EraWheel.SelfTest/obj/Release/net8.0/EraWheel.SelfTest.dll
+/mnt/c/Users/14745/Desktop/mod/tools/EraWheel.SelfTest/obj/Release/net8.0/refint/EraWheel.SelfTest.dll
+/mnt/c/Users/14745/Desktop/mod/tools/EraWheel.SelfTest/obj/Release/net8.0/EraWheel.SelfTest.pdb
+/mnt/c/Users/14745/Desktop/mod/tools/EraWheel.SelfTest/obj/Release/net8.0/EraWheel.SelfTest.genruntimeconfig.cache
+/mnt/c/Users/14745/Desktop/mod/tools/EraWheel.SelfTest/obj/Release/net8.0/ref/EraWheel.SelfTest.dll

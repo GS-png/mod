@@ -1,0 +1,15 @@
+/mnt/c/Users/14745/Desktop/mod/mod/tools/EraWheel.ApiDoc/obj/Debug/net8.0/EraWheel.ApiDoc.GeneratedMSBuildEditorConfig.editorconfig
+/mnt/c/Users/14745/Desktop/mod/mod/tools/EraWheel.ApiDoc/obj/Debug/net8.0/EraWheel.ApiDoc.AssemblyInfoInputs.cache
+/mnt/c/Users/14745/Desktop/mod/mod/tools/EraWheel.ApiDoc/obj/Debug/net8.0/EraWheel.ApiDoc.AssemblyInfo.cs
+/mnt/c/Users/14745/Desktop/mod/mod/tools/EraWheel.ApiDoc/obj/Debug/net8.0/EraWheel.ApiDoc.csproj.CoreCompileInputs.cache
+/mnt/c/Users/14745/Desktop/mod/mod/tools/EraWheel.ApiDoc/obj/Debug/net8.0/EraWheel.ApiDoc.sourcelink.json
+/mnt/c/Users/14745/Desktop/mod/mod/tools/EraWheel.ApiDoc/bin/Debug/net8.0/EraWheel.ApiDoc
+/mnt/c/Users/14745/Desktop/mod/mod/tools/EraWheel.ApiDoc/bin/Debug/net8.0/EraWheel.ApiDoc.deps.json
+/mnt/c/Users/14745/Desktop/mod/mod/tools/EraWheel.ApiDoc/bin/Debug/net8.0/EraWheel.ApiDoc.runtimeconfig.json
+/mnt/c/Users/14745/Desktop/mod/mod/tools/EraWheel.ApiDoc/bin/Debug/net8.0/EraWheel.ApiDoc.dll
+/mnt/c/Users/14745/Desktop/mod/mod/tools/EraWheel.ApiDoc/bin/Debug/net8.0/EraWheel.ApiDoc.pdb
+/mnt/c/Users/14745/Desktop/mod/mod/tools/EraWheel.ApiDoc/obj/Debug/net8.0/EraWheel.ApiDoc.dll
+/mnt/c/Users/14745/Desktop/mod/mod/tools/EraWheel.ApiDoc/obj/Debug/net8.0/refint/EraWheel.ApiDoc.dll
+/mnt/c/Users/14745/Desktop/mod/mod/tools/EraWheel.ApiDoc/obj/Debug/net8.0/EraWheel.ApiDoc.pdb
+/mnt/c/Users/14745/Desktop/mod/mod/tools/EraWheel.ApiDoc/obj/Debug/net8.0/EraWheel.ApiDoc.genruntimeconfig.cache
+/mnt/c/Users/14745/Desktop/mod/mod/tools/EraWheel.ApiDoc/obj/Debug/net8.0/ref/EraWheel.ApiDoc.dll
