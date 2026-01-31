@@ -504,8 +504,8 @@
 
 | 遗产类型 | 效果示例 | 档位规则 |
 |---------|---------|--------|
-| **工艺遗产（王国）** | 解锁更高阶装备/材料池；英雄与精英单位可获得更高品质装备 | 档位 1-10：随档位扩展装备池 |
-| **研究遗产（王国）** | 解锁“封印研究/破魔锻造”等能力与英雄技能池 | 档位 1-10：随档位扩展技能池 |
+| **工艺遗产（王国）** | 解锁更高阶装备/材料池；按原版装备制作/领取逻辑**概率获得**（全王国可用，英雄/精英权重更高，非全体必得） | 档位 1-10：随档位扩展装备池 |
+| **研究遗产（王国）** | 解锁“研究技能池”能力；按原版“特质/成长”逻辑**概率获得**（全王国可用，英雄/精英权重更高，非全体必得） | 档位 1-10：随档位扩展技能池 |
 | **军事遗产（王国）** | 对魔王阵营单位攻击 +10%，防御 +10%（基础档位） | 档位 1-10：加成幅度递减（档位越高增量越小） |
 | **传承遗产（英雄）** | 命定英雄晋升评分 +15%，英雄基础属性 +5%（基础档位） | 档位 1-10：加成幅度递减（档位越高增量越小） |
 
@@ -514,7 +514,7 @@
 | 遗产类型 | 效果示例 | 档位规则 |
 |---------|---------|--------|
 | **征服遗产（魔王）** | 魔王阵营基础伤害/防御 +10%（基础档位） | 档位 1-10：加成幅度递减（档位越高增量越小） |
-| **军备遗产（魔王）** | 解锁魔王专属装备池；**下轮回**魔王/将领/精锐/终极生成时自动配装 | 档位 1-10：随档位扩展装备池 |
+| **军备遗产（魔王）** | 解锁魔王专属装备池；生成/补给时**按概率配装**（魔王/将领权重更高，非全体必得） | 档位 1-10：随档位扩展装备池 |
 | **魔能遗产（魔王）** | 魔王/将领法力上限与回复 +10%（基础档位） | 档位 1-10：加成幅度递减（档位越高增量越小） |
 | **领域遗产（魔王）** | 领域类技能半径/次数 +10%（只影响 MOD 技能）（基础档位） | 档位 1-10：加成幅度递减（档位越高增量越小） |
 
@@ -524,7 +524,28 @@
 - **解锁类（工艺/研究/军备）**：档位只扩展可用清单，不直接叠加数值。
 - **数值类（军事/传承/征服/魔能/领域）**：收益递减（档位越高增量越小，可配置）。
 
-#### 2.3.2.1 解锁档位清单（10 档，默认可配置）
+#### 2.3.2.1 遗产生效与出现方式（玩家视角）
+
+- **总原则**：遗产不是“全员立刻强化”，而是**解锁池 + 被动 trait**，并沿用原版装备/特质逻辑，因此是“概率出现”。  
+- **工艺遗产（王国装备）**：  
+  - 解锁装备池，不直接全员配装。  
+  - 走原版流程：`ItemCrafting.tryToCraftRandomWeapon/Equipment` 负责制作 → 城市库存 → `City.giveItem` 领取/替换。  
+  - 是否拿到取决于资源、城市生产、AI 行为触发（`BehMakeItem` / `BehActorTryToTakeItemFromCity`），因此天然是概率获得。  
+  - 可配置：英雄/精英单位权重更高，普通单位低概率。  
+- **研究遗产（王国技能/特质）**：  
+  - 解锁技能/能力池，不直接全员授予。  
+  - 走原版“随机特质”逻辑：出生用 `Actor.checkTraitMutationOnBirth()` 从 `AssetManager.traits.pot_traits_birth` 抽取；成长用 `Actor.checkTraitMutationGrowUp()` 从 `pot_traits_growup` 抽取；抽取次数由 `Subspecies.getAmountOfRandomMutationsActorTraits()` 与 `Randy.randomInt(0,3)` 决定。  
+  - 研究遗产以 trait 形式加入候选池（按档位解锁），因此是概率获得；英雄/精英可提高权重/多一次抽取。  
+- **军事遗产**：**王国维度被动**。通过 `KingdomTrait` 影响本王国单位的战斗表现（对魔王阵营伤害/减伤），通常可立即生效。  
+- **传承遗产**：**英雄维度加成**。主要影响“命定英雄晋升评分/基础属性”，在晋升或生成时写入英雄 trait；是否对已存在英雄**补发加成**可配置（默认不补发，避免突变）。  
+- **魔王遗产（补充）**：  
+  - **军备遗产**：解锁装备池，魔王/将领/军团生成或补给时**按概率配装**（非全体必得）。  
+  - **征服/魔能**：数值类被动，全阵营直接生效。  
+  - **领域**：当前为数值类被动；若后续扩展“领域技能池”，也按生成概率携带。
+
+> 一句话总结：遗产不是“突然冒出来一个新生物”，而是**解锁池 + trait 加成**，在“制作/领取/出生/成长/战斗”等节点逐步体现出来。
+
+#### 2.3.2.2 解锁档位清单（10 档，默认可配置）
 
 **工艺遗产（王国）档位**（解锁装备池，全部为 MOD 自定义装备，带自定义外观/特效）：
 - 1 层：基础工坊  
@@ -567,7 +588,7 @@
   - 终焉圣裁器（武器）：`damage +50%`；命中魔王阵营有 20% 概率短暂眩晕（默认时长）  
   - 终焉守护铠（护甲）：`armor +35%`；受击减伤 25%  
   - 终焉灵戒（饰品）：命中/受击时恢复 `2% 最大生命（health_max）`（限频）
-实现口径：每档=一组 **MOD 自定义** `ItemAsset` 列表（不是原版装备）；只有解锁的列表才参与 `generateItem`。  
+实现口径：每档=一组 **MOD 自定义** `ItemAsset` 列表（不是原版装备）；只加入原版“制作/领取”候选池（`ItemCrafting` → 城市库存 → `City.giveItem`），**不直接全员配装**。  
 特效由“装备绑定 trait”实现（命中/受击钩子），不依赖原版装备效果。  
 装备生成时写入“制造王国/制作者”标记，用于叙事与追溯。
 
@@ -599,7 +620,8 @@
 - 10 层：终焉研究  
   - 终焉封印：对魔王阵营单体造成 `40% 当前生命（health_current）` 伤害（英雄减半）并短暂眩晕  
   - 神佑结界：半径 8 友军获得 10 年减伤 20%（限频）
-实现口径：扩展“英雄技能池”候选列表，这些技能为 **MOD 自定义条目**（基于 trait + 现有 API 组合）；仍遵循 `P0+S1`。  
+实现口径：研究遗产以 **trait 形式**挂载，并按档位解锁加入“出生/成长随机特质池”（`pot_traits_birth` / `pot_traits_growup`）。  
+英雄仍遵循 `P0+S1`，研究遗产技能与“英雄随机技能池”分开管理，避免混淆。  
 默认法力消耗：普通 5 点 / 终极 10 点，所有数值可配置。
 
 **军备遗产（魔王）档位**（解锁装备池，全部为 MOD 自定义装备，带自定义外观/特效）：
@@ -633,9 +655,9 @@
 - 10 层：终焉遗铸  
   - 终焉裁决刃（武器）：`damage +45%`；命中英雄有 20% 概率短暂眩晕（默认时长）  
   - 终焉魔甲（护甲）：`armor +35%`；受击减伤 25%
-实现口径：每档=魔王专属 **MOD 自定义** 装备 `ItemAsset` 列表；**下轮回生成时**配装，不做战斗中动态换装。
+实现口径：每档=魔王专属 **MOD 自定义** 装备 `ItemAsset` 列表；魔王/将领/军团**生成或补给时按概率配装**，不做战斗中动态换装。
 
-#### 2.3.2.2 王国掌握度与继承规则（混合方案，可实现）
+#### 2.3.2.3 王国掌握度与继承规则（混合方案，可实现）
 
 **核心思路**：  
 - 世界有“档位”（1-10）。  
@@ -726,11 +748,18 @@ AssetManager.traits.add(new ActorTrait
 // 魔王遗产：魔王/将领/军团生成时添加 ActorTrait
 // newDemonUnit.addTrait($"legacy_conquest_{tier}");
 
-// 工艺遗产：解锁装备并给英雄配装（示意）
+// 工艺遗产：只解锁装备池，沿用原版制作/领取流程（示意）
 // itemAsset.unlock(true);
-// Item item = World.world.items.generateItem(itemAsset, kingdom, "LegacyCraft", 1, hero);
-// hero.equipment.setItem(item, hero);
-// 或：ItemCrafting.tryToCraftRandomWeapon(hero, city);
+// // 触发频率走原版行为；如需更稀有，可在触发前加概率判定
+// // if (Randy.randomChance(legacyCraftChance)) {
+//     ItemCrafting.tryToCraftRandomWeapon(heroOrUnit, city); // 制作 → 城市库存
+//     // AI 行为触发 City.giveItem(...) 领取/替换
+// // }
+
+// 研究遗产：把“研究技能 trait”加入出生/成长随机池（示意）
+// AssetManager.traits.pot_traits_birth.Add(trait_legacy_research_tier);
+// AssetManager.traits.pot_traits_growup.Add(trait_legacy_research_tier);
+// 由 Actor.checkTraitMutationOnBirth/GrowUp 触发抽取，保持原版概率逻辑
 
 // 军事遗产：对魔王阵营单位生效（示意）
 // 约定：魔王阵营单位统一挂 trait_era_demon_faction
@@ -742,10 +771,12 @@ AssetManager.traits.add(new ActorTrait
 // float damage_est = Math.Max(0f, last_health - self.getHealth());
 // last_health = self.getHealth();
 
-// 军备遗产（魔王）：解锁装备池并给魔王阵营单位配装（示意）
+// 军备遗产（魔王）：解锁装备池，生成/补给时按概率配装（示意）
 // demonItemAsset.unlock(true);
-// Item item = World.world.items.generateItem(demonItemAsset, null, "LegacyArmory", 1, newDemonUnit);
-// newDemonUnit.equipment.setItem(item, newDemonUnit);
+// if (Randy.randomChance(legacyArmoryChance)) {
+//     Item item = World.world.items.generateItem(demonItemAsset, null, "LegacyArmory", 1, newDemonUnit);
+//     newDemonUnit.equipment.setItem(item, newDemonUnit);
+// }
 ```
 
 ---
@@ -1078,6 +1109,7 @@ AssetManager.traits.add(new ActorTrait
 
 **技能与遗产联动（可选）**：
 - 抗魔等级/研究遗产可解锁新的英雄技能条目（仍遵循 `P0+S1`，避免复杂度爆炸）。
+- 普通单位的研究遗产获取仍走“随机特质池”的概率逻辑，不进入英雄技能池。
 
 ## 第三部分：游戏数值与平衡
 [↩ 目录](#toc) · [↑ 顶部](#top)
