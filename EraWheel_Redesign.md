@@ -7,7 +7,7 @@
 |---|---|
 | 项目编号 | ERA-WHEEL-DEMON-MOD |
 | 版本 | 2.0（完全重新设计） |
-| 最后更新 | 2026-01-28 |
+| 最后更新 | 2026-01-31 |
 | 开发状态 | 重新架构阶段 |
 | 目标平台 | WorldBox 0.51.2+ (NeoModLoader) |
 
@@ -24,9 +24,11 @@
 - 玩家/体验向：先看「[1.2 玩法总览](#s12)」→「[2.1 轮回系统](#s21)」→「[2.4 敌方军势](#s24)」→「[2.5 文明与英雄](#s25)」→「[第四部分：用户交互设计](#p4)」
 - 开发/实现向：先看「[附录A：统一口径](#conventions)」→「[附录B：技术可行性与实现方案](#p5)」，再回到 2.x 按需查细节
 - 只查默认值/参数：跳到「[7.1 关键参数默认值速查](#s71)」（附录D）
+- 只查技能表：跳到「[附录E/F](#appendix-demon-skills)」（军团无技能）
 
 **阅读方式（少跳转）**
 - 先读 1.2，再读 2.1~2.5，最后看 UI 与附录
+- 技能/将领/军团的大表已集中到附录 E/F/G，正文只保留规则与流程
 - 超长表格已用 `<details>` 折叠，需要时展开
 - 回目录：在任意章节使用「[↩ 目录](#toc)」
 
@@ -77,6 +79,8 @@
 - [附录B：技术可行性与实现方案](#p5)
 - [附录C：版本规划与交付](#p6)
 - [附录D：关键参数默认值速查](#p7)
+- [附录E：魔王技能表](#appendix-demon-skills)
+- [附录F：将领名册与技能表](#appendix-general-skills)
 
 ---
 
@@ -129,7 +133,7 @@
 | 军团波次 | 敌军生成节奏 | 阶段/波次配置/军团库 | 军团生成与规模 | [2.4.1](#s241) |
 | 文明与英雄 | 反哺与对抗系统 | 王国/英雄运行态 | 抗魔等级/英雄晋升 | [2.5](#s25) |
 | 将领系统 | 精英单位与指挥层 | 魔王类型/轮回数 | 将领激活与技能 | [2.4.2](#s242) |
-| 军团系统 | 单位库与规格 | 魔王类型/军团配置 | 军团单位与技能 | [2.4.3](#s243) |
+| 军团系统 | 单位库与规格 | 魔王类型/军团配置 | 军团单位与生成规则 | [2.4.3](#s243) |
 
 想看细节实现：从「[2.1 轮回系统](#s21)」开始按系统阅读。
 
@@ -337,12 +341,7 @@
 
 **默认值统一入口**：见 [7.1.1 轮回与阶段](#s71)
 
-**参数口径与容错**：
-- 参数不做“建议范围”限制（兼容其他 MOD 的极端数值）。系统仅做硬限制/安全修正以保证可运行
-- 时间/数量类：小于 0 的输入按 0 处理
-- 间隔类：`<= 0` 会被修正为最小正值（避免除零/死循环）
-- 概率类：按 `0%-100%` 归一（超过 100% 视为 100%；小于 0 按 0 处理）
-- 任意数值：若出现 `NaN/Infinity` 自动回退为安全值
+**参数口径与容错**：统一放在「[附录A：配置与容错](#conventions)」，本节不重复。
 
 #### 2.1.4 保护机制
 
@@ -410,185 +409,10 @@
 | 衰弱 | <30% | 被动仅 | ❌ | 减半 | 优先逃离，部分将领撤退/失控 |
 | 再封印 | 0% | ❌ | ❌ | 0 | 轮回结算，状态重置 |
 
-#### 2.2.4 十大魔王技能表（每魔王：1 被动 + 6 技能）
+#### 2.2.4 魔王技能库（移至附录）
 
-> 建议把“机制”直接落成技能表，方便实现与调参。  
-> 统一规则：每个魔王 **1 个被动（P0）+ 6 个技能（S1-S6）**；数值可配置；触发与存储口径见「[统一口径](#conventions)」。  
-> 主动技能消耗与频率统一见「[统一口径](#conventions)」与「[7.1.8](#s71)」，本节不再重复。
-
-**魔王索引**： [1 虚无](#demon-1-void) · [2 瘟疫](#demon-2-plague) · [3 机械](#demon-3-mech) · [4 时空](#demon-4-time) · [5 火焰](#demon-5-fire) · [6 深渊](#demon-6-abyss) · [7 亡灵](#demon-7-death) · [8 契约](#demon-8-soul) · [9 自然](#demon-9-nature) · [10 终焉](#demon-10-judge)
-
-<a id="demon-1-void"></a>
-##### 魔王1：虚无之主（虚空）
-<details>
-<summary>展开技能表（P0+S1-S6）</summary>
-
-| 槽位 | 技能名 | 类型 | 触发（默认消耗：普通 5 点 / 终极 10 点） | 能力详细描述（默认） | 实现方式（建议） |
-|------|--------|------|-------------------|----------------------|------------------|
-| P0 | 虚空领域 | 战斗光环 | 常驻；命中/受击触发 | 当虚无之主**命中或受击**时：以当前 `pTile` 为中心半径 `R=12`，对敌对单位结算一次“虚空侵蚀”：损失 `5% 当前生命（health_current）`（最低扣到 `1HP`），并附加 2 年“虚空迟滞”（移速 -20%）。 | 给虚无之主挂 `trait_era_void_aura`：在 `action_attack_target` 与 `action_get_hit` 中调用同一逻辑；用 `pTile` 半径枚举单位并 `changeHealth(-dmg)`；迟滞=给目标加 `trait_era_void_slow` 并刷新 `custom_data_int["era_void_slow_expire_year"]`。 |
-| S1 | 存在抹除 | 死亡点触发（标记） | 无消耗；目标死亡触发 | 虚无之主命中目标时：给目标附加 5 年“残响标记”。带标记的目标死亡时：在死亡点爆发一次“残响冲击”（半径 6）：敌对单位损失 `20% 当前生命（health_current）`（最低扣到 `1HP`），并附加 2 年“迟滞”（移速 -20%）。 | 命中：在虚无之主 trait 的 `action_attack_target` 给目标 `addTrait("trait_era_void_echo_mark")` 并写入到期年。死亡：在 `trait_era_void_echo_mark.action_on_object_remove` 里用目标 tile 枚举半径 6 单位并处理（扣血+迟滞）。 |
-| S2 | 世界收缩 | 累计触发 | 每累计击杀 `K=100` 触发 | 每当虚无之主累计击杀达到 `K=100`：在世界边缘随机选 `N=8` 个地块“虚空化”（危险地形/贫瘠地形），并对附近单位附加 2 年减速。`N` 随阶段提升（苏醒 6 / 降临 8 / 全盛 12）。 | “击杀计数”严格走三钩子：命中时给目标写 `custom_data_int["era_last_hit_attacker"] = self.id` 并挂短时 `trait_era_last_hit_mark`；在该标记的 `action_on_object_remove` 若确认 `last_hit_attacker==虚无之主` 则给虚无之主 `custom_data_int["era_void_kill_count"]++`；达到 `K` 后触发一次地形改造并清零。 |
-| S3 | 相位突袭 | 主动（命中施放） | 命中英雄时尝试 | 当虚无之主**命中英雄**且法力足够时：瞬移到该英雄附近 3 格内，追加一次 `200% 基础伤害（damage）` 的打击；并给目标附加 10 年“破碎”（受伤 +25%）。 | 在 `action_attack_target` 中：若 `pTarget` 为英雄则 `spendMana(cost)` → `singularityTeleportation(...)` → 直接扣血；“破碎”用 `trait_era_void_shatter` + `custom_data_int["era_void_shatter_expire_year"]`。 |
-| S4 | 虚空裂隙 | 主动（命中施放） | 命中时尝试 | 当虚无之主命中目标且法力足够时：以 `pTarget` 的 `pTile` 为中心半径 10 触发一次“裂隙撕扯”：敌对单位损失 `20% 当前生命（health_current）`，并有 `15%` 概率被随机传送到附近荒地。 | 在 `action_attack_target` 中：`spendMana(cost)` 后以 `pTarget` 的 tile 枚举半径 10 单位；扣血 `changeHealth`；传送用 `ActionLibrary.teleportRandom(self, target, tile)`。 |
-| S5 | 虚无洪流 | 主动（直线） | 命中时尝试 | 当虚无之主命中目标且法力足够时：沿“自身→目标”方向取 30 格直线，对路径附近半径 3 的敌对单位造成 `35% 当前生命（health_current）` 伤害；并附加 3 年“压制标记”：带标记单位**每次受击**都会额外触发一次 眩晕（默认时长）（最多触发 6 次）。 | `action_attack_target`：`spendMana` 后取 tile 串并半径枚举；给命中的单位加 `trait_era_void_suppress`，在该 trait 的 `action_get_hit` 里做“剩余触发次数”递减并调用 `addStunnedEffectOnTarget(...)`。 |
-| S6 | 反物质爆发 | 终极技 | 仅全盛可用 | 以自身为中心半径 18：单位受到 `50% 当前生命（health_current）` 伤害（对英雄减半）；建筑受到高额伤害（优先打到“废墟阈值”）；并清空区域内 30% 地块植被。 | 单位用 `changeHealth`；建筑用 `Building.getHit(...)` 口径可替换为 `changeHealth(-dmg)`（Building 继承 BaseSimObject）；植被用 `WorldTile.removeTrees/removeGrass`。 |
-
-</details>
-
-<a id="demon-2-plague"></a>
-##### 魔王2：瘟疫母神（瘟疫）
-<details>
-<summary>展开技能表（P0+S1-S6）</summary>
-
-| 槽位 | 技能名 | 类型 | 触发（默认消耗：普通 5 点 / 终极 10 点） | 能力详细描述（默认） | 实现方式（建议） |
-|------|--------|------|-------------------|----------------------|------------------|
-| P0 | 瘟疫传播 | 被动 | 常驻；命中触发 | 普攻命中时：给目标叠加 1 层“感染”（最多 5 层）；感染目标在**后续每次受击**时会额外损失 `2% 当前生命（health_current） × 层数`，并在感染存在期间降低攻击/移速。 | 给瘟疫母神挂 `ActorTrait`：`action_attack_target` 命中时给目标加 `trait_era_infection` 并写入 `custom_data_int["era_infection_stacks"]`（上限 5）与 `custom_data_int["era_infection_expire_year"]`。感染的额外伤害在 `trait_era_infection.action_get_hit` 里结算（不需要“每年 DOT”）。 |
-| S1 | 感染转化 | 条件触发（感染者） | 感染满层后触发 | 单位感染层数达到 5 后：在其接下来累计受击 `H=20` 次时触发一次“转化判定”：`60%` 概率转化为瘟疫仆从（替换模板）；失败则进入“重病期”（接下来 10 次受击额外掉血）。 | 在 `trait_era_infection.action_get_hit` 中维护 `custom_data_int["era_infection_hits_taken"]` 与 `custom_data_int["era_infection_sick_hits_left"]`；满足阈值时执行 `metamorphInto(...)` 或 spawn+remove（不走定时器）。 |
-| S2 | 毒雾弥漫 | 死亡点触发（感染者） | 无消耗；目标死亡触发 | 任意感染单位死亡：在死亡点触发一次“毒雾冲击”（半径 8）：敌对单位损失 `12% 当前生命（health_current）`（最低扣到 `1HP`），并附加 5 年中毒效果。 | 用 `trait_era_infection.action_on_object_remove`：拿到目标 tile 后枚举半径 8 敌对单位，扣血 + `addPoisonedEffectOnTarget(...)`（或中毒 trait + 到期年）。 |
-| S3 | 基因突变 | 随机触发（感染者） | 感染者受击时判定 | 感染者每次受击有 `10%` 概率触发一次突变：获得随机强化（攻击/防御/移速 +20%）或随机弱化（-20%），持续到其后续 `M=20` 次受击结束（最多叠 2 层）。 | 在 `trait_era_infection.action_get_hit` 里做概率判定；把突变层数与剩余受击次数写入 `custom_data_int`，并用 buff/debuff trait 表现（只靠受击事件推进与清理）。 |
-| S4 | 疫病领主 | 累计触发 | 每转化 `T=50` 单位触发 | 每累计成功转化 50 个仆从：在母神据点生成 1 个“疫病领主”（精英单位），并立即带队向最近城市进军。 | `ActorManager.spawnNewUnit("plague_lord", tile, ...)`；用 `Actor.goTo(...)` 引导其移动到城市周边。 |
-| S5 | 疫潮爆发 | 主动（命中施放） | 命中时尝试 | 当母神命中目标且法力足够时：以目标 tile 半径 20 内敌对单位立刻获得 1 层感染，并附加“疫潮标记”（持续 20 年）：带标记单位在其后续 **3 次受击**时，每次额外 +1 层感染；感染满层时每次受击有 `25%` 概率触发转化。 | 在母神 `action_attack_target`：`spendMana` 后以 `pTarget` tile 枚举半径 20 单位并加 `trait_era_infection` + `trait_era_plague_tide_mark`；在 `trait_era_plague_tide_mark.action_get_hit` 里做“剩余触发次数”递减并加层/判定转化。 |
-| S6 | 黑疫降临 | 终极技（命中施放） | 仅全盛可用；命中时尝试 | 当母神命中目标且法力足够时：以母神当前位置半径 30 触发一次“黑疫浪潮”：敌对单位获得 50 年“虚弱”（攻击/防御 -15%），并立刻在该范围内随机 5 个点各触发一次“毒雾冲击”（同 S2 的爆发效果）。 | 只做“局部范围枚举”，不做全图。逻辑放在母神 `action_attack_target`：`spendMana` 后枚举半径 30 敌对单位加 debuff trait；随机点用 tile 抽样并复用 S2 的爆发扣血/中毒。 |
-
-</details>
-
-<a id="demon-3-mech"></a>
-##### 魔王3：机械暴君（机械）
-<details>
-<summary>展开技能表（P0+S1-S6）</summary>
-
-| 槽位 | 技能名 | 类型 | 触发（默认消耗：普通 5 点 / 终极 10 点） | 能力详细描述（默认） | 实现方式（建议） |
-|------|--------|------|-------------------|----------------------|------------------|
-| P0 | 反魔法立场 | 战斗光环 | 常驻；命中/受击触发 | 当机械暴君**命中或受击**时：以当前 `pTile` 半径 `R=14`，对“有法力/施法倾向”的敌对单位刷新 3 年“干扰”（法力回复 -50%，攻击 -15%，且本 MOD 的“主动技能触发概率”降低）。 | 给机械暴君挂 `trait_era_mech_antimagic`：在 `action_attack_target`/`action_get_hit` 中以 `pTile` 半径枚举单位；判定“有 mana/法师 trait/职业”后给目标加 `trait_era_mech_jam` 并刷新 `custom_data_int["era_mech_jam_expire_year"]`。 |
-| S1 | 纳米修复 | 受击触发（自愈） | 常驻；受击触发 | 当机械暴君受击时：立刻恢复 `5% 最大生命（health_max）`；若站在机械据点范围内则改为 `8%`。 | 在机械暴君的 `action_get_hit` 中：根据位置是否在据点半径内选择比例，然后 `restoreHealthPercent(...)`（不做“按年回血”）。 |
-| S2 | 逻辑病毒 | 主动（命中施放） | 命中时尝试 | 当机械暴君命中目标且法力足够时：以目标 `pTile` 半径 12 触发一次“系统冲击”：随机打击最多 3 个建筑（若范围内存在），并使范围内敌军有 `20%` 概率眩晕（默认时长）。 | 在 `action_attack_target`：`spendMana(cost)` 后，建筑=在半径内抽样 `Building` 并 `changeHealth(-dmg)`；单位=枚举半径内敌对单位，概率调用 `addStunnedEffectOnTarget(...)`。 |
-| S3 | 同化协议 | 主动（命中施放） | 命中时尝试 | 当机械暴君命中目标且法力足够时：以目标 `pTile` 半径 10，随机选择最多 5 个敌对单位进行“同化”（替换为机械仆从模板/变形为机械种）；英雄同化概率减半（默认只施加 debuff）。 | 在 `action_attack_target`：`spendMana` 后范围枚举 + 抽样；非英雄 `metamorphInto(...)` 或 spawn+remove；英雄默认给 `trait_era_mech_assimilated`（攻击/移速 -20% 等）而不强制替换。 |
-| S4 | 轨道电弧 | 主动（点杀/清场） | 主动施放 | 对目标 tile 连续释放 3 次闪电：每次对半径 4 的单位造成固定伤害（例如 80/120/160，随轮回成长）。 | `ActionLibrary.castLightning(demonActor, null, tile)` 连发；若要稳定伤害，用 `changeHealth` 作为补偿。 |
-| S5 | 生产线 | 主动（召唤） | 主动施放 | 在据点周围生成 20 个机械兵 + 2 个机械精英；优先补足军团上限。 | `ActorManager.spawnNewUnit(...)` 批量生成；生成数量受“同时存在上限”限制。 |
-| S6 | 天网觉醒 | 终极技（命中施放） | 仅全盛可用；命中时尝试；持续 50 年 | 当机械暴君命中目标且法力足够时：以自身 `pTile` 半径 `R=35`（可配置）内机械单位获得 50 年“超载”（攻击/防御/移速 +30%）；并获得“战斗自修复”：机械单位**命中或受击**时额外恢复 `3% 最大生命（health_max）`。同时立即生成 1 波“天网军团”（规模=当前轮回×系数）。 | 在 `action_attack_target` 中枚举半径 `R` 内机械单位并加 `trait_era_mech_overload` 与 `trait_era_mech_repair_on_combat`（修复逻辑放在其 `action_attack_target`/`action_get_hit`）；军团生成复用 2.4 波次系统。 |
-
-</details>
-
-<a id="demon-4-time"></a>
-##### 魔王4：时空扭曲者（时空）
-<details>
-<summary>展开技能表（P0+S1-S6）</summary>
-
-| 槽位 | 技能名 | 类型 | 触发（默认消耗：普通 5 点 / 终极 10 点） | 能力详细描述（默认） | 实现方式（建议） |
-|------|--------|------|-------------------|----------------------|------------------|
-| P0 | 命运窥视 | 被动 | 常驻 | 获得“预知”：闪避率 +30%（用等效属性实现：受到伤害时有概率无效/减半）；并使控制持续时间 -50%（仅对 MOD 施加的控制生效）。 | 受击用 `action_get_hit`（`GetHitAction`）做概率“无效/减半”；控制缩短用 trait 标记，在 MOD 施加控制时按该标记缩短到期年（写入 `custom_data_int`）。 |
-| S1 | 时间禁锢 | 主动（命中施放） | 命中时尝试；持续 10 年 | 当时空扭曲者命中英雄/将领且法力足够时：为其附加 10 年“禁锢标记”。带标记单位在其后续每次受击时都会被短暂眩晕（默认时长）（最多触发 8 次），并可被“净化”移除标记。 | 在 `action_attack_target`：判断目标类型后 `spendMana`，给目标加 `trait_era_time_prison` 并写入到期年与 `custom_data_int["era_time_prison_procs_left"]=8`；在 `trait_era_time_prison.action_get_hit` 里调用 `addStunnedEffectOnTarget(...)` 并递减次数，到期或次数归零即移除。 |
-| S2 | 因果锚点 | 受击触发（保命） | 遭遇致命伤时触发 | 时空扭曲者会在战斗中不断“刷新锚点”（记录当前位置与当前 HP）。当其遭遇致命伤且法力足够时：触发一次“因果回避”——瞬移回锚点位置并恢复至锚点 HP（至少 30% 最大生命（health_max）），清除负面控制。 | 锚点只在三钩子里刷新：例如在自身 `action_attack_target`/`action_get_hit` 中把 `custom_data_float["era_time_anchor_hp"]` 与 `custom_data_int["era_time_anchor_x/y"]` 更新为当前值。致死判定在 `action_get_hit`：若 `incomingDamage >= currentHP` 且有锚点且 `spendMana` 成功，则 `singularityTeleportation(anchorTile, self)` + `setHealth(...)`/`restoreHealthPercent(...)` + 移除控制类 trait。 |
-| S3 | 时空裂隙 | 主动（命中施放） | 命中时尝试 | 当时空扭曲者命中目标且法力足够时：以目标 `pTile` 半径 12，随机选择最多 10 个敌对单位立刻“错位传送”到附近荒野（距离原地 30-80 格）。 | 在 `action_attack_target`：`spendMana` 后范围枚举+抽样；每个被选中的目标调用 `teleportRandom(self, target, tile)`。 |
-| S4 | 时间加速 | 主动（增益） | 主动施放；持续 20 年 | 自身与 2 名最近将领获得“加速”：移速 +40%，攻击速度/攻击力 +20%，并获得“回蓝加速”（法力恢复 +50%）。 | 增益用 trait（含法力恢复加成）。 |
-| S5 | 时间悖论 | 主动（命中施放） | 命中时尝试；持续 15 年 | 当时空扭曲者命中目标且法力足够时：以目标 `pTile` 半径 10 触发一次“悖论爆发”：对范围内敌军随机施加一种效果（眩晕（默认时长） / 随机传送 / 固定伤害）。并给被命中的敌军附加 15 年“悖论标记”：其后续每次受击都有 `25%` 概率再次触发一次（最多触发 3 次）。 | 在 `action_attack_target`：`spendMana` 后范围枚举并对每个敌军 roll；标记用 `trait_era_time_paradox_mark`，在该 trait 的 `action_get_hit` 里做概率与“剩余次数”递减。 |
-| S6 | 永恒回环 | 终极技（命中施放） | 仅全盛可用；命中时尝试；持续 50 年 | 当时空扭曲者命中目标且法力足够时：以自身 `pTile` 半径 25 给敌军附加 50 年“时间风暴标记”（受击时更易触发短眩晕（默认时长）或随机传送，最多各触发 5 次）；同时获得“回环”：在下一次遭遇致命伤时，可额外触发一次“小型因果回避”（复用 S2 的致死回避，但恢复量减半）。 | 标记= `trait_era_time_storm`（逻辑在其 `action_get_hit`，只靠受击推进次数）；“回环”= 在时空扭曲者自身 `custom_data_int` 写一个“可用次数=1”，在其 `action_get_hit` 的致死分支里优先消耗并执行简化 S2。 |
-
-</details>
-
-<a id="demon-5-fire"></a>
-##### 魔王5：混沌炎魔（火焰）
-<details>
-<summary>展开技能表（P0+S1-S6）</summary>
-
-| 槽位 | 技能名 | 类型 | 触发（默认消耗：普通 5 点 / 终极 10 点） | 能力详细描述（默认） | 实现方式（建议） |
-|------|--------|------|-------------------|----------------------|------------------|
-| P0 | 烈焰灼烧 | 战斗光环 | 常驻；命中/受击触发 | 当炎魔**命中或受击**时：以当前 `pTile` 半径 `R=12`，对敌对单位结算一次：损失 `6% 当前生命（health_current）`（最低扣到 `1HP`），并叠 1 层“灼烧”（最多 5 层；灼烧存在期间该单位在受击时会额外承受 +10% 火焰系追加伤害）。 | 给炎魔挂 `trait_era_fire_aura`：在 `action_attack_target`/`action_get_hit` 中范围枚举并 `changeHealth`；灼烧=给目标加 `trait_era_burn_stack` + 写入 `custom_data_int["era_burn_stacks"]`（上限 5）。追加伤害逻辑放在 `trait_era_burn_stack.action_get_hit`：若攻击者为火焰阵营/带火焰 trait，则额外扣一段 `10%×层数` 的“追加伤害”。 |
-| S1 | 地狱化 | 累计触发（地形） | 每累计击杀 `K=30` 触发 | 炎魔累计击杀达到 `K=30` 时：将据点周围半径 8 的随机 20 个地块变为熔岩/焦土，并清除树木与草（每次触发都有改造上限，避免破图）。 | “击杀计数”走“命中标记 → 目标 `action_on_object_remove` 记账”的三钩子口径；触发后做一次性地形改造：`setTileType` + `removeTrees/removeGrass`。 |
-| S2 | 爆燃 | 死亡点触发（标记） | 不耗法力 | 炎魔命中目标时：给目标附加 3 年“爆燃标记”。带标记的目标死亡时：在死亡点半径 5 造成爆炸伤害（目标当前生命（health_current） 的 20%），并对附近地块施加“烧焦”。 | 命中：炎魔 trait 的 `action_attack_target` 给目标 `addTrait("trait_era_fire_burst_mark")`。死亡：`trait_era_fire_burst_mark.action_on_object_remove` 里做 AOE 扫描 + `changeHealth`；地形用 `WorldTile.setTileType(...)` 或 `removeTrees/removeGrass` 表现“焦化”。 |
-| S3 | 熔岩喷发 | 主动（区域） | 主动施放 | 目标区域半径 10：立即喷发，单位受到固定伤害并被击退/眩晕（默认时长）；同时生成 12 个熔岩地块。 | 伤害 `changeHealth`；眩晕用 `ActionLibrary.addStunnedEffectOnTarget(...)`；地形用 `setTileType`。 |
-| S4 | 灼烧烙印 | 主动（命中施放） | 命中英雄时尝试；持续 20 年 | 当炎魔命中英雄且法力足够时：给目标施加 20 年“烙印”。带烙印目标在其后续每次受击时额外损失 `8% 当前生命（health_current）`；若其所在 tile 为熔岩/火焰地形则该次额外伤害翻倍。 | 在炎魔 `action_attack_target`：`spendMana` 后给目标加 `trait_era_fire_brand` 并写到期年；在 `trait_era_fire_brand.action_get_hit` 里做额外扣血（含地形判定）。 |
-| S5 | 火焰复苏 | 受击触发（地形条件） | 受击时判定 | 当炎魔受击时：若其所在 tile 为熔岩/焦土，则立刻恢复 `10% 最大生命（health_max）`，并刷新 5 年“火焰护体”（减伤 20%）。 | 在炎魔 `action_get_hit` 里检测 tile type：满足则 `restoreHealthPercent` + 给自身加 `trait_era_fire_guard` 并刷新到期年；减伤逻辑放在 `trait_era_fire_guard.action_get_hit`。 |
-| S6 | 末日烈焰 | 终极技（命中施放） | 仅全盛可用；命中时尝试；持续 30 年 | 当炎魔命中目标且法力足够时：以炎魔当前位置半径 30 随机选 8 个点各触发一次“烈焰雨爆发”（对范围内单位/建筑造成一次性伤害）；并给该范围内敌军附加 30 年“热浪”（移速 -10%）。 | 只做“局部范围枚举”，不做全图区域系统：在炎魔 `action_attack_target` 中 `spendMana` 后做 tile 抽样，表现可用 `castFire/throwTorchAtTile`，伤害用 `changeHealth`；热浪用 trait + 到期年。 |
-
-</details>
-
-<a id="demon-6-abyss"></a>
-##### 魔王6：深渊邪神（疯狂）
-<details>
-<summary>展开技能表（P0+S1-S6）</summary>
-
-| 槽位 | 技能名 | 类型 | 触发（默认消耗：普通 5 点 / 终极 10 点） | 能力详细描述（默认） | 实现方式（建议） |
-|------|--------|------|-------------------|----------------------|------------------|
-| P0 | 精神污染 | 战斗光环 | 常驻；命中/受击触发 | 当深渊邪神**命中或受击**时：以当前 `pTile` 半径 `R=16`，对敌对单位结算一次“疯狂侵染”：疯狂值 +10（0-100）。疯狂值越高，单位越容易失控（用后续技能触发表达）。 | 疯狂值写入单位 `custom_data_int["era_madness"]`（0-100）；逻辑放在深渊邪神的 `action_attack_target`/`action_get_hit`：范围枚举后对敌军 `madness = clamp(madness+10)`。 |
-| S1 | 疯狂爆发 | 条件触发（标记） | 疯狂 ≥ 100 时触发；持续 10 年 | 单位疯狂值达到 100 时触发一次“失控标记”（持续 10 年）：带标记单位在其后续每次受击时都会短暂 `makeConfused(...)`（最多触发 8 次），并获得“狂乱”（攻击 +30%，防御 -20%）。标记结束时将疯狂值降到 40。 | 触发点放在深渊邪神的 `action_attack_target`：把目标疯狂值加到阈值后，给目标加 `trait_era_madness_burst`（写到期年 + `procs_left`）。在 `trait_era_madness_burst.action_get_hit` 里调用 `makeConfused(...)` 并递减次数；移除时把 `era_madness` 设回 40。 |
-| S2 | 邪教渗透 | 主动（命中施放/召唤） | 命中时尝试 | 当深渊邪神命中目标且法力足够时：在目标 `pTile` 周围召唤 8-12 个邪教徒（临时单位），邪教徒会优先传播疯狂值并攻击英雄。 | 在 `action_attack_target`：`spendMana` 后以 `pTile` 为中心找可行走点并 `spawnNewUnit("cultist", tile, ...)`；必要时对邪教徒做一次性 `goTo(...)` 引导靠近最近英雄。 |
-| S3 | 深渊凝视 | 主动（单体） | 主动施放 | 指定英雄：立刻 +50 疯狂值，并眩晕（默认时长）；若目标疯狂值 ≥ 80，则额外掉血 `20% 当前生命（health_current）`。 | 疯狂值加成由 MOD；眩晕用 `ActionLibrary.addStunnedEffectOnTarget`；掉血 `changeHealth`。 |
-| S4 | 低语诱导 | 主动（命中施放/牵引标记） | 命中英雄时尝试；持续 15 年 | 当深渊邪神命中英雄且法力足够时：为其附加 15 年“低语标记”。带标记英雄在其后续每次受击时会被强制 `goTo(深渊据点附近 tile)` 并短暂 `makeConfused(...)`（最多触发 10 次），稳定把其拖向战场核心。 | 在 `action_attack_target`：`spendMana` 后给目标加 `trait_era_abyss_lure`（到期年+次数）。在该 trait 的 `action_get_hit`：调用 `goTo(...)` + `makeConfused(...)` 并递减次数。 |
-| S5 | 深渊触手 | 主动（命中施放/召唤） | 命中时尝试 | 当深渊邪神命中目标且法力足够时：在目标 `pTile` 周围召唤 4 个“深渊触手”（临时单位），优先攻击建筑与密集人群；触手持续到深渊邪神被封印/死亡或触手被击杀。 | 在 `action_attack_target`：`spendMana` 后 `spawnNewUnit("abyss_tentacle", tile, ...)`。清理由深渊邪神自身的 `action_on_object_remove`（死亡/移除时批量移除仍存活的触手）。 |
-| S6 | 旧日降临 | 终极技（命中施放） | 仅全盛可用；命中时尝试 | 当深渊邪神命中目标且法力足够时：以自身 `pTile` 半径 35 内所有敌对单位疯狂值 +30；并在附近生成 1 个“旧日化身”（Boss）加入战场，持续到封印战结束或被击杀。 | 只做“局部范围枚举”，不做全图：在 `action_attack_target` 中 `spendMana` 后枚举半径 35 单位并加疯狂；Boss 用 `spawnNewUnit`，并通过 trait 强化其高血/范围伤害。 |
-
-</details>
-
-<a id="demon-7-death"></a>
-##### 魔王7：死亡君王（亡灵）
-<details>
-<summary>展开技能表（P0+S1-S6）</summary>
-
-| 槽位 | 技能名 | 类型 | 触发（默认消耗：普通 5 点 / 终极 10 点） | 能力详细描述（默认） | 实现方式（建议） |
-|------|--------|------|-------------------|----------------------|------------------|
-| P0 | 亡灵领域 | 战斗光环 | 常驻；命中/受击触发 | 当死亡君王**命中或受击**时：以当前 `pTile` 半径 `R=14`，范围内亡灵单位攻击 +30%（刷新 5 年），敌对单位附加 5 年“凋零”（生命回复 -50%）。 | 给死亡君王挂 `trait_era_death_domain`：在 `action_attack_target`/`action_get_hit` 中范围枚举；对亡灵单位加 buff trait（到期年），对敌军加 `trait_era_death_withered`（到期年）。 |
-| S1 | 死亡审判 | 死亡点触发（范围标记） | 不耗法力 | 当死亡君王发生命中/受击时：会“宣判”其周围半径 25 的敌对单位（刷新 2 年标记）。带标记单位死亡时：有 `25%` 概率在原地生成 1 个骷髅仆从；若死者是“命定英雄”（`trait_era_destined`）则概率减半但生成精英骷髅。 | 在死亡君王的 `action_attack_target`/`action_get_hit`：以 `pTile` 半径 25 枚举敌军并加 `trait_era_death_sentence_mark`（写到期年）。在该标记的 `action_on_object_remove`：按概率 `spawnNewUnit("skeleton_thrall"/"skeleton_elite", tile, ...)`。 |
-| S2 | 灵魂收割 | 累计触发 | 每击杀 10 单位叠 1 层；最多 20 层 | 每层：死亡君王自身最大生命（health_max） +1%，攻击 +1%（可衰减）；封印后保留 30% 层数作为下一轮起始。 | 计数器 + 给魔王添加 trait（或 MOD 内部倍率）；结算时固化层数。 |
-| S3 | 死亡凋零 | 主动（命中施放） | 命中时尝试 | 当死亡君王命中目标且法力足够时：以目标 `pTile` 半径 12，敌对单位立刻损失 `30% 当前生命（health_current）`（英雄减半），并附加 10 年“凋零标记”：带标记单位在其后续每次受击时额外损失 `5% 当前生命（health_current）`。 | 在 `action_attack_target`：`spendMana` 后范围枚举并立刻扣血；给目标加 `trait_era_death_decay`（到期年）。额外伤害逻辑放在 `trait_era_death_decay.action_get_hit`。 |
-| S4 | 冥界大门 | 主动（命中施放/召唤波次） | 命中时尝试 | 当死亡君王命中目标且法力足够时：立刻额外生成一波亡灵（规模=当前轮回×系数），从据点或死亡君王附近集结出发。 | 在 `action_attack_target`：`spendMana` 后直接调用 2.4 波次生成（单位模板换亡灵），不做“每 N 年自动出兵”。 |
-| S5 | 死亡印记 | 主动（单体） | 主动施放；持续 20 年 | 给目标英雄施加“死亡印记”：20 年内若目标掉血到 30% 以下，则触发一次“处决”（直接击杀/或强制掉到 1HP 并眩晕（默认时长）），并消耗该印记。 | 施放时给目标添加 `trait_era_death_mark` 并写入到期年；目标受击用 `trait_era_death_mark.action_get_hit` 检查血量阈值，达成则执行 `ActionLibrary.deathMark(target)`（若可用）或 `setHealth(1)` + 眩晕，并移除标记。 |
-| S6 | 终末审判 | 终极技（命中施放） | 仅全盛可用；命中时尝试 | 当死亡君王命中目标且法力足够时：以自身 `pTile` 半径 35 触发一次死亡能量爆发：敌对单位获得 50 年“恐惧”（移速 -15%）；并立刻在该范围内 3 个“战场热点”（按密集单位 tile 抽样）生成亡灵大军。 | 只做“局部范围枚举”：在 `action_attack_target` 中 `spendMana` 后枚举半径 35 单位加恐惧 trait；热点=从半径内 tile 抽样；亡灵生成用 `spawnNewUnit`。 |
-
-</details>
-
-<a id="demon-8-soul"></a>
-##### 魔王8：灵魂编织者（契约）
-<details>
-<summary>展开技能表（P0+S1-S6）</summary>
-
-| 槽位 | 技能名 | 类型 | 触发（默认消耗：普通 5 点 / 终极 10 点） | 能力详细描述（默认） | 实现方式（建议） |
-|------|--------|------|-------------------|----------------------|------------------|
-| P0 | 契约烙印 | 被动 | 常驻；命中触发 | 普攻命中英雄时：叠加 1 层“契约”（最多 5 层）。带契约的英雄在其后续每次受击时额外损失 `2% 当前生命（health_current） × 层数`，并在契约存在期间降低抗性。 | 在灵魂编织者 `action_attack_target`：把层数写入英雄 `custom_data_int["era_contract_stacks"]`（上限 5）并刷新到期年；额外掉血逻辑放在英雄身上的 `trait_era_contract.action_get_hit`（不需要“每年结算”）。 |
-| S1 | 侵蚀冲动 | 条件触发（契约者） | 契约≥3 的英雄受击时判定 | 契约层数 ≥3：英雄每次受击有 `5% × 层数` 概率触发“侵蚀冲动”（持续 5 年）：立刻短暂混乱（默认时长），并获得 5 年易伤（受伤 +15%）。 | 在 `trait_era_contract.action_get_hit`：读取 `era_contract_stacks`，按概率触发 `makeConfused(...)` + 给目标加易伤 trait（写到期年）。 |
-| S2 | 傀儡牵引 | 主动（命中施放） | 命中英雄时尝试；持续 10 年 | 当灵魂编织者命中英雄且法力足够时：为其附加 10 年“牵引标记”。带标记英雄在其后续每次受击时会被强制 `goTo(魔王据点/魔王本体附近 tile)`，并刷新“攻击 +20% / 防御 -20%”（用于表现其被操控冲锋）。 | 在灵魂编织者 `action_attack_target`：`spendMana` 后给目标加 `trait_era_soul_pull`（到期年+次数）。在 `trait_era_soul_pull.action_get_hit`：调用 `goTo(...)` 并刷新 buff/debuff trait（只靠受击推进，不做“按年强制移动”）。 |
-| S3 | 灵魂吸取 | 击杀计数触发 | 不耗法力 | 灵魂编织者击杀单位时：恢复 `5% 最大生命（health_max）`；若击杀英雄则额外恢复 `15%` 并获得 1 层“灵魂护盾”（减伤 10% 持续 30 年）。 | “击杀检测”不做全局监听：在灵魂编织者的 `action_attack_target`（以及必要时 `action_get_hit`）里对比 `Actor.kills` 与 `custom_data_int["era_last_kills"]` 的增量；若有增量则执行 `restoreHealthPercent` 并叠加护盾 trait（写到期年/上限）。英雄击杀用“命中标记 → 目标 `action_on_object_remove` 回写到施法者”口径更稳定。 |
-| S4 | 灵魂链接 | 主动（区域） | 主动施放；持续 30 年 | 选定区域半径 14：随机 3 名英雄被“链接”。链接期间其中任意一个受到伤害，会有 30% 伤害分摊到其余两人。 | 给被链接者挂链接标记 trait，并用链接标记的 `action_get_hit`（`GetHitAction`）做分摊：对另外两人 `changeHealth(-share)`。 |
-| S5 | 意志粉碎 | 主动（命中施放） | 命中英雄时尝试 | 当灵魂编织者命中英雄且法力足够时：目标立刻损失 50% 体力/法力，并短暂硬控（默认时长）；随后获得“虚弱”（攻击 -15%，移速 -10%）基础 10 年，且契约层数每层额外 +2 年（上限 20 年）。 | 在 `action_attack_target`：`spendMana` 后对目标 `setStamina/setMana` + `addStunnedEffectOnTarget(...)`；虚弱用 `trait_era_weakened` 并写入到期年（不写“计时器移除”，到期清理由三钩子检查）。 |
-| S6 | 契约终裁 | 终极技（命中施放） | 仅全盛可用；命中时尝试 | 当灵魂编织者命中目标且法力足够时：以自身 `pTile` 半径 35 内所有“已带契约”的英雄：契约层数立即 +2，并触发一次“契约爆发”（大额掉血或短暂失控（默认时长），二选一）。 | 只做“局部范围枚举”，不遍历全图：在 `action_attack_target` 中 `spendMana` 后枚举半径 35 单位，筛选 `era_contract_stacks>0` 的英雄并统一处理：层数 +2、扣血 `changeHealth` 或 `makeConfused`，并弹 UI 事件提示。 |
-
-</details>
-
-<a id="demon-9-nature"></a>
-##### 魔王9：自然之怒（自然）
-<details>
-<summary>展开技能表（P0+S1-S6）</summary>
-
-| 槽位 | 技能名 | 类型 | 触发（默认消耗：普通 5 点 / 终极 10 点） | 能力详细描述（默认） | 实现方式（建议） |
-|------|--------|------|-------------------|----------------------|------------------|
-| P0 | 自然亲和 | 被动（地形加成） | 常驻；命中/受击触发刷新 | 当自然之怒**命中或受击**时：检测自身所在 tile。若为森林/草地：自身与附近自然军团攻击/防御 +25%（刷新 5 年）；若为荒地/熔岩：改为 -10%（刷新 5 年）。 | 在自然之怒的 `action_attack_target`/`action_get_hit` 中做 tile type 判定，并给自身/半径内自然军团刷新 buff/debuff trait（写到期年；不做定时器轮询）。 |
-| S1 | 植物暴走 | 主动（命中施放/地形） | 命中时尝试 | 当自然之怒命中目标且法力足够时：以目标 `pTile` 半径 18 随机选择 30 个地块转为森林/荆棘顶层，并给半径 18 敌军附加 10 年减速（移速 -15%）。 | 在 `action_attack_target`：`spendMana` 后做 tile 抽样并 `setTileType/setTopTileType`；减速用 trait（写到期年）。 |
-| S2 | 巨兽召唤 | 主动（召唤） | 主动施放 | 召唤 1 只自然巨兽（Boss 单位）+ 6 只护卫兽，目标为最近城市。 | `ActorManager.spawnNewUnit(...)`；用 `goTo` 引导。 |
-| S3 | 大地震颤 | 主动（建筑打击） | 主动施放 | 目标区域半径 16：建筑有 `50%` 概率受到重创（按当前生命（health_current）比例扣血），并使区域内单位眩晕（默认时长）。 | 对 `city.buildings` 或区域内 building 列表抽样 `changeHealth(-dmg)`；眩晕用 `ActionLibrary.addStunnedEffectOnTarget`。 |
-| S4 | 生命缠绕 | 主动（命中施放/范围控制） | 命中时尝试；持续 15 年 | 当自然之怒命中目标且法力足够时：以目标 `pTile` 半径 12 的敌军获得 15 年“缠绕”（移速 -40%，攻击 -15%）。 | 在 `action_attack_target`：`spendMana` 后范围枚举并给敌军加 `trait_era_entangle`（写到期年），不维护“区域集合”。 |
-| S5 | 风暴召唤 | 主动（命中施放/灾害） | 命中时尝试 | 当自然之怒命中目标且法力足够时：在目标 `pTile` 触发一次风暴表现（龙卷风/落雷/击退任选其一），并对半径 14 敌军施加 5 年减速（移速 -10%）与短暂眩晕（默认时长，小概率）。 | 表现优先 `ActionLibrary.castTornado(self, null, tile)`（或雷击/击退等）；核心效果只做一次性范围枚举（减速 trait + 概率短控），不做“风暴区周期伤害”。 |
-| S6 | 盖亚之怒 | 终极技（命中施放） | 仅全盛可用；命中时尝试 | 当自然之怒命中目标且法力足够时：以自身 `pTile` 半径 40 触发一次“自然灾变连锁”：执行 S1/S3/S5 的强化版各 1 次（地形改造+震颤+风暴），但每项都有严格“单次影响上限”。 | 只做“局部范围枚举与 tile 抽样”，不选全图热点：在 `action_attack_target` 里 `spendMana` 后复用 S1/S3/S5 的一次性逻辑（范围与数量上调，但有硬上限）。 |
-
-</details>
-
-<a id="demon-10-judge"></a>
-##### 魔王10：终焉审判者（终焉）
-<details>
-<summary>展开技能表（P0+S1-S6）</summary>
-
-| 槽位 | 技能名 | 类型 | 触发（默认消耗：普通 5 点 / 终极 10 点） | 能力详细描述（默认） | 实现方式（建议） |
-|------|--------|------|-------------------|----------------------|------------------|
-| P0 | 神罚印记 | 被动 | 常驻；命中触发 | 普攻命中英雄：叠 1 层“审判”（最多 3 层）。每层使其受到的伤害 +10%。 | 用终焉审判者的 `ActorTrait.action_attack_target` 命中时：把层数写入英雄 `custom_data_int["era_judgement_stacks"]`（上限 3），并用 trait 表现易伤。 |
-| S1 | 天堂审判 | 条件触发 | 审判层数=3 且法力足够时触发 | 审判满 3 层：触发一次“裁决”——目标立刻损失 `60% 当前生命（health_current）`（若已低于 30% 则处决/击杀），并清空其审判层数。 | 由 MOD 检测层数；伤害 `changeHealth`；处决可用 `ActionLibrary.deathMark(...)`（若适配）或 `setHealth(1)` + 眩晕。 |
-| S2 | 末日号角 | 主动（命中施放/范围压制） | 命中时尝试；持续 30 年 | 当终焉审判者命中目标且法力足够时：以自身 `pTile` 半径 40 的文明单位获得 30 年“末日压迫”（攻击 -10%，防御 -10%，移速 -5%）。 | 在 `action_attack_target`：`spendMana` 后范围枚举并给目标加 `trait_era_doom_pressure`（到期年）。不做“定时全图触发”。 |
-| S3 | 圣裁光束 | 主动（点杀） | 主动施放 | 对目标英雄位置降下“圣裁”：连续 3 次雷击，外加 5 年易伤（受伤 +20%）。 | `ActionLibrary.castLightning(...)` + 易伤 trait。 |
-| S4 | 终焉波次 | 主动（命中施放/军团强化） | 命中时尝试；持续 30 年 | 当终焉审判者命中目标且法力足够时：立刻追加 1 波“终焉军团”（数量=当前波次×系数），并给终焉军团附加 30 年“终焉增幅”：军团单位在其后续每次命中时追加 +15% 伤害。 | 在 `action_attack_target`：`spendMana` 后调用 2.4 生成；增幅用 `trait_era_judge_legion_amp`（逻辑放在军团单位的 `action_attack_target`：追加扣血），并用到期年控制持续。 |
-| S5 | 诸神黄昏 | 条件技能（战斗燃命） | HP < 50% 时生效 | HP < 50%：自身进入“黄昏形态”——攻击/防御 +50%，法力恢复 +30%；代价是每次**命中或受击**都会损失 `2% 当前生命（health_current）`（燃命）。 | 条件检查写在终焉审判者的 `action_attack_target`/`action_get_hit`：满足 HP 条件则刷新 `trait_era_judge_twilight`；燃命=在这两个钩子里按当前生命扣血（`changeHealth(-curHp*0.02)`）。 |
-| S6 | 世界终结（末日计量） | 终极技（累计触发） | 仅全盛可用；累计“末日值”触发 | 终焉审判者在全盛期会累积“末日值”：每次命中/受击/处决都会增加。末日值达到阈值（例如 300）时：触发一次“终焉事件”——在自身附近连续执行 3 个灾害爆发（雷暴/瘟疫/地形崩坏各 1 次）并追加 1 次终极波次。 | 末日值写入 `custom_data_int["era_doom_meter"]` 并只在三钩子里递增；达到阈值时清零并触发：灾害爆发全部限定在半径内（范围枚举 + tile 抽样），终极波次复用 2.4。 |
-
-</details>
-
----
+> 为减少主文档冗长与跳转负担，完整技能表统一放在「附录E」。
+> 入口：见 [附录E：魔王技能表](#appendix-demon-skills)。
 
 ### 2.3 纪元遗产系统（轮回的"记忆"）
 <a id="s23"></a>
@@ -930,189 +754,34 @@ AssetManager.traits.add(new ActorTrait
 | 辅助型 | 1.0× | 0.8× | 1.0× | 1.0× | Buff/召唤/净化 |
 | 精英型 | 1.2× | 1.2× | 1.2× | 1.0× | 多面手/关键技 |
 
-##### 2.4.2.3 将领名册与技能表（P0+S1）
+##### 2.4.2.3 将领名册与技能表（移至附录）
 
-> 表中“实现抓手”是建议路线：优先 `ActionLibrary.*`，没有现成动作时用自定义 trait + `custom_data_*` 存状态，并在三钩子里推进与清理（见「[统一口径](#conventions)」）。
-
-说明：本节所有 S1 默认消耗 5 点法力，触发频率见「[统一口径](#conventions)」与「[7.1.8](#s71)」，表格不再重复标注。
-
-**将领索引**： [虚无](#generals-void) · [瘟疫](#generals-plague) · [机械](#generals-mech) · [时空](#generals-time) · [火焰](#generals-fire) · [深渊](#generals-abyss) · [亡灵](#generals-death) · [契约](#generals-soul) · [自然](#generals-nature) · [终焉](#generals-judge)
-
-<a id="generals-void"></a>
-###### 2.4.2.3.1 虚无之主将领（领域：虚空）
-<details>
-<summary>展开将领表（5 名，P0+S1）</summary>
-
-| 将领ID | 名称 | 定位 | P0 被动（常驻） | S1 主动 |
-|---|---|---|---|---|
-| `general_void_dps` | 虚空剑圣·塞拉斯 | 输出 | **虚空剑意**：普攻命中时附加一次“裂伤”（目标 10 年内受到伤害 +15%）；对英雄额外 +10%。实现：给塞拉斯挂 `ActorTrait`，用 `action_attack_target` 命中时给目标 `addTrait("trait_era_void_bleed")` 并刷新剩余年限。 | **相位穿行**：持续 5 年；自身移速 +100%，并在施放时瞬移到最近英雄附近（3 格内）。实现：`ActionLibrary.singularityTeleportation(...)` + 速度 trait。 |
-| `general_void_vanguard` | 虚空行者·米拉 | 先锋 | **虚空潜行（相位）**：自身累计命中 `N=5` 次后获得 10 年“相位潜行”（移速 +20%）；相位潜行期间受击时有 10% 概率随机传送脱离（每累计受击 `M=20` 次最多触发 1 次）。实现：命中计数写入 `custom_data_int`；受击用 `action_get_hit` 判定传送，并用 `custom_data_int` 做“受击次数限频”。 | **相位突袭**：瞬移到最近英雄附近（3 格内），首次命中基础伤害（damage）×3，并施加短暂硬控（默认时长）。实现：`singularityTeleportation(...)` + 命中用 `action_attack_target` + `addStunnedEffectOnTarget(...)`。 |
-| `general_void_tank` | 虚空守卫·奥古斯 | 坦克 | **存在锚定**：当奥古斯命中/受击时：以当前 `pTile` 半径 10 刷新友军“锚定”（控制时间 -30%，不受“抹除类效果”影响，持续 5 年）。实现：在 `action_attack_target/action_get_hit` 里半径枚举并刷新 buff trait（到期年）。 | **虚空护盾**：持续 10 年；获得护盾值 `500 + 50×轮回数`，护盾存在时减伤 30%。实现：自定义护盾数值（MOD 内部）+ 护盾 trait 的 `action_get_hit`（`GetHitAction`）减伤。 |
-| `general_void_support` | 虚空祭司·艾莉娅 | 辅助 | **虚空祝福**：当艾莉娅命中/受击时：以当前 `pTile` 半径 12 刷新友军攻击 +15%（持续 5 年）。实现：在 `action_attack_target/action_get_hit` 里半径枚举并刷新 buff trait（到期年）。 | **虚空召唤**：在自身周围召唤 3 个“虚空行者”（军团先锋单位），并命令其向最近城市移动。实现：`spawnNewUnit(...)` + `goTo(...)` 引导（受军团上限约束）。 |
-| `general_void_elite` | 虚空领主·塞拉菲姆 | 精英 | **虚空领域（弱化版）**：当塞拉菲姆命中/受击时：以当前 `pTile` 半径 10 对敌军结算一次 `3% 当前生命（health_current）` 伤害（最低扣到 1HP）。实现：在 `action_attack_target/action_get_hit` 里半径枚举并 `changeHealth(-dmg)`。 | **相位打击**：瞬移到目标英雄身边并造成一次“无视护甲”的高伤害（基础伤害（damage）×2.0）。实现：传送 + 直接扣血 `changeHealth(-dmg)`。 |
-
-</details>
-
-<a id="generals-plague"></a>
-###### 2.4.2.3.2 瘟疫母神将领（领域：瘟疫）
-<details>
-<summary>展开将领表（5 名，P0+S1）</summary>
-
-| 将领ID | 名称 | 定位 | P0 被动（常驻） | S1 主动 |
-|---|---|---|---|---|
-| `general_plague_vanguard` | 疫病使者·莫格拉 | 先锋 | **疫源携带**：普攻命中给目标叠 1 层感染（最多 5 层）；感染额外伤害统一走“感染者受击触发”（与瘟疫母神同口径）。实现：`action_attack_target` 命中时写 `custom_data_int["era_infection_stacks"]` 并刷新到期年。 | **感染冲锋**：直线冲锋 20 格，路径上每隔若干格触发一次“毒雾冲击”（半径 4：敌军损失 `6% 当前生命（health_current）` 并中毒 5 年）。实现：路径取样 + 在命中钩子里做多次“半径枚举爆发”（不做毒雾区列表）。 |
-| `general_plague_tank` | 腐烂巨兽·格罗尔 | 坦克 | **毒素护甲**：受击时反施加“中毒”（10 年内攻击 -10%）。实现：在自身 `action_get_hit` 对攻击者加中毒 trait（到期年）。 | **腐烂光环**：持续 30 年；持续期内当格罗尔命中/受击时：以当前 `pTile` 半径 12 对敌军结算一次 `10% 当前生命（health_current）` 伤害（最低扣到 1HP）。实现：施放时给自身加 `trait_era_plague_rot_aura`（写到期年），该 trait 在 `action_attack_target/action_get_hit` 做半径枚举扣血。 |
-| `general_plague_dps` | 变异领主·泽克斯 | 输出 | **突变体质**：每次命中有 `5%` 概率获得 20 年增益（攻击/防御/移速 +20%），最多叠 2 层。实现：在 `action_attack_target` 里做概率 + 层数写入 `custom_data_int` + buff trait。 | **毒素爆发**：以目标 `pTile` 半径 8 立刻造成固定伤害（默认 100）并给敌军叠感染 2 层。实现：范围扣血 + 写入感染层数（不做区域持续）。 |
-| `general_plague_support` | 瘟疫祭司·娜塔莎 | 辅助 | **感染仪式**：当娜塔莎命中/受击时：以当前 `pTile` 半径 12，对感染者把 `custom_data_int["era_infection_hits_taken"]` 额外 +5（上限不超过转化阈值），等效“加速转化”。实现：在钩子里半径枚举感染者并写字段（不做每年扫描）。 | **瘟疫治愈**：治疗周围友军 30% 最大生命（health_max），并移除 1 个负面状态。实现：`restoreHealthPercent(...)` + 移除 trait。 |
-| `general_plague_elite` | 疫病之母·玛拉凯 | 精英 | **超级感染**：感染上限提高到 6 层；感染层数 ≥5 的目标在其受击时有 `5%` 概率直接转化为仆从。实现：把规则合并到 `trait_era_infection.action_get_hit` 的判定里（仅对“超级感染来源”生效）。 | **疫病领主召唤**：召唤 2 个“疫病领主”，优先围攻最近大城。实现：批量 `spawnNewUnit(...)` + `goTo(...)`（受军团上限约束）。 |
-
-</details>
-
-<a id="generals-mech"></a>
-###### 2.4.2.3.3 机械暴君将领（领域：机械）
-<details>
-<summary>展开将领表（5 名，P0+S1）</summary>
-
-| 将领ID | 名称 | 定位 | P0 被动（常驻） | S1 主动 |
-|---|---|---|---|---|
-| `general_mech_dps` | 歼灭者·阿尔法 | 输出 | **火控校准**：攻击 +15%，并获得“攻城加压”：当阿尔法普攻命中建筑时，额外造成一次固定伤害（默认 30）。实现：在 `action_attack_target` 里检测 `pTarget` 为建筑并 `changeHealth(-30)`。 | **离子炮**：对目标点半径 4 造成固定伤害（默认 120）并短暂眩晕（默认时长）。实现：范围扣血 + `addStunnedEffectOnTarget(...)`。 |
-| `general_mech_vanguard` | 侦察者·贝塔 | 先锋 | **扫描协议**：当贝塔命中/受击时：在半径 20 内选择最近英雄作为“扫描目标”（用于 UI），并刷新 10 年“受伤 +10%”标记。实现：在 `action_attack_target/action_get_hit` 里做局部选目标 + 加 debuff trait。 | **扫描锁定**：持续 20 年；给目标英雄施加“锁定”（受伤 +30%）。实现：命中时施放并写到期年（到期清理由三钩子检查）。 |
-| `general_mech_tank` | 堡垒·伽马 | 坦克 | **反击协议**：受击时有 15% 概率使攻击者短暂眩晕（默认时长）并减速 5 年（-15%）；为避免刷屏，改为“每累计受击 `H=10` 次最多触发 1 次”。实现：在 `action_get_hit` 里用 `custom_data_int` 做受击计数与触发重置。 | **能量护盾**：持续 12 年；获得护盾值 `600 + 60×轮回数`，护盾期间减伤 20%（不做控制免疫）。实现：护盾数值（MOD 内部）+ 护盾 trait 的 `action_get_hit`（`GetHitAction`）减伤。 |
-| `general_mech_support` | 工程师·德尔塔 | 辅助 | **维修协议**：当德尔塔命中/受击时：以当前 `pTile` 半径 12 为机械友军恢复 `3% 最大生命（health_max）`（单次处理上限）。实现：在 `action_attack_target/action_get_hit` 里半径枚举并 `restoreHealthPercent(...)`。 | **生产线**：召唤 3 个机械兵（军团先锋/主力按比例），并立即集结到自身。实现：批量 `spawnNewUnit(...)` + `goTo(...)`（受军团上限约束）。 |
-| `general_mech_elite` | 终结者·欧米茄二号 | 精英 | **歼灭协议**：对建筑伤害（damage）×3；对军团单位伤害 +30%。实现：命中加成。 | **同化光束**：对目标单位施加“同化标记”：目标累计受击 `H=20` 次后转化为机械单位；英雄仅施加虚弱（不强制同化）。实现：命中时加 `trait_era_mech_assimilate_mark`，在其 `action_get_hit` 里计数到阈值后 spawn+remove。 |
-
-</details>
-
-<a id="generals-time"></a>
-###### 2.4.2.3.4 时空扭曲者将领（领域：时空）
-<details>
-<summary>展开将领表（5 名，P0+S1）</summary>
-
-| 将领ID | 名称 | 定位 | P0 被动（常驻） | S1 主动 |
-|---|---|---|---|---|
-| `general_time_vanguard` | 时空游侠·克洛诺 | 先锋 | **时间漂移**：受到致命伤害时有 20% 概率瞬移脱离；为限制频率，改为“每累计受击 `H=80` 次最多触发 1 次”。实现：在自身 `action_get_hit` 里做致命判定 + 受击计数阈值，触发后清零计数并 `teleportRandom(...)`。 | **闪烁**：瞬移到目标附近随机位置，并获得 5 年移速 +50%。实现：传送 + trait。 |
-| `general_time_tank` | 时间守护者·埃恩 | 坦克 | **时间护盾（被动触发）**：HP < 30% 受击时自动获得 5 年减伤 60%；为限制频率，改为“每累计受击 `H=100` 次最多触发 1 次”。实现：在 `action_get_hit` 里用受击计数阈值 + 到期年控制。 | **时间静止**：半径 10 敌军获得 1 年“静止标记”：带标记敌军在其后续每次受击时触发眩晕（默认时长），最多触发 3 次。实现：范围加标记 trait，并在标记的 `action_get_hit` 里短控+次数递减。 |
-| `general_time_dps` | 命运编织者·莫伊拉 | 输出 | **命运之箭**：对英雄命中必定暴击（用基础伤害（damage）×1.5 近似）。实现：命中加成。 | **因果链**：对 1 个目标造成伤害后，弹射到最近 3 个敌人（每次伤害衰减 20%）。实现：邻近搜索 + 多段扣血。 |
-| `general_time_support` | 时空祭司·泰姆拉 | 辅助 | **时间加速光环**：当泰姆拉命中/受击时：以当前 `pTile` 半径 12 为友军额外恢复法力 `5% MaxMana`（不超过 MaxMana，仅对有法力者生效）。实现：在 `action_attack_target/action_get_hit` 里半径枚举并 `addMana(...)`。 | **时间回溯**：在据点召唤 1 名“时间幻影将领”（属性为本体 50%），持续到泰姆拉被移除/死亡或幻影被击杀。实现：`spawnNewUnit(...)`；清理由泰姆拉的 `action_on_object_remove` 批量移除仍存活的幻影。 |
-| `general_time_elite` | 永恒者·伊特尼提 | 精英 | **时间循环（阈值触发）**：HP < 20% 时触发一次“回环”：瞬移到安全位置并恢复 20% 最大生命（health_max）；为限制频率，改为“每累计受击 `H=120` 次最多触发 1 次”。实现：在 `action_get_hit` 里做阈值检测 + 受击计数阈值，触发后清零计数并 `teleportRandom(...)` + `restoreHealthPercent(...)`。 | **命运改写**：目标英雄 10 年内伤害 -30%，并短暂眩晕（默认时长）。实现：debuff trait + 短控。 |
-
-</details>
-
-<a id="generals-fire"></a>
-###### 2.4.2.3.5 混沌炎魔将领（领域：火焰）
-<details>
-<summary>展开将领表（5 名，P0+S1）</summary>
-
-| 将领ID | 名称 | 定位 | P0 被动（常驻） | S1 主动 |
-|---|---|---|---|---|
-| `general_fire_vanguard` | 火焰使者·伊格尼斯 | 先锋 | **炽焰印记**：普攻命中时点燃目标 5 年；点燃的额外伤害改为“目标后续每次受击触发”（每次受击额外 -3% 当前生命（health_current））。实现：命中加 `trait_era_burn_mark`，在标记的 `action_get_hit` 里扣血。 | **火焰冲锋**：冲锋到目标并造成一次基础伤害（damage）×1.5，点燃目标 10 年。实现：位移引导 + 点燃标记（受击触发扣血）。 |
-| `general_fire_tank` | 熔岩巨人·玛格玛 | 坦克 | **熔岩护甲**：近战攻击者受到固定反伤（默认 50）。实现：用护甲 trait 的 `action_get_hit`（`GetHitAction`）对攻击者 `changeHealth(-dmg)`。 | **岩浆喷发**：目标区域半径 10 转熔岩地形（每次最多改 20 格），并短暂眩晕敌军（默认时长）。实现：`WorldTile.setTileType(...)` + 范围眩晕。 |
-| `general_fire_dps` | 地狱火焰·因菲诺 | 输出 | **焚烧**：普攻命中附加 10 年“焚烧标记”；带标记目标后续每次受击额外损失 `4% 当前生命（health_current）`。实现：命中加 `trait_era_burn_dot`，额外伤害在其 `action_get_hit` 里结算（不按年 DOT）。 | **烈焰风暴**：半径 12 造成固定火焰伤害（默认 300）。实现：范围扣血 + 表现用 `ActionLibrary.castFire(...)`。 |
-| `general_fire_support` | 火焰祭司·辛德拉 | 辅助 | **火焰祝福**：当辛德拉命中/受击时：以当前 `pTile` 半径 12 刷新友军“火焰附魔”（持续 5 年）：友军命中会给目标附加 5 年燃烧标记（燃烧额外伤害走受击触发）。实现：在钩子里半径枚举给友军加 trait。 | **火焰复苏**：持续 20 年；持续期内当友军命中/受击且站在火焰/熔岩地形上时，恢复量 ×1.5，并获得 20 年火抗。实现：给友军刷新“复苏标记 trait”，在其命中/受击钩子里做地形判定与回血倍率。 |
-| `general_fire_elite` | 炎魔之子·弗雷格 | 精英 | **火焰抗性**：火焰伤害 -80%（口径：仅对 MOD 的火焰伤害/燃烧触发伤害生效）；并在受击时若站在熔岩上恢复 `5% 最大生命（health_max）`。实现：在自身 `action_get_hit` 里做地形判定 + `restoreHealthPercent(...)`。 | **末日烈焰（局部）**：持续 20 年；以目标 `pTile` 半径 14 触发一次火雨爆发（一次性范围伤害），并给敌军附加 20 年“热浪标记”：其后续每次受击额外掉血（小额）。实现：范围扣血 + 标记的 `action_get_hit` 追加伤害（不做区域列表）。 |
-
-</details>
-
-<a id="generals-abyss"></a>
-###### 2.4.2.3.6 深渊邪神将领（领域：疯狂）
-<details>
-<summary>展开将领表（5 名，P0+S1）</summary>
-
-| 将领ID | 名称 | 定位 | P0 被动（常驻） | S1 主动 |
-|---|---|---|---|---|
-| `general_abyss_vanguard` | 低语者·萨尔 | 先锋 | **精神侵蚀**：命中英雄使其疯狂值 +20（0-100）。实现：用 `ActorTrait.action_attack_target` 命中时把疯狂值写入目标 `custom_data_int["era_madness"]`（0-100）。 | **低语突袭**：使目标英雄立即短暂混乱（默认时长），并降低其攻击 10 年。实现：混乱 + trait。 |
-| `general_abyss_tank` | 深渊守卫·达贡 | 坦克 | **深渊护甲**：当达贡命中/受击时：以当前 `pTile` 半径 10 对疯狂值 ≥50 的敌军刷新“攻击 -15%”（持续 5 年）。实现：在 `action_attack_target/action_get_hit` 里半径枚举 + debuff trait。 | **恐惧光环**：持续 20 年；持续期内当达贡命中/受击时：以当前 `pTile` 半径 12 刷新敌军攻击 -25%。实现：施放后给自身加光环 trait（到期年），光环 trait 在 `action_attack_target/action_get_hit` 做半径枚举。 |
-| `general_abyss_dps` | 疯狂使者·尼亚拉 | 输出 | **疯狂共鸣**：对疯狂值越高的目标伤害越高（满 100 时 +100%）。实现：按疯狂值加成。 | **精神爆破**：对目标区域半径 8 造成伤害，对疯狂值 ≥50 的单位基础伤害（damage）×3。实现：范围扣血 + 条件倍率。 |
-| `general_abyss_support` | 邪教主教·海德拉 | 辅助 | **深渊祝福**：当海德拉命中/受击时：以当前 `pTile` 半径 12 刷新友军“疯狂值增长 -50%”标记，并使混乱/恐惧持续时间 -50%（仅对 MOD 精神控制生效）。实现：在钩子里半径枚举给友军加 trait 标记；写入到期年时按标记缩短。 | **邪教仪式**：在目标 `pTile` 周围召唤邪教徒 3 名，并命令其优先靠近英雄传播疯狂。实现：`spawnNewUnit(...)` + `goTo(...)`（受军团上限约束）。 |
-| `general_abyss_elite` | 触手领主·肖格斯 | 精英 | **触手横扫**：普攻命中时对目标周围 2 个敌人造成 50% 溅射伤害（每累计命中 `H=20` 次最多触发 1 次）。实现：在 `action_attack_target` 里用命中计数阈值限频，并邻近搜索 2 个敌人 `changeHealth(-dmg)`。 | **深渊凝视（弱化版）**：对目标英雄疯狂值 +30，并短暂眩晕（默认时长）。实现：疯狂值写入 `custom_data_int["era_madness"]` + `addStunnedEffectOnTarget(...)`。 |
-
-</details>
-
-<a id="generals-death"></a>
-###### 2.4.2.3.7 死亡君王将领（领域：亡灵）
-<details>
-<summary>展开将领表（5 名，P0+S1）</summary>
-
-| 将领ID | 名称 | 定位 | P0 被动（常驻） | S1 主动 |
-|---|---|---|---|---|
-| `general_death_vanguard` | 死亡骑士·莫德雷德 | 先锋 | **尸骸践踏**：普攻命中时有 15% 概率在目标附近生成 1 个骷髅兵；为限频，改为“每累计命中 `H=20` 次最多触发 1 次”，且总触发上限 6 次。实现：在 `action_attack_target` 里做计数与上限控制，触发时 `spawnNewUnit("skeleton_thrall", tile, ...)`。 | **亡灵冲锋**：冲锋到目标并造成基础伤害（damage）×1.3，同时给目标附加 3 年“冲锋标记”；目标在标记期内死亡则额外召唤 1 个骷髅。实现：冲锋引导 + 命中标记 trait → 标记 trait `action_on_object_remove` 生成骷髅（受军团上限约束）。 |
-| `general_death_tank` | 骨龙·尼德霍格 | 坦克 | **骨甲**：减伤 30%，并使控制持续时间 -30%（仅对 MOD 控制生效）。实现：骨甲 trait 的 `action_get_hit`（`GetHitAction`）减伤；控制缩短按“到期年”规则处理。 | **亡灵光环**：持续 20 年；当尼德霍格命中/受击时：以当前 `pTile` 半径 12 为亡灵单位恢复 4% 最大生命（health_max）（可限频）。实现：光环 trait 在 `action_attack_target/action_get_hit` 里范围恢复。 |
-| `general_death_dps` | 死灵法师·凯尔苏斯 | 输出 | **灵魂收割**：击杀单位恢复 50% 最大生命（health_max）；为限频，改为“每累计击杀 `K=3` 次最多触发 1 次”。实现：用 `Actor.kills` 增量触发（上次 kills 记到 `custom_data_int`）+ 次数上限。 | **死亡射线**：对目标英雄造成固定伤害（默认 100）且“无视护甲”。实现：直接扣血。 |
-| `general_death_support` | 亡灵祭司·莉莉丝 | 辅助 | **死亡祝福**：半径 12 友军死亡后有 20% 概率转化为亡灵仆从。实现：当莉莉丝命中/受击时，以当前 `pTile` 半径 12 为友军刷新标记 `trait_era_death_bless_mark`；标记 trait 的 `action_on_object_remove` 在友军死亡时按概率 `spawnNewUnit("undead_thrall", tile, ...)`。 | **复活仪式**：在据点召唤 3 个亡灵单位（优先主力/精锐）。实现：批量生成（受军团上限约束）。 |
-| `general_death_elite` | 死神使者·桑纳托斯 | 精英 | **死亡审判（弱化版）**：附近死亡事件触发骷髅生成概率 +15%。实现：全局/区域加成。 | **冥界召唤**：召唤“死神分身”2 个（临时精英单位，持续 50 年）。实现：生成 + 计时清理。 |
-
-</details>
-
-<a id="generals-soul"></a>
-###### 2.4.2.3.8 灵魂编织者将领（领域：契约）
-<details>
-<summary>展开将领表（5 名，P0+S1）</summary>
-
-| 将领ID | 名称 | 定位 | P0 被动（常驻） | S1 主动 |
-|---|---|---|---|---|
-| `general_soul_vanguard` | 诱惑者·莉莉丝 | 先锋 | **魅影**：对英雄命中时有 10% 概率触发“短暂魅惑”（目标短暂停止攻击，默认时长）。实现：用 `ActorTrait.action_attack_target` 命中时做概率判定，对目标 `makeWait(...)` 或短眩晕（按“<1 年”规则）。 | **魅惑**：目标英雄短暂停止攻击（默认时长），并获得“易伤”10 年。实现：`makeWait(...)`/短控 + 易伤 trait（到期年写入 `custom_data_int`）。 |
-| `general_soul_tank` | 契约守护者·巴弗灭 | 坦克 | **契约壁垒**：当巴弗灭命中/受击时：以当前 `pTile` 半径 8 刷新友军减伤 10% 与“控制持续时间 -20%”（持续 5 年，仅对 MOD 控制生效）。实现：在 `action_attack_target/action_get_hit` 里半径枚举并刷新 buff trait。 | **灵魂守护（近似嘲讽）**：持续 20 年；指定 1 名友军获得护盾值（默认 300）与减伤 20%。守护期间当巴弗灭命中/受击时：对半径 8 敌军执行一次 `startFightingWith(巴弗灭)`，实现近似嘲讽（带数量上限）。 |
-| `general_soul_dps` | 灵魂猎手·阿撒兹勒 | 输出 | **灵魂吸取**：击杀永久 +5% 攻击（上限 10 层）。实现：用 `Actor.kills` 增量触发并把层数写入 `custom_data_int` + trait 表现。 | **灵魂撕裂**：对“有契约层数”的目标基础伤害（damage）×3。实现：读取目标 `custom_data_int["era_contract_stacks"]` + 条件倍率。 |
-| `general_soul_support` | 契约祭司·贝利亚尔 | 辅助 | **契约解除**：普攻命中时有概率移除目标 1 个增益状态；为限制频率，改为“每累计命中 `H=20` 次最多触发 1 次”。实现：在 `action_attack_target` 里计数到阈值后对目标移除 1 个增益 trait。 | **批量契约**：半径 12 内敌军全部获得 1 层契约。实现：范围施加契约层数。 |
-| `general_soul_elite` | 傀儡大师·墨菲斯托二世 | 精英 | **契约侵蚀**：当带契约层数 ≥3 的英雄受击时：触发短暂混乱（默认时长）并附加 1 年易伤（受伤 +15%）；为限制频率，改为“每累计受击 `H=10` 次最多触发 1 次”。实现：逻辑写在英雄的 `trait_era_contract.action_get_hit`（读 `era_contract_stacks` + 受击计数阈值）。 | **契约牵引**：持续 30 年；给目标英雄施加“牵引标记”：其后续每次受击都会 `goTo(魔王据点/魔王本体附近 tile)` 并短暂混乱（默认时长）（最多触发 10 次）。实现：命中施放标记 trait，在标记的 `action_get_hit` 里牵引+混乱+次数递减。 |
-
-</details>
-
-<a id="generals-nature"></a>
-###### 2.4.2.3.9 自然之怒将领（领域：自然）
-<details>
-<summary>展开将领表（5 名，P0+S1）</summary>
-
-| 将领ID | 名称 | 定位 | P0 被动（常驻） | S1 主动 |
-|---|---|---|---|---|
-| `general_nature_vanguard` | 荆棘使者·索恩 | 先锋 | **荆棘印记**：命中目标附加 10 年减速（-20%），并在其脚下生成 1 个荆棘地块。实现：trait + 小范围地形改造（严格上限）。 | **荆棘冲锋**：冲锋路径留下荆棘（仅做地形表现，持续 15 年），并对路径附近敌军触发一次“荆棘爆刺”（半径 2：损失 `3% 当前生命（health_current）`，最低扣到 1HP）。实现：路径取样 + 每个采样点做一次性半径枚举扣血（不做“经过后每年掉血”）。 |
-| `general_nature_tank` | 古树守护者·伊格德拉西尔 | 坦克 | **树皮护甲**：减伤 40%。实现：护甲 trait 的 `action_get_hit`（`GetHitAction`）减伤。 | **根系缠绕**：半径 10 敌军减速 -40% 持续 10 年，并短暂眩晕（默认时长）。实现：范围 debuff + 短控。 |
-| `general_nature_dps` | 野兽之王·芬里尔 | 输出 | **狂暴**：HP < 50% 时攻击 +30%，移速 +15%。实现：阈值 trait。 | **召唤狼群**：召唤 3 只狼加入战斗并围攻最近城市。实现：生成单位（受军团上限约束）。 |
-| `general_nature_support` | 自然祭司·德鲁伊娜 | 辅助 | **自然治愈**：当德鲁伊娜命中/受击时：以当前 `pTile` 半径 12 为友军恢复 `3% 最大生命（health_max）`（单次处理上限）。实现：在 `action_attack_target/action_get_hit` 里半径枚举并 `restoreHealthPercent(...)`。 | **植物召唤**：召唤食人花/植物怪 6 个守卫据点。实现：生成单位。 |
-| `general_nature_elite` | 盖亚之子·泰坦 | 精英 | **大地之躯**：控制持续时间 -30%（仅对 MOD 控制生效）；建筑伤害 +30%。实现：trait。 | **地震**：目标区域半径 16，建筑 40% 概率受重创，单位短暂眩晕（默认时长）。实现：建筑抽样扣血 + 范围短控。 |
-
-</details>
-
-<a id="generals-judge"></a>
-###### 2.4.2.3.10 终焉审判者将领（领域：审判）
-<details>
-<summary>展开将领表（5 名，P0+S1）</summary>
-
-| 将领ID | 名称 | 定位 | P0 被动（常驻） | S1 主动 |
-|---|---|---|---|---|
-| `general_judge_vanguard` | 天使长·米迦勒 | 先锋 | **圣痕**：命中英雄叠加 1 层审判（最多 3 层；每层受伤 +10%）。实现：用 `ActorTrait.action_attack_target` 命中时写入目标 `custom_data_int["era_judgement_stacks"]`（上限 3）并刷新到期年。 | **神圣冲锋**：无视地形冲锋到目标并造成基础伤害（damage）×1.5。实现：路径忽略用传送近似 + 扣血。 |
-| `general_judge_tank` | 守护天使·乌列尔 | 坦克 | **神圣护盾**：减伤 25%，并使控制持续时间 -30%（仅对 MOD 施加的控制生效）。实现：护盾 trait 的 `action_get_hit`（`GetHitAction`）减伤；控制缩短按“到期年”规则处理。 | **神罚反击**：持续 20 年；受击时给攻击者叠 1 层审判（持续期内最多触发 20 次）。实现：用反击 trait 的 `action_get_hit`（`GetHitAction`）做 `procs_left` 递减与叠层写入 `custom_data_int["era_judgement_stacks"]`。 |
-| `general_judge_dps` | 审判天使·加百列 | 输出 | **神圣之剑**：对“被审判目标”伤害 +80%（不做 ×3）。实现：按审判层数/标记加成。 | **审判执行**：对审判 ≥3 层的英雄造成一次重击（当前生命（health_current） -35%），并短暂眩晕（默认时长），随后清空其审判层数。实现：条件扣血 + 控制 + 清层。 |
-| `general_judge_support` | 救赎天使·拉斐尔 | 辅助 | **净化**：半径 12 友军负面状态持续时间 -40%（仅对 MOD 负面状态生效）。实现：trait 标记 + 对应负面效果写入到期年（`custom_data_int`）时按该标记缩短。 | **神圣治愈**：治疗半径 12 友军 60% 最大生命（health_max），并移除 1 个负面状态。实现：`restoreHealthPercent(0.6)` + 移除。 |
-| `general_judge_elite` | 末日天使·亚兹拉尔 | 精英 | **末日宣告（局部）**：当亚兹拉尔命中/受击时：以当前 `pTile` 半径 14 刷新敌军攻击/防御 -5%（持续 5 年）。实现：在 `action_attack_target/action_get_hit` 里半径枚举并刷新 debuff trait。 | **最终审判（局部）**：目标区域半径 16 敌军当前生命（health_current） -15%（英雄减半），并施加 10 年移速 -10%。实现：范围扣血 + debuff。 |
-
-</details>
-
----
+> 完整将领表已统一整理到「附录F」。
+> 入口：见 [附录F：将领名册与技能表](#appendix-general-skills)。
 
 #### 2.4.3 军团系统（单位库）
 <a id="s243"></a>
 
-> `2.4` 已定义波次与生成规则；本节补齐“每个魔王 4 类军团单位（先锋/主力/精锐/终极）”的可实现口径：单位模板、倍率、以及每单位 **P0+S1**。  
-> 技能触发/范围/存储规则遵循「[统一口径](#conventions)」。
+> `2.4` 已定义波次与生成规则；本节补齐“每个魔王 4 类军团单位（先锋/主力/精锐/终极）”的可实现口径：单位模板与倍率。  
+> 军团单位不配置技能，保持“自动生成小兵”的直观体验与性能稳定。
 
 ##### 2.4.3.1 军团通用规则（必须一致）
 
-- **单位分层**：先锋（骚扰）/主力（均衡）/精锐（带技能）/终极（Boss）。
+- **单位分层**：先锋（骚扰）/主力（均衡）/精锐（高属性）/终极（Boss）。
+- **技能规则**：军团单位无技能（不配置 P0/S1），仅靠基础属性与模板区分。
 - **同时上限**：受 `2.4` 的“军团_同时上限”约束；超过则停止生成。
-- **模板/法力/频率口径**：见「[统一口径](#conventions)」与「[7.1.8](#s71)」，本节不再重复。
-- **技能口径**：军团单位技能尽量短（单次/短持续）；触发与持续清理规则见「[统一口径](#conventions)」。
+- **模板口径**：见「[统一口径](#conventions)」。
 - **死亡替换**：军团单位不做“永久变形”，需要“转化/同化”时用“替换生成（spawn + remove）”实现。
-- **平衡约束**（军团 << 魔王）：军团不做“全图效果/复活/召唤自复制/直接处决/长期强控”；控制类效果默认不超过 0.5 年（Boss 可到 1 年）。
+- **平衡约束**（军团 << 魔王）：军团不做“全图效果/复活/召唤自复制/直接处决/长期强控”。
 
 ##### 2.4.3.2 军团单位倍率模板（默认）
 
-| 阶层 | HP倍率 | 攻击倍率 | 防御倍率 | 移速倍率 | 技能配置 |
-|------|--------|---------|---------|---------|---------|
-| 先锋 | 0.7× | 0.8× | 0.6× | 1.3× | P0 + S1（主动耗法力） |
-| 主力 | 1.0× | 1.0× | 1.0× | 1.0× | P0 + S1（主动耗法力） |
-| 精锐 | 1.6× | 1.4× | 1.2× | 1.0× | P0 + S1（强控/爆发） |
-| 终极 | 4.0× | 2.5× | 2.0× | 0.8× | P0 + S1（范围技能） |
+| 阶层 | HP倍率 | 攻击倍率 | 防御倍率 | 移速倍率 |
+|------|--------|---------|---------|---------|
+| 先锋 | 0.7× | 0.8× | 0.6× | 1.3× |
+| 主力 | 1.0× | 1.0× | 1.0× | 1.0× |
+| 精锐 | 1.6× | 1.4× | 1.2× | 1.0× |
+| 终极 | 4.0× | 2.5× | 2.0× | 0.8× |
 
 ##### 2.4.3.3 各魔王军团单位名册（4 类）
 
@@ -1129,155 +798,6 @@ AssetManager.traits.add(new ActorTrait
 | 自然 | 狼 | 熊 | 巨兽 | 世界树守护者 |
 | 终焉 | 低阶天使 | 中阶天使 | 高阶天使 | 炽天使 |
 
-##### 2.4.3.4 军团单位技能表（P0+S1）
-
-> 说明：军团单位的“数值”默认是便于实现与平衡的起点；最终可在配置里按轮回/波次做倍率修正。
-
-说明：本节所有 S1 默认消耗 5 点法力，触发频率见「[统一口径](#conventions)」与「[7.1.8](#s71)」，表格不再重复标注。
-
-**军团索引**： [虚无](#units-void) · [瘟疫](#units-plague) · [机械](#units-mech) · [时空](#units-time) · [火焰](#units-fire) · [深渊](#units-abyss) · [亡灵](#units-death) · [契约](#units-soul) · [自然](#units-nature) · [终焉](#units-judge)
-
-<a id="units-void"></a>
-###### 2.4.3.4.1 虚无军团（虚空）
-<details>
-<summary>展开单位表（4 类，P0+S1）</summary>
-
-| 单位ID | 名称 | 阶层 | P0 被动（常驻） | S1 主动 |
-|---|---|---|---|---|
-| `unit_void_vanguard` | 虚空行者 | 先锋 | **虚空步**：脱战 3 年移速 +20%，首次命中附加 5 年减速 -20%。实现：脱战计时 + trait。 | **裂隙跳跃**：瞬移到目标附近并造成基础伤害（damage）×1.2。实现：`teleportRandom(...)`/`singularityTeleportation(...)` + 扣血。 |
-| `unit_void_main` | 存在蚀刻者 | 主力 | **蚀刻**：命中建筑伤害 +50%。实现：命中加成。 | **虚空撕裂**：对目标区域半径 6 造成固定伤害（默认 40）。实现：范围扣血。 |
-| `unit_void_elite` | 虚空裂解者 | 精锐 | **裂解光环**：命中/受击时：以当前 `pTile` 半径 6 对敌军结算一次 `-2% 当前生命（health_current）`（最低扣到 1HP）。实现：在 `action_attack_target/action_get_hit` 里半径枚举并 `changeHealth(-dmg)`。 | **相位斩**：对英雄造成基础伤害（damage）×1.4，并短暂眩晕（默认时长）。实现：条件扣血 + 短控。 |
-| `unit_void_boss` | 反物质泰坦 | 终极 | **巨体**：减伤 25%（不做控制免疫）。实现：trait。 | **反物质震荡**：半径 14 敌军受到固定伤害（默认 120，英雄减半）并减速 10 年（-15%）；建筑受重创。实现：范围扣血 + debuff + 建筑扣血（分批）。 |
-
-</details>
-
-<a id="units-plague"></a>
-###### 2.4.3.4.2 瘟疫军团（瘟疫）
-<details>
-<summary>展开单位表（4 类，P0+S1）</summary>
-
-| 单位ID | 名称 | 阶层 | P0 被动（常驻） | S1 主动 |
-|---|---|---|---|---|
-| `unit_plague_vanguard` | 感染者 | 先锋 | **携毒**：命中叠 1 层感染（最多 3 层）。实现：用 `ActorTrait.action_attack_target` 命中时写入目标 `custom_data_int[\"era_infection_stacks\"]`（上限 3）并刷新到期年。 | **毒雾喷吐**：在目标点触发一次“毒雾冲击”（半径 6：敌军损失 `6% 当前生命（health_current）`，并中毒 5 年）。实现：范围枚举扣血 + 中毒 trait（不做区域列表）。 |
-| `unit_plague_main` | 瘟疫兽 | 主力 | **腐化咬噬**：对英雄伤害 +20%。实现：命中加成。 | **腐烂波**：半径 8 敌军当前生命（health_current） -15%。实现：范围扣血。 |
-| `unit_plague_elite` | 变异领主 | 精锐 | **突变**：每累计命中 `H=20` 次触发一次强化（攻击/防御 +20%，持续 20 年），触发后清零计数。实现：在 `action_attack_target` 里计数并刷新 buff trait。 | **感染爆发**：半径 10 敌军感染层数 +2。实现：范围叠层。 |
-| `unit_plague_boss` | 瘟疫泰坦 | 终极 | **疫体**：中毒/感染伤害 -80%（口径：仅对 MOD 相关 DOT 生效）；受击时按累计次数触发自愈：每累计受击 `H=20` 次恢复 3% 最大生命（health_max）。实现：trait + 在 `action_get_hit` 里计数与回血。 | **黑疫扩散**：以自身为中心半径 12 随机抽取 6 个点各触发一次“毒雾冲击”（半径 6），并给范围内敌军附加 10 年中毒。实现：tile 抽样 + 范围枚举（不做区域列表）。 |
-
-</details>
-
-<a id="units-mech"></a>
-###### 2.4.3.4.3 机械军团（机械）
-<details>
-<summary>展开单位表（4 类，P0+S1）</summary>
-
-| 单位ID | 名称 | 阶层 | P0 被动（常驻） | S1 主动 |
-|---|---|---|---|---|
-| `unit_mech_vanguard` | 机械兵 | 先锋 | **钢壳**：减伤 10%。实现：trait。 | **电击**：对目标短暂眩晕（默认时长）并减速 5 年（-15%）。实现：短控 + debuff trait。 |
-| `unit_mech_main` | 战斗机器人 | 主力 | **协同火力**：附近有机械单位时攻击 +10%（半径 8）。实现：邻近计数 + trait。 | **压制射击**：持续 10 年；目标减速 -30%。实现：trait。 |
-| `unit_mech_elite` | 歼灭者 | 精锐 | **破城**：对建筑伤害（damage）×2。实现：命中加成。 | **超载齐射**：半径 8 造成固定伤害（默认 80）。实现：范围扣血。 |
-| `unit_mech_boss` | 机械泰坦 | 终极 | **自我修复**：受击时按累计次数触发修复：每累计受击 `H=20` 次恢复 4% 最大生命（health_max）。实现：在 `action_get_hit` 里计数与回血。 | **天网指令**：持续 30 年；周围机械单位攻击 +25%。实现：范围 buff。 |
-
-</details>
-
-<a id="units-time"></a>
-###### 2.4.3.4.4 时空军团（时空）
-<details>
-<summary>展开单位表（4 类，P0+S1）</summary>
-
-| 单位ID | 名称 | 阶层 | P0 被动（常驻） | S1 主动 |
-|---|---|---|---|---|
-| `unit_time_vanguard` | 时间碎片 | 先锋 | **时移**：受到伤害时有 10% 概率瞬移到附近空地；为限频，改为“每累计受击 `H=20` 次最多触发 1 次”。实现：在自身 `action_get_hit` 里做概率与计数限频，并执行传送。 | **闪回**：移速 +50% 持续 5 年。实现：trait。 |
-| `unit_time_main` | 时空行者 | 主力 | **缓时打击**：命中使目标 5 年减速 -20%。实现：trait。 | **错位传送**：随机传送 1 名敌人到附近荒地。实现：`teleportRandom(...)`。 |
-| `unit_time_elite` | 命运编织者 | 精锐 | **预知**：减伤 12%。实现：trait。 | **命运锁链**：半径 8 敌军短暂眩晕（默认时长）。实现：范围短控。 |
-| `unit_time_boss` | 永恒泰坦 | 终极 | **回环护盾（阈值触发）**：HP < 25% 时获得 10 年减伤 30%；为限频，改为“每累计受击 `H=150` 次最多触发 1 次”。实现：在护盾 trait 的 `action_get_hit` 里检查阈值/计数并减伤。 | **时间风暴**：对半径 10 敌军施加 15 年“风暴标记”：减速 -15%，并在其后续受击时有小概率短暂眩晕（默认时长，单体可限频）。实现：范围加标记 trait + `action_get_hit` 概率短控。 |
-
-</details>
-
-<a id="units-fire"></a>
-###### 2.4.3.4.5 炎魔军团（火焰）
-<details>
-<summary>展开单位表（4 类，P0+S1）</summary>
-
-| 单位ID | 名称 | 阶层 | P0 被动（常驻） | S1 主动 |
-|---|---|---|---|---|
-| `unit_fire_vanguard` | 火元素 | 先锋 | **点燃**：命中附加 5 年燃烧；燃烧目标在其后续每次受击时额外损失 `2% 当前生命（health_current）`。实现：命中加燃烧标记，在标记的 `action_get_hit` 里扣血。 | **火焰冲刺**：冲刺并点燃地块 10 年。实现：点火 + 位移引导。 |
-| `unit_fire_main` | 熔岩兽 | 主力 | **耐热**：火焰伤害 -50%。实现：trait。 | **熔岩吐息**：半径 6 固定伤害（默认 60）并点火。实现：范围扣血 + 点火。 |
-| `unit_fire_elite` | 地狱火焰 | 精锐 | **灼热光环**：命中/受击时：以当前 `pTile` 半径 8 对敌军结算一次 `-3% 当前生命（health_current）`（最低扣到 1HP）。实现：在 `action_attack_target/action_get_hit` 里半径枚举并扣血。 | **烈焰风暴**：半径 10 固定伤害（默认 120）。实现：范围扣血。 |
-| `unit_fire_boss` | 炎魔泰坦 | 终极 | **熔岩之躯**：命中/受击时若站在熔岩上则恢复 4% 最大生命（health_max）（可限频）。实现：在 `action_attack_target/action_get_hit` 里做地形判定 + `custom_data_int` 限频回血。 | **末日喷发**：目标区域转熔岩（每次最多改 30 格），并短暂眩晕敌军（默认时长）。实现：地形改造 + 控制。 |
-
-</details>
-
-<a id="units-abyss"></a>
-###### 2.4.3.4.6 深渊军团（疯狂）
-<details>
-<summary>展开单位表（4 类，P0+S1）</summary>
-
-| 单位ID | 名称 | 阶层 | P0 被动（常驻） | S1 主动 |
-|---|---|---|---|---|
-| `unit_abyss_vanguard` | 邪教徒 | 先锋 | **低语**：命中英雄疯狂值 +10。实现：用 `ActorTrait.action_attack_target` 命中时写入目标 `custom_data_int[\"era_madness\"]`（0-100）。 | **祈祷**：半径 8 友军攻击 +10%，并给范围内敌军施加 10 年“低语标记”：标记单位在其后续受击时疯狂值 +5（有上限）。实现：范围加 buff trait + 标记 trait，在标记的 `action_get_hit` 里累加疯狂值。 |
-| `unit_abyss_main` | 深渊行者 | 主力 | **恐惧**：命中目标 5 年攻击 -10%。实现：trait。 | **深渊踏击**：半径 6 短暂眩晕（默认时长）并减速 5 年（-20%）。实现：短控 + debuff。 |
-| `unit_abyss_elite` | 触手怪 | 精锐 | **疯狂共鸣**：对疯狂值 ≥50 的目标伤害 +50%。实现：条件加成。 | **触手缠绕**：单体“缠绕压制”3 年：标记期间目标每次受击触发 眩晕（默认时长）（最多触发 5 次），并附加移速 -30%。实现：压制标记 + `action_get_hit` 限次短控 + debuff trait。 |
-| `unit_abyss_boss` | 旧日支配者 | 终极 | **心智撕裂**：命中/受击时：以当前 `pTile` 半径 12 的敌军疯狂值 +15（上限 100）。实现：在 `action_attack_target/action_get_hit` 里半径枚举并写 `custom_data_int`。 | **旧日降临（军团版）**：召唤触手 4 个守卫据点 50 年。实现：生成 + 清理。 |
-
-</details>
-
-<a id="units-death"></a>
-###### 2.4.3.4.7 死亡军团（亡灵）
-<details>
-<summary>展开单位表（4 类，P0+S1）</summary>
-
-| 单位ID | 名称 | 阶层 | P0 被动（常驻） | S1 主动 |
-|---|---|---|---|---|
-| `unit_death_vanguard` | 骷髅兵 | 先锋 | **亡灵坚韧**：减伤 10%。实现：trait。 | **骨刃突刺**：单体基础伤害（damage）×1.3。实现：扣血。 |
-| `unit_death_main` | 亡灵骑士 | 主力 | **恐惧骑乘**：命中使目标 5 年移速 -15%。实现：trait。 | **亡灵冲锋**：冲锋并造成范围小伤害。实现：位移引导 + 范围扣血。 |
-| `unit_death_elite` | 死灵法师 | 精锐 | **亡灵增幅**：半径 10 亡灵攻击 +15%。实现：范围 buff。 | **死灵召唤**：召唤骷髅兵 6 名。实现：生成单位。 |
-| `unit_death_boss` | 骨龙 | 终极 | **骨甲**：减伤 25%（不做控制免疫）。实现：trait。 | **亡灵吐息**：半径 12 造成固定伤害（默认 120），并使目标 5 年内生命恢复 -30%。实现：范围扣血 + debuff。 |
-
-</details>
-
-<a id="units-soul"></a>
-###### 2.4.3.4.8 灵魂军团（契约）
-<details>
-<summary>展开单位表（4 类，P0+S1）</summary>
-
-| 单位ID | 名称 | 阶层 | P0 被动（常驻） | S1 主动 |
-|---|---|---|---|---|
-| `unit_soul_vanguard` | 傀儡 | 先锋 | **牵线**：命中目标 5 年攻击 -10%。实现：trait。 | **绞线**：单体短暂眩晕（默认时长）并减速 5 年（-20%）。实现：短控 + debuff。 |
-| `unit_soul_main` | 契约者 | 主力 | **契约烙印**：命中叠 1 层契约（最多 3）。实现：用 `ActorTrait.action_attack_target` 命中时写入目标 `custom_data_int["era_contract_stacks"]`（上限 3）并刷新到期年。 | **献祭**：对自身周围敌军造成伤害并自身掉血（自爆式）。实现：范围扣血 + 自身扣血。 |
-| `unit_soul_elite` | 灵魂猎手 | 精锐 | **猎魂**：对契约目标伤害 +50%。实现：条件加成。 | **抽魂**：对英雄造成伤害并治疗自身 20% 最大生命（health_max）。实现：扣血 + `restoreHealthPercent(...)`。 |
-| `unit_soul_boss` | 傀儡大师 | 终极 | **操线领域**：半径 12 敌军更易混乱（概率 +20%）。实现：区域加成。 | **夺心**：选择 1 名英雄施加 5 年“夺心压制”（敌我不分的失控近似）。实现：施加“夺心标记”，标记期间目标每次受击触发短暂混乱（`makeConfused`）+ 牵引（`goTo`）（可限频）。 |
-
-</details>
-
-<a id="units-nature"></a>
-###### 2.4.3.4.9 自然军团（自然）
-<details>
-<summary>展开单位表（4 类，P0+S1）</summary>
-
-| 单位ID | 名称 | 阶层 | P0 被动（常驻） | S1 主动 |
-|---|---|---|---|---|
-| `unit_nature_vanguard` | 狼 | 先锋 | **追猎**：对落单目标伤害 +15%。实现：目标判定。 | **扑击**：单体短暂眩晕（默认时长）并造成额外基础伤害（damage）×1.2。实现：短控 + 扣血。 |
-| `unit_nature_main` | 熊 | 主力 | **厚皮**：减伤 15%。实现：trait。 | **震地**：半径 6 敌军减速 5 年。实现：trait。 |
-| `unit_nature_elite` | 巨兽 | 精锐 | **狂暴**：HP < 50% 时攻击 +25%。实现：阈值 trait。 | **践踏**：半径 10 敌军短暂眩晕（默认时长）并造成固定伤害（默认 60）。实现：范围短控 + 扣血。 |
-| `unit_nature_boss` | 世界树守护者 | 终极 | **根系庇护**：命中/受击时：以当前 `pTile` 半径 12 的友军恢复 2% 最大生命（health_max）（可限频）。实现：在 `action_attack_target/action_get_hit` 里范围恢复并用 `custom_data_int` 限频。 | **根系爆发**：目标区域生成荆棘地形（每次最多改 25 格）并减速敌军 20 年。实现：地形改造 + debuff。 |
-
-</details>
-
-<a id="units-judge"></a>
-###### 2.4.3.4.10 终焉军团（审判）
-<details>
-<summary>展开单位表（4 类，P0+S1）</summary>
-
-| 单位ID | 名称 | 阶层 | P0 被动（常驻） | S1 主动 |
-|---|---|---|---|---|
-| `unit_judge_vanguard` | 低阶天使 | 先锋 | **审判印记**：命中英雄叠 1 层审判（最多 2）。实现：用 `ActorTrait.action_attack_target` 命中时写入目标 `custom_data_int[\"era_judgement_stacks\"]`（上限 2）并刷新到期年。 | **雷击**：对目标造成固定伤害（默认 40）。实现：`castLightning(...)`/扣血。 |
-| `unit_judge_main` | 中阶天使 | 主力 | **圣光**：半径 10 友军攻击 +10%。实现：范围 buff。 | **裁决**：对审判层数 ≥2 的目标造成额外伤害。实现：条件倍率。 |
-| `unit_judge_elite` | 高阶天使 | 精锐 | **圣裁**：减伤 15%（不做“免疫控制”）。实现：trait。 | **圣裁光束**：半径 8 固定伤害（默认 90），并减速 5 年（-15%）。实现：范围扣血 + debuff。 |
-| `unit_judge_boss` | 炽天使 | 终极 | **神性**：命中/受击时恢复 2% 最大生命（health_max）（可限频）；审判层数上限 +1。实现：在 `action_attack_target/action_get_hit` 里回血并计数限频。 | **天罚（局部）**：施放时在自身周围半径 14 随机落雷 4 次（范围内敌军受伤），并给范围内敌军附加 15 年“天罚标记”：标记单位后续受击时有小概率再次落雷（可限频）。实现：tile 抽样 + 标记 trait 的 `action_get_hit` 里触发 `castLightning(...)`。 |
-
-</details>
-
-<a id="p3"></a>
 ### 2.5 文明与英雄系统
 <a id="s25"></a>
 
@@ -1766,7 +1286,7 @@ CSI = (人口权重 + 城市权重 + 发展权重 + 英雄权重 + 抗魔权重)
 ## 开发附录
 [↩ 目录](#toc) · [↑ 顶部](#top)
 
-说明：本附录中仍沿用原 5.x/6.x/7.x 小节编号，便于历史引用。
+说明：本附录中仍沿用原 5.x/6.x/7.x 小节编号，便于历史引用；新增 E/F 为技能库（原 2.2.4 / 2.4.2.3）。
 
 <a id="conventions"></a>
 ## 附录A：统一口径与实现约定
@@ -1806,12 +1326,16 @@ CSI = (人口权重 + 城市权重 + 发展权重 + 英雄权重 + 抗魔权重)
 **D. 配置与容错**
 - 技能参数可配置：伤害、百分比、持续、半径、次数、概率、上限、法力消耗、频率等默认进入配置与 UI，可随时调整。
 - 可配置口径：标记为“默认值/可配置”的参数进入配置文件与控制面板；非法值（空/NaN/≤0 间隔/超大值）需做安全修正并提示（不崩溃）。
+- 时间/数量类：小于 0 的输入按 0 处理。
+- 间隔类：`<= 0` 自动修正为最小正值（避免除零/死循环）。
+- 概率类：按 `0%-100%` 归一（超过 100% 视为 100%；小于 0 按 0 处理）。
+- 任意数值：若出现 `NaN/Infinity` 自动回退为安全值。
 
 **E. 生成与挂载**
-- 技能槽位口径：魔王为 `P0 + S1-S6`；将领/军团为 `P0 + S1`。除特别声明外，控制类效果应短时且有上限。
+- 技能槽位口径：魔王为 `P0 + S1-S6`；将领为 `P0 + S1`；军团无技能。除特别声明外，控制类效果应短时且有上限。
 - 生成口径：魔王/将领/军团使用独立 `ActorAsset` 模板自定义生成（可从原生模板 clone 后改 `id/sprite/数值`）；不直接改写原生资产，不通过“现场改造现存单位”的方式生成。
 - 模板基底：选用“原生可见法力条”的基底（避免 `force_hide_mana`），以便技能直接使用游戏内置 `Actor.mana`。
-- 技能挂载口径（防误扩散）：技能 trait 不加入随机特质池/出生池，仅在生成魔王/将领/军团或晋升命定英雄时由代码手动 `addTrait(...)` 挂载。
+- 技能挂载口径（防误扩散）：技能 trait 不加入随机特质池/出生池，仅在生成魔王/将领或晋升命定英雄时由代码手动 `addTrait(...)` 挂载；军团不挂技能 trait。
 - 随机特质口径：魔王/将领/军团/命定英雄与原版单位一致，生成后按 `rate_birth/rate_acquire_grow_up/rate_inherit` 自动获得特质；默认开启，可配置关闭。
 - 寿命口径（魔王阵营）：魔王/将领/军团默认“不老死”，在 `ActorAsset.base_stats` 上将 `lifespan` 设为超大值（或 `multiplier_lifespan` 设为超高倍率）。
 
@@ -1823,8 +1347,6 @@ CSI = (人口权重 + 城市权重 + 发展权重 + 英雄权重 + 抗魔权重)
 - 收藏标记口径（便于定位）：生成魔王/将领/命定英雄时可自动加入收藏夹（配置开关）；默认不收藏普通军团。实现：`ActorAsset.can_be_favorited=true` + `Actor.switchFavorite()`。单位死亡后会被销毁，不需要额外“手动取消收藏”。
 
 </details>
-
----
 <a id="p5"></a>
 ## 附录B：技术可行性与实现方案
 [↩ 目录](#toc) · [↑ 顶部](#top)
@@ -2360,13 +1882,12 @@ paragraphs: [
 
 | 参数 | 默认值 | 备注 |
 |------|-----|------|
-| 主动技能法力消耗（固定-普通） | 5 | 魔王/将领/军团/英雄通用 |
+| 主动技能法力消耗（固定-普通） | 5 | 魔王/将领/英雄通用 |
 | 主动技能法力消耗（固定-终极） | 10 | 仅终极技/大招 |
 | 主动技能触发上限（普通） | 2 次/年 | 每个技能单独计数 |
 | 终极技触发间隔 | 2 年 | 间隔内最多 1 次 |
-| 技能数值（魔王/将领/军团/英雄） | 见对应技能表 | 伤害/持续/半径/次数/概率/上限 |
+| 技能数值（魔王/将领/英雄） | 见对应技能表（附录E/F） | 伤害/持续/半径/次数/概率/上限 |
 | 遗产档位与装备/研究技能数值 | 见 2.3.2.1 | 工艺/研究/军备/魔王遗产 |
-| 军团单位技能表数值 | 见 2.4.3.4 | 默认值以表内为准 |
 
 #### 7.1.9 体验与显示
 
@@ -2413,3 +1934,349 @@ paragraphs: [
 | `随机加成_英雄_暴击率` | 10%~25% | 作用于 `critical_chance` |
 | `随机倍率_英雄_移速` | 1.05~1.25 | 作用于 `speed` |
 | `随机倍率_英雄_攻速` | 1.05~1.25 | 作用于 `attack_speed` |
+
+---
+
+<a id="appendix-demon-skills"></a>
+## 附录E：魔王技能表（P0+S1-S6，原 2.2.4）
+[↩ 目录](#toc) · [↑ 顶部](#top)
+
+> 建议把“机制”直接落成技能表，方便实现与调参。  
+> 统一规则：每个魔王 **1 个被动（P0）+ 6 个技能（S1-S6）**；数值可配置；触发与存储口径见「[统一口径](#conventions)」。  
+> 主动技能消耗与频率统一见「[统一口径](#conventions)」与「[7.1.8](#s71)」，本节不再重复。
+
+**魔王索引**： [1 虚无](#demon-1-void) · [2 瘟疫](#demon-2-plague) · [3 机械](#demon-3-mech) · [4 时空](#demon-4-time) · [5 火焰](#demon-5-fire) · [6 深渊](#demon-6-abyss) · [7 亡灵](#demon-7-death) · [8 契约](#demon-8-soul) · [9 自然](#demon-9-nature) · [10 终焉](#demon-10-judge)
+
+<a id="demon-1-void"></a>
+##### 魔王1：虚无之主（虚空）
+<details>
+<summary>展开技能表（P0+S1-S6）</summary>
+
+| 槽位 | 技能名 | 类型 | 触发（默认消耗：普通 5 点 / 终极 10 点） | 能力详细描述（默认） | 实现方式（建议） |
+|------|--------|------|-------------------|----------------------|------------------|
+| P0 | 虚空领域 | 战斗光环 | 常驻；命中/受击触发 | 当虚无之主**命中或受击**时：以当前 `pTile` 为中心半径 `R=12`，对敌对单位结算一次“虚空侵蚀”：损失 `5% 当前生命（health_current）`（最低扣到 `1HP`），并附加 2 年“虚空迟滞”（移速 -20%）。 | 给虚无之主挂 `trait_era_void_aura`：在 `action_attack_target` 与 `action_get_hit` 中调用同一逻辑；用 `pTile` 半径枚举单位并 `changeHealth(-dmg)`；迟滞=给目标加 `trait_era_void_slow` 并刷新 `custom_data_int["era_void_slow_expire_year"]`。 |
+| S1 | 存在抹除 | 死亡点触发（标记） | 无消耗；目标死亡触发 | 虚无之主命中目标时：给目标附加 5 年“残响标记”。带标记的目标死亡时：在死亡点爆发一次“残响冲击”（半径 6）：敌对单位损失 `20% 当前生命（health_current）`（最低扣到 `1HP`），并附加 2 年“迟滞”（移速 -20%）。 | 命中：在虚无之主 trait 的 `action_attack_target` 给目标 `addTrait("trait_era_void_echo_mark")` 并写入到期年。死亡：在 `trait_era_void_echo_mark.action_on_object_remove` 里用目标 tile 枚举半径 6 单位并处理（扣血+迟滞）。 |
+| S2 | 世界收缩 | 累计触发 | 每累计击杀 `K=100` 触发 | 每当虚无之主累计击杀达到 `K=100`：在世界边缘随机选 `N=8` 个地块“虚空化”（危险地形/贫瘠地形），并对附近单位附加 2 年减速。`N` 随阶段提升（苏醒 6 / 降临 8 / 全盛 12）。 | “击杀计数”严格走三钩子：命中时给目标写 `custom_data_int["era_last_hit_attacker"] = self.id` 并挂短时 `trait_era_last_hit_mark`；在该标记的 `action_on_object_remove` 若确认 `last_hit_attacker==虚无之主` 则给虚无之主 `custom_data_int["era_void_kill_count"]++`；达到 `K` 后触发一次地形改造并清零。 |
+| S3 | 相位突袭 | 主动（命中施放） | 命中英雄时尝试 | 当虚无之主**命中英雄**且法力足够时：瞬移到该英雄附近 3 格内，追加一次 `200% 基础伤害（damage）` 的打击；并给目标附加 10 年“破碎”（受伤 +25%）。 | 在 `action_attack_target` 中：若 `pTarget` 为英雄则 `spendMana(cost)` → `singularityTeleportation(...)` → 直接扣血；“破碎”用 `trait_era_void_shatter` + `custom_data_int["era_void_shatter_expire_year"]`。 |
+| S4 | 虚空裂隙 | 主动（命中施放） | 命中时尝试 | 当虚无之主命中目标且法力足够时：以 `pTarget` 的 `pTile` 为中心半径 10 触发一次“裂隙撕扯”：敌对单位损失 `20% 当前生命（health_current）`，并有 `15%` 概率被随机传送到附近荒地。 | 在 `action_attack_target` 中：`spendMana(cost)` 后以 `pTarget` 的 tile 枚举半径 10 单位；扣血 `changeHealth`；传送用 `ActionLibrary.teleportRandom(self, target, tile)`。 |
+| S5 | 虚无洪流 | 主动（直线） | 命中时尝试 | 当虚无之主命中目标且法力足够时：沿“自身→目标”方向取 30 格直线，对路径附近半径 3 的敌对单位造成 `35% 当前生命（health_current）` 伤害；并附加 3 年“压制标记”：带标记单位**每次受击**都会额外触发一次 眩晕（默认时长）（最多触发 6 次）。 | `action_attack_target`：`spendMana` 后取 tile 串并半径枚举；给命中的单位加 `trait_era_void_suppress`，在该 trait 的 `action_get_hit` 里做“剩余触发次数”递减并调用 `addStunnedEffectOnTarget(...)`。 |
+| S6 | 反物质爆发 | 终极技 | 仅全盛可用 | 以自身为中心半径 18：单位受到 `50% 当前生命（health_current）` 伤害（对英雄减半）；建筑受到高额伤害（优先打到“废墟阈值”）；并清空区域内 30% 地块植被。 | 单位用 `changeHealth`；建筑用 `Building.getHit(...)` 口径可替换为 `changeHealth(-dmg)`（Building 继承 BaseSimObject）；植被用 `WorldTile.removeTrees/removeGrass`。 |
+
+</details>
+
+<a id="demon-2-plague"></a>
+##### 魔王2：瘟疫母神（瘟疫）
+<details>
+<summary>展开技能表（P0+S1-S6）</summary>
+
+| 槽位 | 技能名 | 类型 | 触发（默认消耗：普通 5 点 / 终极 10 点） | 能力详细描述（默认） | 实现方式（建议） |
+|------|--------|------|-------------------|----------------------|------------------|
+| P0 | 瘟疫传播 | 被动 | 常驻；命中触发 | 普攻命中时：给目标叠加 1 层“感染”（最多 5 层）；感染目标在**后续每次受击**时会额外损失 `2% 当前生命（health_current） × 层数`，并在感染存在期间降低攻击/移速。 | 给瘟疫母神挂 `ActorTrait`：`action_attack_target` 命中时给目标加 `trait_era_infection` 并写入 `custom_data_int["era_infection_stacks"]`（上限 5）与 `custom_data_int["era_infection_expire_year"]`。感染的额外伤害在 `trait_era_infection.action_get_hit` 里结算（不需要“每年 DOT”）。 |
+| S1 | 感染转化 | 条件触发（感染者） | 感染满层后触发 | 单位感染层数达到 5 后：在其接下来累计受击 `H=20` 次时触发一次“转化判定”：`60%` 概率转化为瘟疫仆从（替换模板）；失败则进入“重病期”（接下来 10 次受击额外掉血）。 | 在 `trait_era_infection.action_get_hit` 中维护 `custom_data_int["era_infection_hits_taken"]` 与 `custom_data_int["era_infection_sick_hits_left"]`；满足阈值时执行 `metamorphInto(...)` 或 spawn+remove（不走定时器）。 |
+| S2 | 毒雾弥漫 | 死亡点触发（感染者） | 无消耗；目标死亡触发 | 任意感染单位死亡：在死亡点触发一次“毒雾冲击”（半径 8）：敌对单位损失 `12% 当前生命（health_current）`（最低扣到 `1HP`），并附加 5 年中毒效果。 | 用 `trait_era_infection.action_on_object_remove`：拿到目标 tile 后枚举半径 8 敌对单位，扣血 + `addPoisonedEffectOnTarget(...)`（或中毒 trait + 到期年）。 |
+| S3 | 基因突变 | 随机触发（感染者） | 感染者受击时判定 | 感染者每次受击有 `10%` 概率触发一次突变：获得随机强化（攻击/防御/移速 +20%）或随机弱化（-20%），持续到其后续 `M=20` 次受击结束（最多叠 2 层）。 | 在 `trait_era_infection.action_get_hit` 里做概率判定；把突变层数与剩余受击次数写入 `custom_data_int`，并用 buff/debuff trait 表现（只靠受击事件推进与清理）。 |
+| S4 | 疫病领主 | 累计触发 | 每转化 `T=50` 单位触发 | 每累计成功转化 50 个仆从：在母神据点生成 1 个“疫病领主”（精英单位），并立即带队向最近城市进军。 | `ActorManager.spawnNewUnit("plague_lord", tile, ...)`；用 `Actor.goTo(...)` 引导其移动到城市周边。 |
+| S5 | 疫潮爆发 | 主动（命中施放） | 命中时尝试 | 当母神命中目标且法力足够时：以目标 tile 半径 20 内敌对单位立刻获得 1 层感染，并附加“疫潮标记”（持续 20 年）：带标记单位在其后续 **3 次受击**时，每次额外 +1 层感染；感染满层时每次受击有 `25%` 概率触发转化。 | 在母神 `action_attack_target`：`spendMana` 后以 `pTarget` tile 枚举半径 20 单位并加 `trait_era_infection` + `trait_era_plague_tide_mark`；在 `trait_era_plague_tide_mark.action_get_hit` 里做“剩余触发次数”递减并加层/判定转化。 |
+| S6 | 黑疫降临 | 终极技（命中施放） | 仅全盛可用；命中时尝试 | 当母神命中目标且法力足够时：以母神当前位置半径 30 触发一次“黑疫浪潮”：敌对单位获得 50 年“虚弱”（攻击/防御 -15%），并立刻在该范围内随机 5 个点各触发一次“毒雾冲击”（同 S2 的爆发效果）。 | 只做“局部范围枚举”，不做全图。逻辑放在母神 `action_attack_target`：`spendMana` 后枚举半径 30 敌对单位加 debuff trait；随机点用 tile 抽样并复用 S2 的爆发扣血/中毒。 |
+
+</details>
+
+<a id="demon-3-mech"></a>
+##### 魔王3：机械暴君（机械）
+<details>
+<summary>展开技能表（P0+S1-S6）</summary>
+
+| 槽位 | 技能名 | 类型 | 触发（默认消耗：普通 5 点 / 终极 10 点） | 能力详细描述（默认） | 实现方式（建议） |
+|------|--------|------|-------------------|----------------------|------------------|
+| P0 | 反魔法立场 | 战斗光环 | 常驻；命中/受击触发 | 当机械暴君**命中或受击**时：以当前 `pTile` 半径 `R=14`，对“有法力/施法倾向”的敌对单位刷新 3 年“干扰”（法力回复 -50%，攻击 -15%，且本 MOD 的“主动技能触发概率”降低）。 | 给机械暴君挂 `trait_era_mech_antimagic`：在 `action_attack_target`/`action_get_hit` 中以 `pTile` 半径枚举单位；判定“有 mana/法师 trait/职业”后给目标加 `trait_era_mech_jam` 并刷新 `custom_data_int["era_mech_jam_expire_year"]`。 |
+| S1 | 纳米修复 | 受击触发（自愈） | 常驻；受击触发 | 当机械暴君受击时：立刻恢复 `5% 最大生命（health_max）`；若站在机械据点范围内则改为 `8%`。 | 在机械暴君的 `action_get_hit` 中：根据位置是否在据点半径内选择比例，然后 `restoreHealthPercent(...)`（不做“按年回血”）。 |
+| S2 | 逻辑病毒 | 主动（命中施放） | 命中时尝试 | 当机械暴君命中目标且法力足够时：以目标 `pTile` 半径 12 触发一次“系统冲击”：随机打击最多 3 个建筑（若范围内存在），并使范围内敌军有 `20%` 概率眩晕（默认时长）。 | 在 `action_attack_target`：`spendMana(cost)` 后，建筑=在半径内抽样 `Building` 并 `changeHealth(-dmg)`；单位=枚举半径内敌对单位，概率调用 `addStunnedEffectOnTarget(...)`。 |
+| S3 | 同化协议 | 主动（命中施放） | 命中时尝试 | 当机械暴君命中目标且法力足够时：以目标 `pTile` 半径 10，随机选择最多 5 个敌对单位进行“同化”（替换为机械仆从模板/变形为机械种）；英雄同化概率减半（默认只施加 debuff）。 | 在 `action_attack_target`：`spendMana` 后范围枚举 + 抽样；非英雄 `metamorphInto(...)` 或 spawn+remove；英雄默认给 `trait_era_mech_assimilated`（攻击/移速 -20% 等）而不强制替换。 |
+| S4 | 轨道电弧 | 主动（点杀/清场） | 主动施放 | 对目标 tile 连续释放 3 次闪电：每次对半径 4 的单位造成固定伤害（例如 80/120/160，随轮回成长）。 | `ActionLibrary.castLightning(demonActor, null, tile)` 连发；若要稳定伤害，用 `changeHealth` 作为补偿。 |
+| S5 | 生产线 | 主动（召唤） | 主动施放 | 在据点周围生成 20 个机械兵 + 2 个机械精英；优先补足军团上限。 | `ActorManager.spawnNewUnit(...)` 批量生成；生成数量受“同时存在上限”限制。 |
+| S6 | 天网觉醒 | 终极技（命中施放） | 仅全盛可用；命中时尝试；持续 50 年 | 当机械暴君命中目标且法力足够时：以自身 `pTile` 半径 `R=35`（可配置）内机械单位获得 50 年“超载”（攻击/防御/移速 +30%）；并获得“战斗自修复”：机械单位**命中或受击**时额外恢复 `3% 最大生命（health_max）`。同时立即生成 1 波“天网军团”（规模=当前轮回×系数）。 | 在 `action_attack_target` 中枚举半径 `R` 内机械单位并加 `trait_era_mech_overload` 与 `trait_era_mech_repair_on_combat`（修复逻辑放在其 `action_attack_target`/`action_get_hit`）；军团生成复用 2.4 波次系统。 |
+
+</details>
+
+<a id="demon-4-time"></a>
+##### 魔王4：时空扭曲者（时空）
+<details>
+<summary>展开技能表（P0+S1-S6）</summary>
+
+| 槽位 | 技能名 | 类型 | 触发（默认消耗：普通 5 点 / 终极 10 点） | 能力详细描述（默认） | 实现方式（建议） |
+|------|--------|------|-------------------|----------------------|------------------|
+| P0 | 命运窥视 | 被动 | 常驻 | 获得“预知”：闪避率 +30%（用等效属性实现：受到伤害时有概率无效/减半）；并使控制持续时间 -50%（仅对 MOD 施加的控制生效）。 | 受击用 `action_get_hit`（`GetHitAction`）做概率“无效/减半”；控制缩短用 trait 标记，在 MOD 施加控制时按该标记缩短到期年（写入 `custom_data_int`）。 |
+| S1 | 时间禁锢 | 主动（命中施放） | 命中时尝试；持续 10 年 | 当时空扭曲者命中英雄/将领且法力足够时：为其附加 10 年“禁锢标记”。带标记单位在其后续每次受击时都会被短暂眩晕（默认时长）（最多触发 8 次），并可被“净化”移除标记。 | 在 `action_attack_target`：判断目标类型后 `spendMana`，给目标加 `trait_era_time_prison` 并写入到期年与 `custom_data_int["era_time_prison_procs_left"]=8`；在 `trait_era_time_prison.action_get_hit` 里调用 `addStunnedEffectOnTarget(...)` 并递减次数，到期或次数归零即移除。 |
+| S2 | 因果锚点 | 受击触发（保命） | 遭遇致命伤时触发 | 时空扭曲者会在战斗中不断“刷新锚点”（记录当前位置与当前 HP）。当其遭遇致命伤且法力足够时：触发一次“因果回避”——瞬移回锚点位置并恢复至锚点 HP（至少 30% 最大生命（health_max）），清除负面控制。 | 锚点只在三钩子里刷新：例如在自身 `action_attack_target`/`action_get_hit` 中把 `custom_data_float["era_time_anchor_hp"]` 与 `custom_data_int["era_time_anchor_x/y"]` 更新为当前值。致死判定在 `action_get_hit`：若 `incomingDamage >= currentHP` 且有锚点且 `spendMana` 成功，则 `singularityTeleportation(anchorTile, self)` + `setHealth(...)`/`restoreHealthPercent(...)` + 移除控制类 trait。 |
+| S3 | 时空裂隙 | 主动（命中施放） | 命中时尝试 | 当时空扭曲者命中目标且法力足够时：以目标 `pTile` 半径 12，随机选择最多 10 个敌对单位立刻“错位传送”到附近荒野（距离原地 30-80 格）。 | 在 `action_attack_target`：`spendMana` 后范围枚举+抽样；每个被选中的目标调用 `teleportRandom(self, target, tile)`。 |
+| S4 | 时间加速 | 主动（增益） | 主动施放；持续 20 年 | 自身与 2 名最近将领获得“加速”：移速 +40%，攻击速度/攻击力 +20%，并获得“回蓝加速”（法力恢复 +50%）。 | 增益用 trait（含法力恢复加成）。 |
+| S5 | 时间悖论 | 主动（命中施放） | 命中时尝试；持续 15 年 | 当时空扭曲者命中目标且法力足够时：以目标 `pTile` 半径 10 触发一次“悖论爆发”：对范围内敌军随机施加一种效果（眩晕（默认时长） / 随机传送 / 固定伤害）。并给被命中的敌军附加 15 年“悖论标记”：其后续每次受击都有 `25%` 概率再次触发一次（最多触发 3 次）。 | 在 `action_attack_target`：`spendMana` 后范围枚举并对每个敌军 roll；标记用 `trait_era_time_paradox_mark`，在该 trait 的 `action_get_hit` 里做概率与“剩余次数”递减。 |
+| S6 | 永恒回环 | 终极技（命中施放） | 仅全盛可用；命中时尝试；持续 50 年 | 当时空扭曲者命中目标且法力足够时：以自身 `pTile` 半径 25 给敌军附加 50 年“时间风暴标记”（受击时更易触发短眩晕（默认时长）或随机传送，最多各触发 5 次）；同时获得“回环”：在下一次遭遇致命伤时，可额外触发一次“小型因果回避”（复用 S2 的致死回避，但恢复量减半）。 | 标记= `trait_era_time_storm`（逻辑在其 `action_get_hit`，只靠受击推进次数）；“回环”= 在时空扭曲者自身 `custom_data_int` 写一个“可用次数=1”，在其 `action_get_hit` 的致死分支里优先消耗并执行简化 S2。 |
+
+</details>
+
+<a id="demon-5-fire"></a>
+##### 魔王5：混沌炎魔（火焰）
+<details>
+<summary>展开技能表（P0+S1-S6）</summary>
+
+| 槽位 | 技能名 | 类型 | 触发（默认消耗：普通 5 点 / 终极 10 点） | 能力详细描述（默认） | 实现方式（建议） |
+|------|--------|------|-------------------|----------------------|------------------|
+| P0 | 烈焰灼烧 | 战斗光环 | 常驻；命中/受击触发 | 当炎魔**命中或受击**时：以当前 `pTile` 半径 `R=12`，对敌对单位结算一次：损失 `6% 当前生命（health_current）`（最低扣到 `1HP`），并叠 1 层“灼烧”（最多 5 层；灼烧存在期间该单位在受击时会额外承受 +10% 火焰系追加伤害）。 | 给炎魔挂 `trait_era_fire_aura`：在 `action_attack_target`/`action_get_hit` 中范围枚举并 `changeHealth`；灼烧=给目标加 `trait_era_burn_stack` + 写入 `custom_data_int["era_burn_stacks"]`（上限 5）。追加伤害逻辑放在 `trait_era_burn_stack.action_get_hit`：若攻击者为火焰阵营/带火焰 trait，则额外扣一段 `10%×层数` 的“追加伤害”。 |
+| S1 | 地狱化 | 累计触发（地形） | 每累计击杀 `K=30` 触发 | 炎魔累计击杀达到 `K=30` 时：将据点周围半径 8 的随机 20 个地块变为熔岩/焦土，并清除树木与草（每次触发都有改造上限，避免破图）。 | “击杀计数”走“命中标记 → 目标 `action_on_object_remove` 记账”的三钩子口径；触发后做一次性地形改造：`setTileType` + `removeTrees/removeGrass`。 |
+| S2 | 爆燃 | 死亡点触发（标记） | 不耗法力 | 炎魔命中目标时：给目标附加 3 年“爆燃标记”。带标记的目标死亡时：在死亡点半径 5 造成爆炸伤害（目标当前生命（health_current） 的 20%），并对附近地块施加“烧焦”。 | 命中：炎魔 trait 的 `action_attack_target` 给目标 `addTrait("trait_era_fire_burst_mark")`。死亡：`trait_era_fire_burst_mark.action_on_object_remove` 里做 AOE 扫描 + `changeHealth`；地形用 `WorldTile.setTileType(...)` 或 `removeTrees/removeGrass` 表现“焦化”。 |
+| S3 | 熔岩喷发 | 主动（区域） | 主动施放 | 目标区域半径 10：立即喷发，单位受到固定伤害并被击退/眩晕（默认时长）；同时生成 12 个熔岩地块。 | 伤害 `changeHealth`；眩晕用 `ActionLibrary.addStunnedEffectOnTarget(...)`；地形用 `setTileType`。 |
+| S4 | 灼烧烙印 | 主动（命中施放） | 命中英雄时尝试；持续 20 年 | 当炎魔命中英雄且法力足够时：给目标施加 20 年“烙印”。带烙印目标在其后续每次受击时额外损失 `8% 当前生命（health_current）`；若其所在 tile 为熔岩/火焰地形则该次额外伤害翻倍。 | 在炎魔 `action_attack_target`：`spendMana` 后给目标加 `trait_era_fire_brand` 并写到期年；在 `trait_era_fire_brand.action_get_hit` 里做额外扣血（含地形判定）。 |
+| S5 | 火焰复苏 | 受击触发（地形条件） | 受击时判定 | 当炎魔受击时：若其所在 tile 为熔岩/焦土，则立刻恢复 `10% 最大生命（health_max）`，并刷新 5 年“火焰护体”（减伤 20%）。 | 在炎魔 `action_get_hit` 里检测 tile type：满足则 `restoreHealthPercent` + 给自身加 `trait_era_fire_guard` 并刷新到期年；减伤逻辑放在 `trait_era_fire_guard.action_get_hit`。 |
+| S6 | 末日烈焰 | 终极技（命中施放） | 仅全盛可用；命中时尝试；持续 30 年 | 当炎魔命中目标且法力足够时：以炎魔当前位置半径 30 随机选 8 个点各触发一次“烈焰雨爆发”（对范围内单位/建筑造成一次性伤害）；并给该范围内敌军附加 30 年“热浪”（移速 -10%）。 | 只做“局部范围枚举”，不做全图区域系统：在炎魔 `action_attack_target` 中 `spendMana` 后做 tile 抽样，表现可用 `castFire/throwTorchAtTile`，伤害用 `changeHealth`；热浪用 trait + 到期年。 |
+
+</details>
+
+<a id="demon-6-abyss"></a>
+##### 魔王6：深渊邪神（疯狂）
+<details>
+<summary>展开技能表（P0+S1-S6）</summary>
+
+| 槽位 | 技能名 | 类型 | 触发（默认消耗：普通 5 点 / 终极 10 点） | 能力详细描述（默认） | 实现方式（建议） |
+|------|--------|------|-------------------|----------------------|------------------|
+| P0 | 精神污染 | 战斗光环 | 常驻；命中/受击触发 | 当深渊邪神**命中或受击**时：以当前 `pTile` 半径 `R=16`，对敌对单位结算一次“疯狂侵染”：疯狂值 +10（0-100）。疯狂值越高，单位越容易失控（用后续技能触发表达）。 | 疯狂值写入单位 `custom_data_int["era_madness"]`（0-100）；逻辑放在深渊邪神的 `action_attack_target`/`action_get_hit`：范围枚举后对敌军 `madness = clamp(madness+10)`。 |
+| S1 | 疯狂爆发 | 条件触发（标记） | 疯狂 ≥ 100 时触发；持续 10 年 | 单位疯狂值达到 100 时触发一次“失控标记”（持续 10 年）：带标记单位在其后续每次受击时都会短暂 `makeConfused(...)`（最多触发 8 次），并获得“狂乱”（攻击 +30%，防御 -20%）。标记结束时将疯狂值降到 40。 | 触发点放在深渊邪神的 `action_attack_target`：把目标疯狂值加到阈值后，给目标加 `trait_era_madness_burst`（写到期年 + `procs_left`）。在 `trait_era_madness_burst.action_get_hit` 里调用 `makeConfused(...)` 并递减次数；移除时把 `era_madness` 设回 40。 |
+| S2 | 邪教渗透 | 主动（命中施放/召唤） | 命中时尝试 | 当深渊邪神命中目标且法力足够时：在目标 `pTile` 周围召唤 8-12 个邪教徒（临时单位），邪教徒会优先传播疯狂值并攻击英雄。 | 在 `action_attack_target`：`spendMana` 后以 `pTile` 为中心找可行走点并 `spawnNewUnit("cultist", tile, ...)`；必要时对邪教徒做一次性 `goTo(...)` 引导靠近最近英雄。 |
+| S3 | 深渊凝视 | 主动（单体） | 主动施放 | 指定英雄：立刻 +50 疯狂值，并眩晕（默认时长）；若目标疯狂值 ≥ 80，则额外掉血 `20% 当前生命（health_current）`。 | 疯狂值加成由 MOD；眩晕用 `ActionLibrary.addStunnedEffectOnTarget`；掉血 `changeHealth`。 |
+| S4 | 低语诱导 | 主动（命中施放/牵引标记） | 命中英雄时尝试；持续 15 年 | 当深渊邪神命中英雄且法力足够时：为其附加 15 年“低语标记”。带标记英雄在其后续每次受击时会被强制 `goTo(深渊据点附近 tile)` 并短暂 `makeConfused(...)`（最多触发 10 次），稳定把其拖向战场核心。 | 在 `action_attack_target`：`spendMana` 后给目标加 `trait_era_abyss_lure`（到期年+次数）。在该 trait 的 `action_get_hit`：调用 `goTo(...)` + `makeConfused(...)` 并递减次数。 |
+| S5 | 深渊触手 | 主动（命中施放/召唤） | 命中时尝试 | 当深渊邪神命中目标且法力足够时：在目标 `pTile` 周围召唤 4 个“深渊触手”（临时单位），优先攻击建筑与密集人群；触手持续到深渊邪神被封印/死亡或触手被击杀。 | 在 `action_attack_target`：`spendMana` 后 `spawnNewUnit("abyss_tentacle", tile, ...)`。清理由深渊邪神自身的 `action_on_object_remove`（死亡/移除时批量移除仍存活的触手）。 |
+| S6 | 旧日降临 | 终极技（命中施放） | 仅全盛可用；命中时尝试 | 当深渊邪神命中目标且法力足够时：以自身 `pTile` 半径 35 内所有敌对单位疯狂值 +30；并在附近生成 1 个“旧日化身”（Boss）加入战场，持续到封印战结束或被击杀。 | 只做“局部范围枚举”，不做全图：在 `action_attack_target` 中 `spendMana` 后枚举半径 35 单位并加疯狂；Boss 用 `spawnNewUnit`，并通过 trait 强化其高血/范围伤害。 |
+
+</details>
+
+<a id="demon-7-death"></a>
+##### 魔王7：死亡君王（亡灵）
+<details>
+<summary>展开技能表（P0+S1-S6）</summary>
+
+| 槽位 | 技能名 | 类型 | 触发（默认消耗：普通 5 点 / 终极 10 点） | 能力详细描述（默认） | 实现方式（建议） |
+|------|--------|------|-------------------|----------------------|------------------|
+| P0 | 亡灵领域 | 战斗光环 | 常驻；命中/受击触发 | 当死亡君王**命中或受击**时：以当前 `pTile` 半径 `R=14`，范围内亡灵单位攻击 +30%（刷新 5 年），敌对单位附加 5 年“凋零”（生命回复 -50%）。 | 给死亡君王挂 `trait_era_death_domain`：在 `action_attack_target`/`action_get_hit` 中范围枚举；对亡灵单位加 buff trait（到期年），对敌军加 `trait_era_death_withered`（到期年）。 |
+| S1 | 死亡审判 | 死亡点触发（范围标记） | 不耗法力 | 当死亡君王发生命中/受击时：会“宣判”其周围半径 25 的敌对单位（刷新 2 年标记）。带标记单位死亡时：有 `25%` 概率在原地生成 1 个骷髅仆从；若死者是“命定英雄”（`trait_era_destined`）则概率减半但生成精英骷髅。 | 在死亡君王的 `action_attack_target`/`action_get_hit`：以 `pTile` 半径 25 枚举敌军并加 `trait_era_death_sentence_mark`（写到期年）。在该标记的 `action_on_object_remove`：按概率 `spawnNewUnit("skeleton_thrall"/"skeleton_elite", tile, ...)`。 |
+| S2 | 灵魂收割 | 累计触发 | 每击杀 10 单位叠 1 层；最多 20 层 | 每层：死亡君王自身最大生命（health_max） +1%，攻击 +1%（可衰减）；封印后保留 30% 层数作为下一轮起始。 | 计数器 + 给魔王添加 trait（或 MOD 内部倍率）；结算时固化层数。 |
+| S3 | 死亡凋零 | 主动（命中施放） | 命中时尝试 | 当死亡君王命中目标且法力足够时：以目标 `pTile` 半径 12，敌对单位立刻损失 `30% 当前生命（health_current）`（英雄减半），并附加 10 年“凋零标记”：带标记单位在其后续每次受击时额外损失 `5% 当前生命（health_current）`。 | 在 `action_attack_target`：`spendMana` 后范围枚举并立刻扣血；给目标加 `trait_era_death_decay`（到期年）。额外伤害逻辑放在 `trait_era_death_decay.action_get_hit`。 |
+| S4 | 冥界大门 | 主动（命中施放/召唤波次） | 命中时尝试 | 当死亡君王命中目标且法力足够时：立刻额外生成一波亡灵（规模=当前轮回×系数），从据点或死亡君王附近集结出发。 | 在 `action_attack_target`：`spendMana` 后直接调用 2.4 波次生成（单位模板换亡灵），不做“每 N 年自动出兵”。 |
+| S5 | 死亡印记 | 主动（单体） | 主动施放；持续 20 年 | 给目标英雄施加“死亡印记”：20 年内若目标掉血到 30% 以下，则触发一次“处决”（直接击杀/或强制掉到 1HP 并眩晕（默认时长）），并消耗该印记。 | 施放时给目标添加 `trait_era_death_mark` 并写入到期年；目标受击用 `trait_era_death_mark.action_get_hit` 检查血量阈值，达成则执行 `ActionLibrary.deathMark(target)`（若可用）或 `setHealth(1)` + 眩晕，并移除标记。 |
+| S6 | 终末审判 | 终极技（命中施放） | 仅全盛可用；命中时尝试 | 当死亡君王命中目标且法力足够时：以自身 `pTile` 半径 35 触发一次死亡能量爆发：敌对单位获得 50 年“恐惧”（移速 -15%）；并立刻在该范围内 3 个“战场热点”（按密集单位 tile 抽样）生成亡灵大军。 | 只做“局部范围枚举”：在 `action_attack_target` 中 `spendMana` 后枚举半径 35 单位加恐惧 trait；热点=从半径内 tile 抽样；亡灵生成用 `spawnNewUnit`。 |
+
+</details>
+
+<a id="demon-8-soul"></a>
+##### 魔王8：灵魂编织者（契约）
+<details>
+<summary>展开技能表（P0+S1-S6）</summary>
+
+| 槽位 | 技能名 | 类型 | 触发（默认消耗：普通 5 点 / 终极 10 点） | 能力详细描述（默认） | 实现方式（建议） |
+|------|--------|------|-------------------|----------------------|------------------|
+| P0 | 契约烙印 | 被动 | 常驻；命中触发 | 普攻命中英雄时：叠加 1 层“契约”（最多 5 层）。带契约的英雄在其后续每次受击时额外损失 `2% 当前生命（health_current） × 层数`，并在契约存在期间降低抗性。 | 在灵魂编织者 `action_attack_target`：把层数写入英雄 `custom_data_int["era_contract_stacks"]`（上限 5）并刷新到期年；额外掉血逻辑放在英雄身上的 `trait_era_contract.action_get_hit`（不需要“每年结算”）。 |
+| S1 | 侵蚀冲动 | 条件触发（契约者） | 契约≥3 的英雄受击时判定 | 契约层数 ≥3：英雄每次受击有 `5% × 层数` 概率触发“侵蚀冲动”（持续 5 年）：立刻短暂混乱（默认时长），并获得 5 年易伤（受伤 +15%）。 | 在 `trait_era_contract.action_get_hit`：读取 `era_contract_stacks`，按概率触发 `makeConfused(...)` + 给目标加易伤 trait（写到期年）。 |
+| S2 | 傀儡牵引 | 主动（命中施放） | 命中英雄时尝试；持续 10 年 | 当灵魂编织者命中英雄且法力足够时：为其附加 10 年“牵引标记”。带标记英雄在其后续每次受击时会被强制 `goTo(魔王据点/魔王本体附近 tile)`，并刷新“攻击 +20% / 防御 -20%”（用于表现其被操控冲锋）。 | 在灵魂编织者 `action_attack_target`：`spendMana` 后给目标加 `trait_era_soul_pull`（到期年+次数）。在 `trait_era_soul_pull.action_get_hit`：调用 `goTo(...)` 并刷新 buff/debuff trait（只靠受击推进，不做“按年强制移动”）。 |
+| S3 | 灵魂吸取 | 击杀计数触发 | 不耗法力 | 灵魂编织者击杀单位时：恢复 `5% 最大生命（health_max）`；若击杀英雄则额外恢复 `15%` 并获得 1 层“灵魂护盾”（减伤 10% 持续 30 年）。 | “击杀检测”不做全局监听：在灵魂编织者的 `action_attack_target`（以及必要时 `action_get_hit`）里对比 `Actor.kills` 与 `custom_data_int["era_last_kills"]` 的增量；若有增量则执行 `restoreHealthPercent` 并叠加护盾 trait（写到期年/上限）。英雄击杀用“命中标记 → 目标 `action_on_object_remove` 回写到施法者”口径更稳定。 |
+| S4 | 灵魂链接 | 主动（区域） | 主动施放；持续 30 年 | 选定区域半径 14：随机 3 名英雄被“链接”。链接期间其中任意一个受到伤害，会有 30% 伤害分摊到其余两人。 | 给被链接者挂链接标记 trait，并用链接标记的 `action_get_hit`（`GetHitAction`）做分摊：对另外两人 `changeHealth(-share)`。 |
+| S5 | 意志粉碎 | 主动（命中施放） | 命中英雄时尝试 | 当灵魂编织者命中英雄且法力足够时：目标立刻损失 50% 体力/法力，并短暂硬控（默认时长）；随后获得“虚弱”（攻击 -15%，移速 -10%）基础 10 年，且契约层数每层额外 +2 年（上限 20 年）。 | 在 `action_attack_target`：`spendMana` 后对目标 `setStamina/setMana` + `addStunnedEffectOnTarget(...)`；虚弱用 `trait_era_weakened` 并写入到期年（不写“计时器移除”，到期清理由三钩子检查）。 |
+| S6 | 契约终裁 | 终极技（命中施放） | 仅全盛可用；命中时尝试 | 当灵魂编织者命中目标且法力足够时：以自身 `pTile` 半径 35 内所有“已带契约”的英雄：契约层数立即 +2，并触发一次“契约爆发”（大额掉血或短暂失控（默认时长），二选一）。 | 只做“局部范围枚举”，不遍历全图：在 `action_attack_target` 中 `spendMana` 后枚举半径 35 单位，筛选 `era_contract_stacks>0` 的英雄并统一处理：层数 +2、扣血 `changeHealth` 或 `makeConfused`，并弹 UI 事件提示。 |
+
+</details>
+
+<a id="demon-9-nature"></a>
+##### 魔王9：自然之怒（自然）
+<details>
+<summary>展开技能表（P0+S1-S6）</summary>
+
+| 槽位 | 技能名 | 类型 | 触发（默认消耗：普通 5 点 / 终极 10 点） | 能力详细描述（默认） | 实现方式（建议） |
+|------|--------|------|-------------------|----------------------|------------------|
+| P0 | 自然亲和 | 被动（地形加成） | 常驻；命中/受击触发刷新 | 当自然之怒**命中或受击**时：检测自身所在 tile。若为森林/草地：自身与附近自然军团攻击/防御 +25%（刷新 5 年）；若为荒地/熔岩：改为 -10%（刷新 5 年）。 | 在自然之怒的 `action_attack_target`/`action_get_hit` 中做 tile type 判定，并给自身/半径内自然军团刷新 buff/debuff trait（写到期年；不做定时器轮询）。 |
+| S1 | 植物暴走 | 主动（命中施放/地形） | 命中时尝试 | 当自然之怒命中目标且法力足够时：以目标 `pTile` 半径 18 随机选择 30 个地块转为森林/荆棘顶层，并给半径 18 敌军附加 10 年减速（移速 -15%）。 | 在 `action_attack_target`：`spendMana` 后做 tile 抽样并 `setTileType/setTopTileType`；减速用 trait（写到期年）。 |
+| S2 | 巨兽召唤 | 主动（召唤） | 主动施放 | 召唤 1 只自然巨兽（Boss 单位）+ 6 只护卫兽，目标为最近城市。 | `ActorManager.spawnNewUnit(...)`；用 `goTo` 引导。 |
+| S3 | 大地震颤 | 主动（建筑打击） | 主动施放 | 目标区域半径 16：建筑有 `50%` 概率受到重创（按当前生命（health_current）比例扣血），并使区域内单位眩晕（默认时长）。 | 对 `city.buildings` 或区域内 building 列表抽样 `changeHealth(-dmg)`；眩晕用 `ActionLibrary.addStunnedEffectOnTarget`。 |
+| S4 | 生命缠绕 | 主动（命中施放/范围控制） | 命中时尝试；持续 15 年 | 当自然之怒命中目标且法力足够时：以目标 `pTile` 半径 12 的敌军获得 15 年“缠绕”（移速 -40%，攻击 -15%）。 | 在 `action_attack_target`：`spendMana` 后范围枚举并给敌军加 `trait_era_entangle`（写到期年），不维护“区域集合”。 |
+| S5 | 风暴召唤 | 主动（命中施放/灾害） | 命中时尝试 | 当自然之怒命中目标且法力足够时：在目标 `pTile` 触发一次风暴表现（龙卷风/落雷/击退任选其一），并对半径 14 敌军施加 5 年减速（移速 -10%）与短暂眩晕（默认时长，小概率）。 | 表现优先 `ActionLibrary.castTornado(self, null, tile)`（或雷击/击退等）；核心效果只做一次性范围枚举（减速 trait + 概率短控），不做“风暴区周期伤害”。 |
+| S6 | 盖亚之怒 | 终极技（命中施放） | 仅全盛可用；命中时尝试 | 当自然之怒命中目标且法力足够时：以自身 `pTile` 半径 40 触发一次“自然灾变连锁”：执行 S1/S3/S5 的强化版各 1 次（地形改造+震颤+风暴），但每项都有严格“单次影响上限”。 | 只做“局部范围枚举与 tile 抽样”，不选全图热点：在 `action_attack_target` 里 `spendMana` 后复用 S1/S3/S5 的一次性逻辑（范围与数量上调，但有硬上限）。 |
+
+</details>
+
+<a id="demon-10-judge"></a>
+##### 魔王10：终焉审判者（终焉）
+<details>
+<summary>展开技能表（P0+S1-S6）</summary>
+
+| 槽位 | 技能名 | 类型 | 触发（默认消耗：普通 5 点 / 终极 10 点） | 能力详细描述（默认） | 实现方式（建议） |
+|------|--------|------|-------------------|----------------------|------------------|
+| P0 | 神罚印记 | 被动 | 常驻；命中触发 | 普攻命中英雄：叠 1 层“审判”（最多 3 层）。每层使其受到的伤害 +10%。 | 用终焉审判者的 `ActorTrait.action_attack_target` 命中时：把层数写入英雄 `custom_data_int["era_judgement_stacks"]`（上限 3），并用 trait 表现易伤。 |
+| S1 | 天堂审判 | 条件触发 | 审判层数=3 且法力足够时触发 | 审判满 3 层：触发一次“裁决”——目标立刻损失 `60% 当前生命（health_current）`（若已低于 30% 则处决/击杀），并清空其审判层数。 | 由 MOD 检测层数；伤害 `changeHealth`；处决可用 `ActionLibrary.deathMark(...)`（若适配）或 `setHealth(1)` + 眩晕。 |
+| S2 | 末日号角 | 主动（命中施放/范围压制） | 命中时尝试；持续 30 年 | 当终焉审判者命中目标且法力足够时：以自身 `pTile` 半径 40 的文明单位获得 30 年“末日压迫”（攻击 -10%，防御 -10%，移速 -5%）。 | 在 `action_attack_target`：`spendMana` 后范围枚举并给目标加 `trait_era_doom_pressure`（到期年）。不做“定时全图触发”。 |
+| S3 | 圣裁光束 | 主动（点杀） | 主动施放 | 对目标英雄位置降下“圣裁”：连续 3 次雷击，外加 5 年易伤（受伤 +20%）。 | `ActionLibrary.castLightning(...)` + 易伤 trait。 |
+| S4 | 终焉波次 | 主动（命中施放/军团强化） | 命中时尝试；持续 30 年 | 当终焉审判者命中目标且法力足够时：立刻追加 1 波“终焉军团”（数量=当前波次×系数），并给终焉军团附加 30 年“终焉增幅”：军团单位在其后续每次命中时追加 +15% 伤害。 | 在 `action_attack_target`：`spendMana` 后调用 2.4 生成；增幅用 `trait_era_judge_legion_amp`（逻辑放在军团单位的 `action_attack_target`：追加扣血），并用到期年控制持续。 |
+| S5 | 诸神黄昏 | 条件技能（战斗燃命） | HP < 50% 时生效 | HP < 50%：自身进入“黄昏形态”——攻击/防御 +50%，法力恢复 +30%；代价是每次**命中或受击**都会损失 `2% 当前生命（health_current）`（燃命）。 | 条件检查写在终焉审判者的 `action_attack_target`/`action_get_hit`：满足 HP 条件则刷新 `trait_era_judge_twilight`；燃命=在这两个钩子里按当前生命扣血（`changeHealth(-curHp*0.02)`）。 |
+| S6 | 世界终结（末日计量） | 终极技（累计触发） | 仅全盛可用；累计“末日值”触发 | 终焉审判者在全盛期会累积“末日值”：每次命中/受击/处决都会增加。末日值达到阈值（例如 300）时：触发一次“终焉事件”——在自身附近连续执行 3 个灾害爆发（雷暴/瘟疫/地形崩坏各 1 次）并追加 1 次终极波次。 | 末日值写入 `custom_data_int["era_doom_meter"]` 并只在三钩子里递增；达到阈值时清零并触发：灾害爆发全部限定在半径内（范围枚举 + tile 抽样），终极波次复用 2.4。 |
+
+</details>
+
+---
+
+<a id="appendix-general-skills"></a>
+## 附录F：将领名册与技能表（P0+S1，原 2.4.2.3）
+[↩ 目录](#toc) · [↑ 顶部](#top)
+
+> 表中“实现抓手”是建议路线：优先 `ActionLibrary.*`，没有现成动作时用自定义 trait + `custom_data_*` 存状态，并在三钩子里推进与清理（见「[统一口径](#conventions)」）。
+
+说明：本节所有 S1 默认消耗 5 点法力，触发频率见「[统一口径](#conventions)」与「[7.1.8](#s71)」，表格不再重复标注。
+
+**将领索引**： [虚无](#generals-void) · [瘟疫](#generals-plague) · [机械](#generals-mech) · [时空](#generals-time) · [火焰](#generals-fire) · [深渊](#generals-abyss) · [亡灵](#generals-death) · [契约](#generals-soul) · [自然](#generals-nature) · [终焉](#generals-judge)
+
+<a id="generals-void"></a>
+### 虚无之主将领（领域：虚空）
+<details>
+<summary>展开将领表（5 名，P0+S1）</summary>
+
+| 将领ID | 名称 | 定位 | P0 被动（常驻） | S1 主动 |
+|---|---|---|---|---|
+| `general_void_dps` | 虚空剑圣·塞拉斯 | 输出 | **虚空剑意**：普攻命中时附加一次“裂伤”（目标 10 年内受到伤害 +15%）；对英雄额外 +10%。实现：给塞拉斯挂 `ActorTrait`，用 `action_attack_target` 命中时给目标 `addTrait("trait_era_void_bleed")` 并刷新剩余年限。 | **相位穿行**：持续 5 年；自身移速 +100%，并在施放时瞬移到最近英雄附近（3 格内）。实现：`ActionLibrary.singularityTeleportation(...)` + 速度 trait。 |
+| `general_void_vanguard` | 虚空行者·米拉 | 先锋 | **虚空潜行（相位）**：自身累计命中 `N=5` 次后获得 10 年“相位潜行”（移速 +20%）；相位潜行期间受击时有 10% 概率随机传送脱离（每累计受击 `M=20` 次最多触发 1 次）。实现：命中计数写入 `custom_data_int`；受击用 `action_get_hit` 判定传送，并用 `custom_data_int` 做“受击次数限频”。 | **相位突袭**：瞬移到最近英雄附近（3 格内），首次命中基础伤害（damage）×3，并施加短暂硬控（默认时长）。实现：`singularityTeleportation(...)` + 命中用 `action_attack_target` + `addStunnedEffectOnTarget(...)`。 |
+| `general_void_tank` | 虚空守卫·奥古斯 | 坦克 | **存在锚定**：当奥古斯命中/受击时：以当前 `pTile` 半径 10 刷新友军“锚定”（控制时间 -30%，不受“抹除类效果”影响，持续 5 年）。实现：在 `action_attack_target/action_get_hit` 里半径枚举并刷新 buff trait（到期年）。 | **虚空护盾**：持续 10 年；获得护盾值 `500 + 50×轮回数`，护盾存在时减伤 30%。实现：自定义护盾数值（MOD 内部）+ 护盾 trait 的 `action_get_hit`（`GetHitAction`）减伤。 |
+| `general_void_support` | 虚空祭司·艾莉娅 | 辅助 | **虚空祝福**：当艾莉娅命中/受击时：以当前 `pTile` 半径 12 刷新友军攻击 +15%（持续 5 年）。实现：在 `action_attack_target/action_get_hit` 里半径枚举并刷新 buff trait（到期年）。 | **虚空召唤**：在自身周围召唤 3 个“虚空行者”（军团先锋单位），并命令其向最近城市移动。实现：`spawnNewUnit(...)` + `goTo(...)` 引导（受军团上限约束）。 |
+| `general_void_elite` | 虚空领主·塞拉菲姆 | 精英 | **虚空领域（弱化版）**：当塞拉菲姆命中/受击时：以当前 `pTile` 半径 10 对敌军结算一次 `3% 当前生命（health_current）` 伤害（最低扣到 1HP）。实现：在 `action_attack_target/action_get_hit` 里半径枚举并 `changeHealth(-dmg)`。 | **相位打击**：瞬移到目标英雄身边并造成一次“无视护甲”的高伤害（基础伤害（damage）×2.0）。实现：传送 + 直接扣血 `changeHealth(-dmg)`。 |
+
+</details>
+
+<a id="generals-plague"></a>
+### 瘟疫母神将领（领域：瘟疫）
+<details>
+<summary>展开将领表（5 名，P0+S1）</summary>
+
+| 将领ID | 名称 | 定位 | P0 被动（常驻） | S1 主动 |
+|---|---|---|---|---|
+| `general_plague_vanguard` | 疫病使者·莫格拉 | 先锋 | **疫源携带**：普攻命中给目标叠 1 层感染（最多 5 层）；感染额外伤害统一走“感染者受击触发”（与瘟疫母神同口径）。实现：`action_attack_target` 命中时写 `custom_data_int["era_infection_stacks"]` 并刷新到期年。 | **感染冲锋**：直线冲锋 20 格，路径上每隔若干格触发一次“毒雾冲击”（半径 4：敌军损失 `6% 当前生命（health_current）` 并中毒 5 年）。实现：路径取样 + 在命中钩子里做多次“半径枚举爆发”（不做毒雾区列表）。 |
+| `general_plague_tank` | 腐烂巨兽·格罗尔 | 坦克 | **毒素护甲**：受击时反施加“中毒”（10 年内攻击 -10%）。实现：在自身 `action_get_hit` 对攻击者加中毒 trait（到期年）。 | **腐烂光环**：持续 30 年；持续期内当格罗尔命中/受击时：以当前 `pTile` 半径 12 对敌军结算一次 `10% 当前生命（health_current）` 伤害（最低扣到 1HP）。实现：施放时给自身加 `trait_era_plague_rot_aura`（写到期年），该 trait 在 `action_attack_target/action_get_hit` 做半径枚举扣血。 |
+| `general_plague_dps` | 变异领主·泽克斯 | 输出 | **突变体质**：每次命中有 `5%` 概率获得 20 年增益（攻击/防御/移速 +20%），最多叠 2 层。实现：在 `action_attack_target` 里做概率 + 层数写入 `custom_data_int` + buff trait。 | **毒素爆发**：以目标 `pTile` 半径 8 立刻造成固定伤害（默认 100）并给敌军叠感染 2 层。实现：范围扣血 + 写入感染层数（不做区域持续）。 |
+| `general_plague_support` | 瘟疫祭司·娜塔莎 | 辅助 | **感染仪式**：当娜塔莎命中/受击时：以当前 `pTile` 半径 12，对感染者把 `custom_data_int["era_infection_hits_taken"]` 额外 +5（上限不超过转化阈值），等效“加速转化”。实现：在钩子里半径枚举感染者并写字段（不做每年扫描）。 | **瘟疫治愈**：治疗周围友军 30% 最大生命（health_max），并移除 1 个负面状态。实现：`restoreHealthPercent(...)` + 移除 trait。 |
+| `general_plague_elite` | 疫病之母·玛拉凯 | 精英 | **超级感染**：感染上限提高到 6 层；感染层数 ≥5 的目标在其受击时有 `5%` 概率直接转化为仆从。实现：把规则合并到 `trait_era_infection.action_get_hit` 的判定里（仅对“超级感染来源”生效）。 | **疫病领主召唤**：召唤 2 个“疫病领主”，优先围攻最近大城。实现：批量 `spawnNewUnit(...)` + `goTo(...)`（受军团上限约束）。 |
+
+</details>
+
+<a id="generals-mech"></a>
+### 机械暴君将领（领域：机械）
+<details>
+<summary>展开将领表（5 名，P0+S1）</summary>
+
+| 将领ID | 名称 | 定位 | P0 被动（常驻） | S1 主动 |
+|---|---|---|---|---|
+| `general_mech_dps` | 歼灭者·阿尔法 | 输出 | **火控校准**：攻击 +15%，并获得“攻城加压”：当阿尔法普攻命中建筑时，额外造成一次固定伤害（默认 30）。实现：在 `action_attack_target` 里检测 `pTarget` 为建筑并 `changeHealth(-30)`。 | **离子炮**：对目标点半径 4 造成固定伤害（默认 120）并短暂眩晕（默认时长）。实现：范围扣血 + `addStunnedEffectOnTarget(...)`。 |
+| `general_mech_vanguard` | 侦察者·贝塔 | 先锋 | **扫描协议**：当贝塔命中/受击时：在半径 20 内选择最近英雄作为“扫描目标”（用于 UI），并刷新 10 年“受伤 +10%”标记。实现：在 `action_attack_target/action_get_hit` 里做局部选目标 + 加 debuff trait。 | **扫描锁定**：持续 20 年；给目标英雄施加“锁定”（受伤 +30%）。实现：命中时施放并写到期年（到期清理由三钩子检查）。 |
+| `general_mech_tank` | 堡垒·伽马 | 坦克 | **反击协议**：受击时有 15% 概率使攻击者短暂眩晕（默认时长）并减速 5 年（-15%）；为避免刷屏，改为“每累计受击 `H=10` 次最多触发 1 次”。实现：在 `action_get_hit` 里用 `custom_data_int` 做受击计数与触发重置。 | **能量护盾**：持续 12 年；获得护盾值 `600 + 60×轮回数`，护盾期间减伤 20%（不做控制免疫）。实现：护盾数值（MOD 内部）+ 护盾 trait 的 `action_get_hit`（`GetHitAction`）减伤。 |
+| `general_mech_support` | 工程师·德尔塔 | 辅助 | **维修协议**：当德尔塔命中/受击时：以当前 `pTile` 半径 12 为机械友军恢复 `3% 最大生命（health_max）`（单次处理上限）。实现：在 `action_attack_target/action_get_hit` 里半径枚举并 `restoreHealthPercent(...)`。 | **生产线**：召唤 3 个机械兵（军团先锋/主力按比例），并立即集结到自身。实现：批量 `spawnNewUnit(...)` + `goTo(...)`（受军团上限约束）。 |
+| `general_mech_elite` | 终结者·欧米茄二号 | 精英 | **歼灭协议**：对建筑伤害（damage）×3；对军团单位伤害 +30%。实现：命中加成。 | **同化光束**：对目标单位施加“同化标记”：目标累计受击 `H=20` 次后转化为机械单位；英雄仅施加虚弱（不强制同化）。实现：命中时加 `trait_era_mech_assimilate_mark`，在其 `action_get_hit` 里计数到阈值后 spawn+remove。 |
+
+</details>
+
+<a id="generals-time"></a>
+### 时空扭曲者将领（领域：时空）
+<details>
+<summary>展开将领表（5 名，P0+S1）</summary>
+
+| 将领ID | 名称 | 定位 | P0 被动（常驻） | S1 主动 |
+|---|---|---|---|---|
+| `general_time_vanguard` | 时空游侠·克洛诺 | 先锋 | **时间漂移**：受到致命伤害时有 20% 概率瞬移脱离；为限制频率，改为“每累计受击 `H=80` 次最多触发 1 次”。实现：在自身 `action_get_hit` 里做致命判定 + 受击计数阈值，触发后清零计数并 `teleportRandom(...)`。 | **闪烁**：瞬移到目标附近随机位置，并获得 5 年移速 +50%。实现：传送 + trait。 |
+| `general_time_tank` | 时间守护者·埃恩 | 坦克 | **时间护盾（被动触发）**：HP < 30% 受击时自动获得 5 年减伤 60%；为限制频率，改为“每累计受击 `H=100` 次最多触发 1 次”。实现：在 `action_get_hit` 里用受击计数阈值 + 到期年控制。 | **时间静止**：半径 10 敌军获得 1 年“静止标记”：带标记敌军在其后续每次受击时触发眩晕（默认时长），最多触发 3 次。实现：范围加标记 trait，并在标记的 `action_get_hit` 里短控+次数递减。 |
+| `general_time_dps` | 命运编织者·莫伊拉 | 输出 | **命运之箭**：对英雄命中必定暴击（用基础伤害（damage）×1.5 近似）。实现：命中加成。 | **因果链**：对 1 个目标造成伤害后，弹射到最近 3 个敌人（每次伤害衰减 20%）。实现：邻近搜索 + 多段扣血。 |
+| `general_time_support` | 时空祭司·泰姆拉 | 辅助 | **时间加速光环**：当泰姆拉命中/受击时：以当前 `pTile` 半径 12 为友军额外恢复法力 `5% MaxMana`（不超过 MaxMana，仅对有法力者生效）。实现：在 `action_attack_target/action_get_hit` 里半径枚举并 `addMana(...)`。 | **时间回溯**：在据点召唤 1 名“时间幻影将领”（属性为本体 50%），持续到泰姆拉被移除/死亡或幻影被击杀。实现：`spawnNewUnit(...)`；清理由泰姆拉的 `action_on_object_remove` 批量移除仍存活的幻影。 |
+| `general_time_elite` | 永恒者·伊特尼提 | 精英 | **时间循环（阈值触发）**：HP < 20% 时触发一次“回环”：瞬移到安全位置并恢复 20% 最大生命（health_max）；为限制频率，改为“每累计受击 `H=120` 次最多触发 1 次”。实现：在 `action_get_hit` 里做阈值检测 + 受击计数阈值，触发后清零计数并 `teleportRandom(...)` + `restoreHealthPercent(...)`。 | **命运改写**：目标英雄 10 年内伤害 -30%，并短暂眩晕（默认时长）。实现：debuff trait + 短控。 |
+
+</details>
+
+<a id="generals-fire"></a>
+### 混沌炎魔将领（领域：火焰）
+<details>
+<summary>展开将领表（5 名，P0+S1）</summary>
+
+| 将领ID | 名称 | 定位 | P0 被动（常驻） | S1 主动 |
+|---|---|---|---|---|
+| `general_fire_vanguard` | 火焰使者·伊格尼斯 | 先锋 | **炽焰印记**：普攻命中时点燃目标 5 年；点燃的额外伤害改为“目标后续每次受击触发”（每次受击额外 -3% 当前生命（health_current））。实现：命中加 `trait_era_burn_mark`，在标记的 `action_get_hit` 里扣血。 | **火焰冲锋**：冲锋到目标并造成一次基础伤害（damage）×1.5，点燃目标 10 年。实现：位移引导 + 点燃标记（受击触发扣血）。 |
+| `general_fire_tank` | 熔岩巨人·玛格玛 | 坦克 | **熔岩护甲**：近战攻击者受到固定反伤（默认 50）。实现：用护甲 trait 的 `action_get_hit`（`GetHitAction`）对攻击者 `changeHealth(-dmg)`。 | **岩浆喷发**：目标区域半径 10 转熔岩地形（每次最多改 20 格），并短暂眩晕敌军（默认时长）。实现：`WorldTile.setTileType(...)` + 范围眩晕。 |
+| `general_fire_dps` | 地狱火焰·因菲诺 | 输出 | **焚烧**：普攻命中附加 10 年“焚烧标记”；带标记目标后续每次受击额外损失 `4% 当前生命（health_current）`。实现：命中加 `trait_era_burn_dot`，额外伤害在其 `action_get_hit` 里结算（不按年 DOT）。 | **烈焰风暴**：半径 12 造成固定火焰伤害（默认 300）。实现：范围扣血 + 表现用 `ActionLibrary.castFire(...)`。 |
+| `general_fire_support` | 火焰祭司·辛德拉 | 辅助 | **火焰祝福**：当辛德拉命中/受击时：以当前 `pTile` 半径 12 刷新友军“火焰附魔”（持续 5 年）：友军命中会给目标附加 5 年燃烧标记（燃烧额外伤害走受击触发）。实现：在钩子里半径枚举给友军加 trait。 | **火焰复苏**：持续 20 年；持续期内当友军命中/受击且站在火焰/熔岩地形上时，恢复量 ×1.5，并获得 20 年火抗。实现：给友军刷新“复苏标记 trait”，在其命中/受击钩子里做地形判定与回血倍率。 |
+| `general_fire_elite` | 炎魔之子·弗雷格 | 精英 | **火焰抗性**：火焰伤害 -80%（口径：仅对 MOD 的火焰伤害/燃烧触发伤害生效）；并在受击时若站在熔岩上恢复 `5% 最大生命（health_max）`。实现：在自身 `action_get_hit` 里做地形判定 + `restoreHealthPercent(...)`。 | **末日烈焰（局部）**：持续 20 年；以目标 `pTile` 半径 14 触发一次火雨爆发（一次性范围伤害），并给敌军附加 20 年“热浪标记”：其后续每次受击额外掉血（小额）。实现：范围扣血 + 标记的 `action_get_hit` 追加伤害（不做区域列表）。 |
+
+</details>
+
+<a id="generals-abyss"></a>
+### 深渊邪神将领（领域：疯狂）
+<details>
+<summary>展开将领表（5 名，P0+S1）</summary>
+
+| 将领ID | 名称 | 定位 | P0 被动（常驻） | S1 主动 |
+|---|---|---|---|---|
+| `general_abyss_vanguard` | 低语者·萨尔 | 先锋 | **精神侵蚀**：命中英雄使其疯狂值 +20（0-100）。实现：用 `ActorTrait.action_attack_target` 命中时把疯狂值写入目标 `custom_data_int["era_madness"]`（0-100）。 | **低语突袭**：使目标英雄立即短暂混乱（默认时长），并降低其攻击 10 年。实现：混乱 + trait。 |
+| `general_abyss_tank` | 深渊守卫·达贡 | 坦克 | **深渊护甲**：当达贡命中/受击时：以当前 `pTile` 半径 10 对疯狂值 ≥50 的敌军刷新“攻击 -15%”（持续 5 年）。实现：在 `action_attack_target/action_get_hit` 里半径枚举 + debuff trait。 | **恐惧光环**：持续 20 年；持续期内当达贡命中/受击时：以当前 `pTile` 半径 12 刷新敌军攻击 -25%。实现：施放后给自身加光环 trait（到期年），光环 trait 在 `action_attack_target/action_get_hit` 做半径枚举。 |
+| `general_abyss_dps` | 疯狂使者·尼亚拉 | 输出 | **疯狂共鸣**：对疯狂值越高的目标伤害越高（满 100 时 +100%）。实现：按疯狂值加成。 | **精神爆破**：对目标区域半径 8 造成伤害，对疯狂值 ≥50 的单位基础伤害（damage）×3。实现：范围扣血 + 条件倍率。 |
+| `general_abyss_support` | 邪教主教·海德拉 | 辅助 | **深渊祝福**：当海德拉命中/受击时：以当前 `pTile` 半径 12 刷新友军“疯狂值增长 -50%”标记，并使混乱/恐惧持续时间 -50%（仅对 MOD 精神控制生效）。实现：在钩子里半径枚举给友军加 trait 标记；写入到期年时按标记缩短。 | **邪教仪式**：在目标 `pTile` 周围召唤邪教徒 3 名，并命令其优先靠近英雄传播疯狂。实现：`spawnNewUnit(...)` + `goTo(...)`（受军团上限约束）。 |
+| `general_abyss_elite` | 触手领主·肖格斯 | 精英 | **触手横扫**：普攻命中时对目标周围 2 个敌人造成 50% 溅射伤害（每累计命中 `H=20` 次最多触发 1 次）。实现：在 `action_attack_target` 里用命中计数阈值限频，并邻近搜索 2 个敌人 `changeHealth(-dmg)`。 | **深渊凝视（弱化版）**：对目标英雄疯狂值 +30，并短暂眩晕（默认时长）。实现：疯狂值写入 `custom_data_int["era_madness"]` + `addStunnedEffectOnTarget(...)`。 |
+
+</details>
+
+<a id="generals-death"></a>
+### 死亡君王将领（领域：亡灵）
+<details>
+<summary>展开将领表（5 名，P0+S1）</summary>
+
+| 将领ID | 名称 | 定位 | P0 被动（常驻） | S1 主动 |
+|---|---|---|---|---|
+| `general_death_vanguard` | 死亡骑士·莫德雷德 | 先锋 | **尸骸践踏**：普攻命中时有 15% 概率在目标附近生成 1 个骷髅兵；为限频，改为“每累计命中 `H=20` 次最多触发 1 次”，且总触发上限 6 次。实现：在 `action_attack_target` 里做计数与上限控制，触发时 `spawnNewUnit("skeleton_thrall", tile, ...)`。 | **亡灵冲锋**：冲锋到目标并造成基础伤害（damage）×1.3，同时给目标附加 3 年“冲锋标记”；目标在标记期内死亡则额外召唤 1 个骷髅。实现：冲锋引导 + 命中标记 trait → 标记 trait `action_on_object_remove` 生成骷髅（受军团上限约束）。 |
+| `general_death_tank` | 骨龙·尼德霍格 | 坦克 | **骨甲**：减伤 30%，并使控制持续时间 -30%（仅对 MOD 控制生效）。实现：骨甲 trait 的 `action_get_hit`（`GetHitAction`）减伤；控制缩短按“到期年”规则处理。 | **亡灵光环**：持续 20 年；当尼德霍格命中/受击时：以当前 `pTile` 半径 12 为亡灵单位恢复 4% 最大生命（health_max）（可限频）。实现：光环 trait 在 `action_attack_target/action_get_hit` 里范围恢复。 |
+| `general_death_dps` | 死灵法师·凯尔苏斯 | 输出 | **灵魂收割**：击杀单位恢复 50% 最大生命（health_max）；为限频，改为“每累计击杀 `K=3` 次最多触发 1 次”。实现：用 `Actor.kills` 增量触发（上次 kills 记到 `custom_data_int`）+ 次数上限。 | **死亡射线**：对目标英雄造成固定伤害（默认 100）且“无视护甲”。实现：直接扣血。 |
+| `general_death_support` | 亡灵祭司·莉莉丝 | 辅助 | **死亡祝福**：半径 12 友军死亡后有 20% 概率转化为亡灵仆从。实现：当莉莉丝命中/受击时，以当前 `pTile` 半径 12 为友军刷新标记 `trait_era_death_bless_mark`；标记 trait 的 `action_on_object_remove` 在友军死亡时按概率 `spawnNewUnit("undead_thrall", tile, ...)`。 | **复活仪式**：在据点召唤 3 个亡灵单位（优先主力/精锐）。实现：批量生成（受军团上限约束）。 |
+| `general_death_elite` | 死神使者·桑纳托斯 | 精英 | **死亡审判（弱化版）**：附近死亡事件触发骷髅生成概率 +15%。实现：全局/区域加成。 | **冥界召唤**：召唤“死神分身”2 个（临时精英单位，持续 50 年）。实现：生成 + 计时清理。 |
+
+</details>
+
+<a id="generals-soul"></a>
+### 灵魂编织者将领（领域：契约）
+<details>
+<summary>展开将领表（5 名，P0+S1）</summary>
+
+| 将领ID | 名称 | 定位 | P0 被动（常驻） | S1 主动 |
+|---|---|---|---|---|
+| `general_soul_vanguard` | 诱惑者·莉莉丝 | 先锋 | **魅影**：对英雄命中时有 10% 概率触发“短暂魅惑”（目标短暂停止攻击，默认时长）。实现：用 `ActorTrait.action_attack_target` 命中时做概率判定，对目标 `makeWait(...)` 或短眩晕（按“<1 年”规则）。 | **魅惑**：目标英雄短暂停止攻击（默认时长），并获得“易伤”10 年。实现：`makeWait(...)`/短控 + 易伤 trait（到期年写入 `custom_data_int`）。 |
+| `general_soul_tank` | 契约守护者·巴弗灭 | 坦克 | **契约壁垒**：当巴弗灭命中/受击时：以当前 `pTile` 半径 8 刷新友军减伤 10% 与“控制持续时间 -20%”（持续 5 年，仅对 MOD 控制生效）。实现：在 `action_attack_target/action_get_hit` 里半径枚举并刷新 buff trait。 | **灵魂守护（近似嘲讽）**：持续 20 年；指定 1 名友军获得护盾值（默认 300）与减伤 20%。守护期间当巴弗灭命中/受击时：对半径 8 敌军执行一次 `startFightingWith(巴弗灭)`，实现近似嘲讽（带数量上限）。 |
+| `general_soul_dps` | 灵魂猎手·阿撒兹勒 | 输出 | **灵魂吸取**：击杀永久 +5% 攻击（上限 10 层）。实现：用 `Actor.kills` 增量触发并把层数写入 `custom_data_int` + trait 表现。 | **灵魂撕裂**：对“有契约层数”的目标基础伤害（damage）×3。实现：读取目标 `custom_data_int["era_contract_stacks"]` + 条件倍率。 |
+| `general_soul_support` | 契约祭司·贝利亚尔 | 辅助 | **契约解除**：普攻命中时有概率移除目标 1 个增益状态；为限制频率，改为“每累计命中 `H=20` 次最多触发 1 次”。实现：在 `action_attack_target` 里计数到阈值后对目标移除 1 个增益 trait。 | **批量契约**：半径 12 内敌军全部获得 1 层契约。实现：范围施加契约层数。 |
+| `general_soul_elite` | 傀儡大师·墨菲斯托二世 | 精英 | **契约侵蚀**：当带契约层数 ≥3 的英雄受击时：触发短暂混乱（默认时长）并附加 1 年易伤（受伤 +15%）；为限制频率，改为“每累计受击 `H=10` 次最多触发 1 次”。实现：逻辑写在英雄的 `trait_era_contract.action_get_hit`（读 `era_contract_stacks` + 受击计数阈值）。 | **契约牵引**：持续 30 年；给目标英雄施加“牵引标记”：其后续每次受击都会 `goTo(魔王据点/魔王本体附近 tile)` 并短暂混乱（默认时长）（最多触发 10 次）。实现：命中施放标记 trait，在标记的 `action_get_hit` 里牵引+混乱+次数递减。 |
+
+</details>
+
+<a id="generals-nature"></a>
+### 自然之怒将领（领域：自然）
+<details>
+<summary>展开将领表（5 名，P0+S1）</summary>
+
+| 将领ID | 名称 | 定位 | P0 被动（常驻） | S1 主动 |
+|---|---|---|---|---|
+| `general_nature_vanguard` | 荆棘使者·索恩 | 先锋 | **荆棘印记**：命中目标附加 10 年减速（-20%），并在其脚下生成 1 个荆棘地块。实现：trait + 小范围地形改造（严格上限）。 | **荆棘冲锋**：冲锋路径留下荆棘（仅做地形表现，持续 15 年），并对路径附近敌军触发一次“荆棘爆刺”（半径 2：损失 `3% 当前生命（health_current）`，最低扣到 1HP）。实现：路径取样 + 每个采样点做一次性半径枚举扣血（不做“经过后每年掉血”）。 |
+| `general_nature_tank` | 古树守护者·伊格德拉西尔 | 坦克 | **树皮护甲**：减伤 40%。实现：护甲 trait 的 `action_get_hit`（`GetHitAction`）减伤。 | **根系缠绕**：半径 10 敌军减速 -40% 持续 10 年，并短暂眩晕（默认时长）。实现：范围 debuff + 短控。 |
+| `general_nature_dps` | 野兽之王·芬里尔 | 输出 | **狂暴**：HP < 50% 时攻击 +30%，移速 +15%。实现：阈值 trait。 | **召唤狼群**：召唤 3 只狼加入战斗并围攻最近城市。实现：生成单位（受军团上限约束）。 |
+| `general_nature_support` | 自然祭司·德鲁伊娜 | 辅助 | **自然治愈**：当德鲁伊娜命中/受击时：以当前 `pTile` 半径 12 为友军恢复 `3% 最大生命（health_max）`（单次处理上限）。实现：在 `action_attack_target/action_get_hit` 里半径枚举并 `restoreHealthPercent(...)`。 | **植物召唤**：召唤食人花/植物怪 6 个守卫据点。实现：生成单位。 |
+| `general_nature_elite` | 盖亚之子·泰坦 | 精英 | **大地之躯**：控制持续时间 -30%（仅对 MOD 控制生效）；建筑伤害 +30%。实现：trait。 | **地震**：目标区域半径 16，建筑 40% 概率受重创，单位短暂眩晕（默认时长）。实现：建筑抽样扣血 + 范围短控。 |
+
+</details>
+
+<a id="generals-judge"></a>
+### 终焉审判者将领（领域：审判）
+<details>
+<summary>展开将领表（5 名，P0+S1）</summary>
+
+| 将领ID | 名称 | 定位 | P0 被动（常驻） | S1 主动 |
+|---|---|---|---|---|
+| `general_judge_vanguard` | 天使长·米迦勒 | 先锋 | **圣痕**：命中英雄叠加 1 层审判（最多 3 层；每层受伤 +10%）。实现：用 `ActorTrait.action_attack_target` 命中时写入目标 `custom_data_int["era_judgement_stacks"]`（上限 3）并刷新到期年。 | **神圣冲锋**：无视地形冲锋到目标并造成基础伤害（damage）×1.5。实现：路径忽略用传送近似 + 扣血。 |
+| `general_judge_tank` | 守护天使·乌列尔 | 坦克 | **神圣护盾**：减伤 25%，并使控制持续时间 -30%（仅对 MOD 施加的控制生效）。实现：护盾 trait 的 `action_get_hit`（`GetHitAction`）减伤；控制缩短按“到期年”规则处理。 | **神罚反击**：持续 20 年；受击时给攻击者叠 1 层审判（持续期内最多触发 20 次）。实现：用反击 trait 的 `action_get_hit`（`GetHitAction`）做 `procs_left` 递减与叠层写入 `custom_data_int["era_judgement_stacks"]`。 |
+| `general_judge_dps` | 审判天使·加百列 | 输出 | **神圣之剑**：对“被审判目标”伤害 +80%（不做 ×3）。实现：按审判层数/标记加成。 | **审判执行**：对审判 ≥3 层的英雄造成一次重击（当前生命（health_current） -35%），并短暂眩晕（默认时长），随后清空其审判层数。实现：条件扣血 + 控制 + 清层。 |
+| `general_judge_support` | 救赎天使·拉斐尔 | 辅助 | **净化**：半径 12 友军负面状态持续时间 -40%（仅对 MOD 负面状态生效）。实现：trait 标记 + 对应负面效果写入到期年（`custom_data_int`）时按该标记缩短。 | **神圣治愈**：治疗半径 12 友军 60% 最大生命（health_max），并移除 1 个负面状态。实现：`restoreHealthPercent(0.6)` + 移除。 |
+| `general_judge_elite` | 末日天使·亚兹拉尔 | 精英 | **末日宣告（局部）**：当亚兹拉尔命中/受击时：以当前 `pTile` 半径 14 刷新敌军攻击/防御 -5%（持续 5 年）。实现：在 `action_attack_target/action_get_hit` 里半径枚举并刷新 debuff trait。 | **最终审判（局部）**：目标区域半径 16 敌军当前生命（health_current） -15%（英雄减半），并施加 10 年移速 -10%。实现：范围扣血 + debuff。 |
+
+</details>
+
+---
