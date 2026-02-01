@@ -7,7 +7,7 @@
 |---|---|
 | 项目编号 | ERA-WHEEL-DEMON-MOD |
 | 版本 | 2.0（完全重新设计） |
-| 最后更新 | 2026-01-31 |
+| 最后更新 | 2026-02-01 |
 | 开发状态 | 重新架构阶段 |
 | 目标平台 | WorldBox 0.51.2+ (NeoModLoader) |
 
@@ -16,30 +16,24 @@
 <a id="doc-rules"></a>
 ## 阅读与口径约定（建议先看）
 
-- 本文是“设计文档 + 开发规划”，目标是**按文档即可实现**。
-- **默认值与参数**：以「[附录D](#p7)」为唯一权威来源；正文如有示例或范围描述，以附录D为准。
-- **实现口径与容错**：统一见「[附录A](#conventions)」，正文不重复。
-- **技能/名册/大表**：集中在「[附录E/F](#appendix-demon-skills)」，正文只讲规则。
+**文档定位**
+- 面向开发：给出可落地的规则、实现口径与参数入口。
+- 同时包含玩家 UI 说明，用于对齐“玩家看到什么”。
 
----
+**推荐阅读顺序（开发优先）**
+1. 先看「[1.2 玩法总览](#s12)」→「[2.1 轮回系统](#s21)」→「[2.4 敌方军势](#s24)」→「[2.5 王国与英雄](#s25)」，把玩法闭环打通。
+2. 再看「[附录A：统一口径](#conventions)」与「[附录B：技术可行性与实现方案](#p5)」，确认实现边界与口径。
+3. 最后按需查「[第四部分：用户交互设计](#p4)」与各附录大表。
 
-<a id="quickstart"></a>
-## 快速阅读（必读）
+**只查信息的快速入口**
+- 默认值/参数：跳到「[7.1 关键参数默认值速查](#s71)」（附录D）
+- 技能表与名册：跳到「[附录E/F](#appendix-demon-skills)」
+- 可用属性字段：跳到「[附录G：可用属性字段速查](#appendix-base-stats)」
 
-**这份文档解决什么**
-- 面向玩家：快速理解玩法与节奏，知道“现在该看什么”
-- 面向开发：给出可落地的规则与实现口径
-
-**推荐阅读顺序**
-- 玩家/体验向：先看「[1.2 玩法总览](#s12)」→「[2.1 轮回系统](#s21)」→「[2.4 敌方军势](#s24)」→「[2.5 王国与英雄](#s25)」→「[第四部分：用户交互设计](#p4)」
-- 开发/实现向：先看「[附录A：统一口径](#conventions)」→「[附录B：技术可行性与实现方案](#p5)」，再回到 2.x 按需查细节
-- 只查默认值/参数：跳到「[7.1 关键参数默认值速查](#s71)」（附录D）
-- 只查技能表：跳到「[附录E/F](#appendix-demon-skills)」
-- 只查可用属性字段：跳到「[附录G：可用属性字段速查](#appendix-base-stats)」
-
-**阅读方式（少跳转）**
-- 主线：1.2 → 2.1~2.5 → UI → 附录
-- 技能大表集中到附录 E/F
+**统一口径（必须遵守）**
+- 默认值与参数：以「[附录D](#p7)」为唯一权威来源；正文如有示例或范围描述，以附录D为准。
+- 实现口径与容错：统一见「[附录A](#conventions)」，正文不重复。
+- 技能/名册/大表：集中在「[附录E/F](#appendix-demon-skills)」，正文只讲规则。
 
 **检索建议**
 - 关键词：轮回 / 阶段 / 魔王 / 将领 / 军团 / 遗产 / 封印 / 技能 / 波次
@@ -67,10 +61,9 @@
 
 **前置阅读**
 - [阅读与口径约定](#doc-rules)
-- [快速阅读](#quickstart)
 - [术语速查](#terms)
 
-**正文结构（玩家版）**
+**正文结构（开发为主）**
 1. [第一部分：项目概述](#p1)
 2. [第二部分：核心系统设计](#p2)
    1. [2.1 轮回系统](#s21)
@@ -525,9 +518,6 @@
   - 终焉圣裁器（武器）：`damage +50%`；命中魔王阵营有 20% 概率短暂眩晕（默认时长）  
   - 终焉守护铠（护甲）：`armor +35%`；受击减伤 25%  
   - 终焉灵戒（饰品）：命中/受击时恢复 `2% 最大生命（health_max）`（限频）
-实现口径：每档=一组 **MOD 自定义** `ItemAsset` 列表（不是原版装备）；只加入原版“制作/领取”候选池（`ItemCrafting` → 城市库存 → `City.giveItem`），**不直接全员配装**。  
-特效由“装备绑定 trait”实现（命中/受击钩子），不依赖原版装备效果。  
-装备生成时写入“制造王国/制作者”标记，用于叙事与追溯。
 
 **研究遗产（王国）档位**（解锁技能池/能力，全部为 MOD 自定义技能）：
 - 1 层：基础研究  
@@ -557,9 +547,6 @@
 - 10 层：终焉研究  
   - 终焉封印：对魔王阵营单体造成 `40% 当前生命（health_current）` 伤害（英雄减半）并短暂眩晕  
   - 神佑结界：半径 8 友军获得 10 年减伤 20%（限频）
-实现口径：研究遗产以 **trait 形式**挂载，并按档位解锁加入“出生/成长随机特质池”（`pot_traits_birth` / `pot_traits_growup`）。  
-英雄仍遵循 `P0+S1`，研究遗产技能与“英雄随机技能池”分开管理，避免混淆。  
-默认法力消耗：普通 5 点 / 终极 10 点，所有数值可配置。
 
 **军备遗产（魔王）档位**（解锁装备池，全部为 MOD 自定义装备，带自定义外观/特效）：
 - 1 层：魔钢制式  
@@ -592,7 +579,12 @@
 - 10 层：终焉遗铸  
   - 终焉裁决刃（武器）：`damage +45%`；命中英雄有 20% 概率短暂眩晕（默认时长）  
   - 终焉魔甲（护甲）：`armor +35%`；受击减伤 25%
-实现口径：每档=魔王专属 **MOD 自定义** 装备 `ItemAsset` 列表；魔王/将领/军团**生成或补给时按概率配装**，不做战斗中动态换装。
+
+**实现要点（统一）**
+- 工艺遗产：每档为一组 **MOD 自定义** `ItemAsset` 列表，只进入原版“制作/领取”候选池（`ItemCrafting` → 城市库存 → `City.giveItem`），不直接全员配装；特效由“装备绑定 trait”实现（命中/受击钩子）。
+- 研究遗产：以 **trait 形式**挂载，按档位加入 `pot_traits_birth` / `pot_traits_growup`；英雄仍遵循 `P0+S1`，与“英雄随机技能池”分开管理；默认法力消耗：普通 5 点 / 终极 10 点（可配）。
+- 军备遗产：每档为魔王专属 **MOD 自定义** 装备 `ItemAsset` 列表；魔王/将领/军团生成或补给时按概率配装，不做战斗中动态换装。
+- 装备溯源：装备生成时写入“制造王国/制作者”标记，用于叙事与追溯。
 
 #### 2.3.2.3 王国掌握度与继承规则（混合方案，可实现）
 
@@ -667,54 +659,12 @@
 
 #### 2.3.4 技术实现方式（WorldBox traits 系统）
 
-```csharp
-// 添加遗产 = 注册 trait（示意）
-AssetManager.traits.add(new ActorTrait
-{
-    // tier = 1..10
-    id = $"legacy_conquest_{tier}",
-    name = $"征服遗产 Lv{tier}",
-    // 档位收益递减，具体曲线可配置
-    description = $"魔王阵营伤害/防御 +{LegacyConfig.getConquestBonus(tier)}%",
-    // 具体字段以 WorldBox/NeoModLoader 实际 trait 数据结构为准
-});
-
-// 王国遗产：对 Kingdom 添加 KingdomTrait（影响王国与英雄）
-// kingdom.addKingdomTrait($"legacy_craft_{tier}");
-
-// 魔王遗产：魔王/将领/军团生成时添加 ActorTrait
-// newDemonUnit.addTrait($"legacy_conquest_{tier}");
-
-// 工艺遗产：只解锁装备池，沿用原版制作/领取流程（示意）
-// itemAsset.unlock(true);
-// // 触发频率走原版行为；如需更稀有，可在触发前加概率判定
-// // if (Randy.randomChance(legacyCraftChance)) {
-//     ItemCrafting.tryToCraftRandomWeapon(heroOrUnit, city); // 制作 → 城市库存
-//     // AI 行为触发 City.giveItem(...) 领取/替换
-// // }
-
-// 研究遗产：把“研究技能 trait”加入出生/成长随机池（示意）
-// AssetManager.traits.pot_traits_birth.Add(trait_legacy_research_tier);
-// AssetManager.traits.pot_traits_growup.Add(trait_legacy_research_tier);
-// 由 Actor.checkTraitMutationOnBirth/GrowUp 触发抽取，保持原版概率逻辑
-
-// 军事遗产：对魔王阵营单位生效（示意）
-// 约定：魔王阵营单位统一挂 trait_era_demon_faction
-// 在王国单位 trait_era_legacy_military.action_attack_target：
-// if (target.hasTrait("trait_era_demon_faction")) target.changeHealth(-self.damage * 0.10f);
-// 在王国单位 trait_era_legacy_military.action_get_hit：
-// if (attacker.hasTrait("trait_era_demon_faction")) self.changeHealth(+damage_est * 0.10f);
-// 若无法直接读取伤害，可用“上一击前后 health 差值”近似：
-// float damage_est = Math.Max(0f, last_health - self.getHealth());
-// last_health = self.getHealth();
-
-// 军备遗产（魔王）：解锁装备池，生成/补给时按概率配装（示意）
-// demonItemAsset.unlock(true);
-// if (Randy.randomChance(legacyArmoryChance)) {
-//     Item item = World.world.items.generateItem(demonItemAsset, null, "LegacyArmory", 1, newDemonUnit);
-//     newDemonUnit.equipment.setItem(item, newDemonUnit);
-// }
-```
+**实现要点**
+- 遗产以 `ActorTrait/KingdomTrait` 表达：王国遗产挂 `KingdomTrait`；魔王/将领/军团遗产在生成或补给时挂 `ActorTrait`。
+- 工艺/军备遗产只解锁装备池：走原版“制作/领取”流程或生成时配装，不做全员强行配装。
+- 研究遗产以 trait 形式加入出生/成长随机池，沿用原版概率逻辑。
+- 军事遗产在命中/受击钩子里判定，对魔王阵营单位生效（阵营统一 trait 标记）。
+- 相关 API 与资产注册口径见「[附录B：技术可行性与实现方案](#p5)」。
 
 ---
 
@@ -922,13 +872,13 @@ AssetManager.traits.add(new ActorTrait
   - `trait_era_hero_skill_heal`：命中/受击时小概率恢复少量生命
   - `trait_era_hero_skill_blink`：受击时小概率瞬移脱离
 
-**实现要点（可直接实现）**：
-- 晋升 = 直接对目标 `Actor.addTrait(...)`（必要时清理互斥 trait），并写入 MOD 内部“英雄档案”（用于 UI/叙事/继承）。
-- “魔王影响区”不做“每年扫描”：在命定英雄自己的 `action_attack_target` / `action_get_hit` 里，用 `pTile` 与“魔王/据点中心 tile”做距离判定；命中/受击且在范围内就添加/刷新 `trait_era_heroic_surge`。
-
 **家族继承**：
 - 英雄死亡后，后代有一定概率继承部分能力
 - 可形成"英雄家族"，延续故事线
+
+**实现要点（可直接实现）**：
+- 晋升 = 直接对目标 `Actor.addTrait(...)`（必要时清理互斥 trait），并写入 MOD 内部“英雄档案”（用于 UI/叙事/继承）。
+- “魔王影响区”不做“每年扫描”：在命定英雄自己的 `action_attack_target` / `action_get_hit` 里，用 `pTile` 与“魔王/据点中心 tile”做距离判定；命中/受击且在范围内就添加/刷新 `trait_era_heroic_surge`。
 
 #### 2.5.3 世界停战与共同讨伐（生产级核心）
 
