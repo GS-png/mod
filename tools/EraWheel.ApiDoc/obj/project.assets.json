@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/mnt/c/Users/14745/Desktop/mod/mod/tools/EraWheel.ApiDoc/EraWheel.ApiDoc.csproj",
+      "projectUniqueName": "/home/wuxu/mod-1/tools/EraWheel.ApiDoc/EraWheel.ApiDoc.csproj",
       "projectName": "EraWheel.ApiDoc",
-      "projectPath": "/mnt/c/Users/14745/Desktop/mod/mod/tools/EraWheel.ApiDoc/EraWheel.ApiDoc.csproj",
+      "projectPath": "/home/wuxu/mod-1/tools/EraWheel.ApiDoc/EraWheel.ApiDoc.csproj",
       "packagesPath": "/home/wuxu/.nuget/packages/",
-      "outputPath": "/mnt/c/Users/14745/Desktop/mod/mod/tools/EraWheel.ApiDoc/obj/",
+      "outputPath": "/home/wuxu/mod-1/tools/EraWheel.ApiDoc/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/wuxu/.nuget/NuGet/NuGet.Config"
@@ -64,7 +64,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.417/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/home/wuxu/.dotnet/sdk/8.0.418/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

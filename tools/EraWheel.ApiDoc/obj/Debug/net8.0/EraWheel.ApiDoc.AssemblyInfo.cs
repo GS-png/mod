@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EraWheel.ApiDoc")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c10f239caf9d4174ddff2545ed3c72e8e21e15b2")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+49bca1d91ca975b8269e9aa1786fc4dd177b12a7")]
 [assembly: System.Reflection.AssemblyProductAttribute("EraWheel.ApiDoc")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EraWheel.ApiDoc")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
