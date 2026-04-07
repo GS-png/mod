@@ -1,0 +1,4 @@
+interface:
+  display_name: "SpecKit Plan"
+  short_description: "Create implementation planning artifacts"
+  default_prompt: "Use $speckit-plan to turn the active Spec Kit specification into an implementation plan."

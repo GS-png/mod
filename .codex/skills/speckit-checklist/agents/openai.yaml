@@ -1,0 +1,4 @@
+interface:
+  display_name: "SpecKit Checklist"
+  short_description: "Generate a requirements quality checklist"
+  default_prompt: "Use $speckit-checklist to generate a requirements quality checklist for the active Spec Kit feature."

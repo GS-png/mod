@@ -1,0 +1,4 @@
+interface:
+  display_name: "两步代码健康评审"
+  short_description: "首轮完成范围初检并给13方向四档快照"
+  default_prompt: "使用 $code-health-fix：先做范围初检并输出 1-13 方向建议表 + 必须/建议/可选/不必 四档快照；收到我的口令或编号后，只做方向归一化回显。"
