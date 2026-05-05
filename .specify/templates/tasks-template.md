@@ -20,10 +20,10 @@ description: "Task list template for feature implementation"
 
 ## Path Conventions
 
-- **Single project**: `src/`, `tests/` at repository root
-- **Web app**: `backend/src/`, `frontend/src/`
-- **Mobile**: `api/src/`, `ios/src/` or `android/src/`
-- Paths shown below assume single project - adjust based on plan.md structure
+- **Official MOD roots**: `EraWheel/mod.json`, `EraWheel/src/`, approved release output directories
+- **Spec & planning docs**: `specs/[###-feature-name]/`
+- **Reference-only paths**: `设计/`, `api/`, `tools/WorldBox.Managed/`, `.codex/tmp/`
+- Tasks MUST place shipping business logic in the official MOD roots, not in reference-only paths
 
 <!-- 
   ============================================================================
@@ -49,10 +49,11 @@ description: "Task list template for feature implementation"
 **Purpose**: Project initialization and basic structure
 
 - [ ] T001 Record authority docs, `api/` evidence, and verified runtime references in `specs/[###-feature-name]/plan.md`
-- [ ] T002 List impacted code, docs, templates, tests, configs, and resource folders that must stay in sync
-- [ ] T003 If rewriting, create a replacement map for old hooks/files/save keys/resources in `specs/[###-feature-name]/plan.md` or `research.md`
-- [ ] T004 Create project structure per implementation plan
-- [ ] T005 [P] Configure linting and formatting tools
+- [ ] T002 List impacted code, docs, templates, tests, configs, resource folders, official MOD roots, and reference-only paths that must stay in sync
+- [ ] T003 Record per-behavior runtime reuse decisions in `specs/[###-feature-name]/spec.md` and `specs/[###-feature-name]/plan.md` (`原版直接复用` / `原版修改复用 + MOD 自定义` / `MOD 自定义`)
+- [ ] T004 If rewriting or using any non-direct reuse path, create a replacement map and exception evidence for old hooks/files/save keys/resources in `specs/[###-feature-name]/plan.md` or `research.md`
+- [ ] T005 Create the official MOD roots per implementation plan and keep shipping logic out of `设计/`, `api/`, `tools/`, and `.codex/tmp/`
+- [ ] T006 [P] Configure linting and formatting tools
 
 ---
 
@@ -64,12 +65,12 @@ description: "Task list template for feature implementation"
 
 Examples of foundational tasks (adjust based on your project):
 
-- [ ] T006 Confirm current MOD entry points, world hooks, save/load bridges, UI routes, and release gates touched by this feature
-- [ ] T007 [P] Build or update shared data/models/contracts required by all stories
-- [ ] T008 [P] Create common runtime integration helpers or adapters required by all stories
-- [ ] T009 Define migration, compatibility, or explicit reset handling for saves/configs affected by the rewrite
-- [ ] T010 Configure validation/logging infrastructure needed to prove runtime equivalence
-- [ ] T011 Mark which old files can only be deleted after each replacement check passes
+- [ ] T007 Confirm current MOD entry points, world hooks, save/load bridges, UI routes, release gates, and original/runtime seams touched by this feature
+- [ ] T008 [P] Build or update shared data/models/contracts required by all stories
+- [ ] T009 [P] Create common runtime integration helpers or adapters required by all stories without bypassing the reused original/runtime chain
+- [ ] T010 Define migration, compatibility, or explicit reset handling for saves/configs affected by the rewrite
+- [ ] T011 Configure validation/logging infrastructure needed to prove runtime equivalence, seam reuse, correct official source-root placement, and absence of a parallel private system
+- [ ] T012 Mark which old files can only be deleted after each replacement check passes
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -85,20 +86,21 @@ Examples of foundational tasks (adjust based on your project):
 
 > **NOTE: Validation is mandatory. Prefer automated checks first. If automation is not practical, write manual verification before implementation.**
 
-- [ ] T012 [P] [US1] Add automated validation for [behavior] in tests/[type]/test_[name].py when feasible
-- [ ] T013 [US1] Write manual verification steps and expected results for [user journey] in `specs/[###-feature-name]/quickstart.md` when needed
-- [ ] T014 [US1] If replacing old code, add equivalence or seam-replacement checks for this story before deleting the old implementation
+- [ ] T013 [P] [US1] Add automated validation for [behavior] in tests/[type]/[test-name] when feasible
+- [ ] T014 [US1] Write manual verification steps and expected results for [user journey] in `specs/[###-feature-name]/quickstart.md` when needed
+- [ ] T015 [US1] Record this story's reused original/runtime seam and, if needed, evidence-backed exception before implementation
+- [ ] T016 [US1] If replacing old code, add equivalence or seam-replacement checks for this story before deleting the old implementation
 
 ### Implementation for User Story 1
 
-- [ ] T015 [P] [US1] Create [Entity1] model in src/models/[entity1].py
-- [ ] T016 [P] [US1] Create [Entity2] model in src/models/[entity2].py
-- [ ] T017 [US1] Implement [Service] in src/services/[service].py (depends on T015, T016)
-- [ ] T018 [US1] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T019 [US1] Add validation and error handling
-- [ ] T020 [US1] Add logging for user story 1 operations
-- [ ] T021 [US1] Delete or retire replaced code only after the mapped checks pass
-- [ ] T022 [US1] Sync affected docs/comments/parameter tables for user story 1
+- [ ] T017 [P] [US1] Create [Entity1] or shared data definition in `EraWheel/src/[module]/[entity1]`
+- [ ] T018 [P] [US1] Create [Entity2] or shared data definition in `EraWheel/src/[module]/[entity2]`
+- [ ] T019 [US1] Implement [Service] in `EraWheel/src/[module]/[service]` (depends on T017, T018)
+- [ ] T020 [US1] Implement [feature entry/hook] in `EraWheel/src/[location]/[file]`
+- [ ] T021 [US1] Add validation and error handling
+- [ ] T022 [US1] Add logging for user story 1 operations
+- [ ] T023 [US1] Delete or retire replaced code only after the mapped checks pass
+- [ ] T024 [US1] Sync affected docs/comments/parameter tables for user story 1 and confirm no parallel private system remains
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and independently verifiable, but the release is not complete until all approved scope is finished
 
@@ -114,18 +116,19 @@ Examples of foundational tasks (adjust based on your project):
 
 > **NOTE: Validation is mandatory. Prefer automated checks first. If automation is not practical, write manual verification before implementation.**
 
-- [ ] T023 [P] [US2] Add automated validation for [behavior] in tests/[type]/test_[name].py when feasible
-- [ ] T024 [US2] Write manual verification steps and expected results for [user journey] in `specs/[###-feature-name]/quickstart.md` when needed
-- [ ] T025 [US2] If replacing old code, add equivalence or seam-replacement checks for this story before deleting the old implementation
+- [ ] T025 [P] [US2] Add automated validation for [behavior] in tests/[type]/[test-name] when feasible
+- [ ] T026 [US2] Write manual verification steps and expected results for [user journey] in `specs/[###-feature-name]/quickstart.md` when needed
+- [ ] T027 [US2] Record this story's reused original/runtime seam and, if needed, evidence-backed exception before implementation
+- [ ] T028 [US2] If replacing old code, add equivalence or seam-replacement checks for this story before deleting the old implementation
 
 ### Implementation for User Story 2
 
-- [ ] T026 [P] [US2] Create [Entity] model in src/models/[entity].py
-- [ ] T027 [US2] Implement [Service] in src/services/[service].py
-- [ ] T028 [US2] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T029 [US2] Integrate with User Story 1 components (if needed)
-- [ ] T030 [US2] Delete or retire replaced code only after the mapped checks pass
-- [ ] T031 [US2] Sync affected docs/comments/parameter tables for user story 2
+- [ ] T029 [P] [US2] Create [Entity] or shared data definition in `EraWheel/src/[module]/[entity]`
+- [ ] T030 [US2] Implement [Service] in `EraWheel/src/[module]/[service]`
+- [ ] T031 [US2] Implement [feature entry/hook] in `EraWheel/src/[location]/[file]`
+- [ ] T032 [US2] Integrate with User Story 1 components (if needed)
+- [ ] T033 [US2] Delete or retire replaced code only after the mapped checks pass
+- [ ] T034 [US2] Sync affected docs/comments/parameter tables for user story 2 and confirm no parallel private system remains
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently, but remaining approved scope is still required for release
 
@@ -141,17 +144,18 @@ Examples of foundational tasks (adjust based on your project):
 
 > **NOTE: Validation is mandatory. Prefer automated checks first. If automation is not practical, write manual verification before implementation.**
 
-- [ ] T032 [P] [US3] Add automated validation for [behavior] in tests/[type]/test_[name].py when feasible
-- [ ] T033 [US3] Write manual verification steps and expected results for [user journey] in `specs/[###-feature-name]/quickstart.md` when needed
-- [ ] T034 [US3] If replacing old code, add equivalence or seam-replacement checks for this story before deleting the old implementation
+- [ ] T035 [P] [US3] Add automated validation for [behavior] in tests/[type]/[test-name] when feasible
+- [ ] T036 [US3] Write manual verification steps and expected results for [user journey] in `specs/[###-feature-name]/quickstart.md` when needed
+- [ ] T037 [US3] Record this story's reused original/runtime seam and, if needed, evidence-backed exception before implementation
+- [ ] T038 [US3] If replacing old code, add equivalence or seam-replacement checks for this story before deleting the old implementation
 
 ### Implementation for User Story 3
 
-- [ ] T035 [P] [US3] Create [Entity] model in src/models/[entity].py
-- [ ] T036 [US3] Implement [Service] in src/services/[service].py
-- [ ] T037 [US3] Implement [endpoint/feature] in src/[location]/[file].py
-- [ ] T038 [US3] Delete or retire replaced code only after the mapped checks pass
-- [ ] T039 [US3] Sync affected docs/comments/parameter tables for user story 3
+- [ ] T039 [P] [US3] Create [Entity] or shared data definition in `EraWheel/src/[module]/[entity]`
+- [ ] T040 [US3] Implement [Service] in `EraWheel/src/[module]/[service]`
+- [ ] T041 [US3] Implement [feature entry/hook] in `EraWheel/src/[location]/[file]`
+- [ ] T042 [US3] Delete or retire replaced code only after the mapped checks pass
+- [ ] T043 [US3] Sync affected docs/comments/parameter tables for user story 3 and confirm no parallel private system remains
 
 **Checkpoint**: All user stories should now be independently functional and ready for full integration and release validation
 
@@ -172,7 +176,9 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] TXXX Security hardening
 - [ ] TXXX Sync authority docs, templates, and comments touched by this feature
 - [ ] TXXX Verify the replacement map is fully closed: no live hook/save key/resource path still depends on deleted old code
+- [ ] TXXX Verify every major behavior still runs through the planned original/runtime seam or its approved minimal exception
 - [ ] TXXX Verify no approved design item remains as placeholder, stub, empty entry, or deferred follow-up
+- [ ] TXXX Verify no parallel private system remains for battle, spellcasting, save/load, unit spawning, UI/HUD, equipment, or growth logic
 - [ ] TXXX Run planned automated/manual validation and record results
 - [ ] TXXX Package and validate the release candidate against full playable-release criteria
 
@@ -198,6 +204,7 @@ Examples of foundational tasks (adjust based on your project):
 ### Within Each User Story
 
 - Validation tasks MUST exist for every story
+- Each story MUST record its reused original/runtime seam and any evidence-backed exception before implementation
 - Rewrite stories MUST record which old seam is being replaced and when deletion becomes safe
 - Automated tests SHOULD be written and fail before implementation when feasible
 - When automation is not practical, manual verification steps MUST be written before implementation
@@ -222,12 +229,12 @@ Examples of foundational tasks (adjust based on your project):
 
 ```bash
 # Launch validation for User Story 1 together:
-Task: "Add automated validation for [behavior] in tests/[type]/test_[name].py"
+Task: "Add automated validation for [behavior] in tests/[type]/[test-name]"
 Task: "Write manual verification steps for [user journey] in specs/[###-feature-name]/quickstart.md"
 
 # Launch all models for User Story 1 together:
-Task: "Create [Entity1] model in src/models/[entity1].py"
-Task: "Create [Entity2] model in src/models/[entity2].py"
+Task: "Create [Entity1] or shared data definition in EraWheel/src/[module]/[entity1]"
+Task: "Create [Entity2] or shared data definition in EraWheel/src/[module]/[entity2]"
 ```
 
 ---

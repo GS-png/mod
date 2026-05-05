@@ -1,0 +1,61 @@
+using System.Collections.Generic;
+using EraWheel.Data.Definitions;
+
+namespace EraWheel.Data.Manifests;
+
+public static class EraGeneralManifestData
+{
+    public static IReadOnlyList<EraGeneralManifest> All { get; } = new[]
+    {
+        new EraGeneralManifest("general_void_lord_01", "虚空剑圣·塞拉斯", "demon_void_lord", "Assets/Art/注册生物单位图片/魔王与将领图片/虚无之主/将领/虚空剑圣·塞拉斯/icon.png"),
+        new EraGeneralManifest("general_void_lord_02", "虚空行者·米拉", "demon_void_lord", "Assets/Art/注册生物单位图片/魔王与将领图片/虚无之主/将领/虚空行者·米拉/icon.png"),
+        new EraGeneralManifest("general_void_lord_03", "虚空守卫·奥古斯", "demon_void_lord", "Assets/Art/注册生物单位图片/魔王与将领图片/虚无之主/将领/虚空守卫·奥古斯/icon.png"),
+        new EraGeneralManifest("general_void_lord_04", "虚空祭司·艾莉娅", "demon_void_lord", "Assets/Art/注册生物单位图片/魔王与将领图片/虚无之主/将领/虚空祭司·艾莉娅/icon.png"),
+        new EraGeneralManifest("general_void_lord_05", "虚空领主·塞拉菲姆", "demon_void_lord", "Assets/Art/注册生物单位图片/魔王与将领图片/虚无之主/将领/虚空领主·塞拉菲姆/icon.png"),
+        new EraGeneralManifest("general_plague_mother_01", "疫病使者·莫格拉", "demon_plague_mother", "Assets/Art/注册生物单位图片/魔王与将领图片/瘟疫母神/将领/疫病使者·莫格拉/icon.png"),
+        new EraGeneralManifest("general_plague_mother_02", "腐烂巨兽·格罗尔", "demon_plague_mother", "Assets/Art/注册生物单位图片/魔王与将领图片/瘟疫母神/将领/腐烂巨兽·格罗尔/icon.png"),
+        new EraGeneralManifest("general_plague_mother_03", "变异领主·泽克斯", "demon_plague_mother", "Assets/Art/注册生物单位图片/魔王与将领图片/瘟疫母神/将领/变异领主·泽克斯/icon.png"),
+        new EraGeneralManifest("general_plague_mother_04", "瘟疫祭司·娜塔莎", "demon_plague_mother", "Assets/Art/注册生物单位图片/魔王与将领图片/瘟疫母神/将领/瘟疫祭司·娜塔莎/icon.png"),
+        new EraGeneralManifest("general_plague_mother_05", "疫病之母·玛拉凯", "demon_plague_mother", "Assets/Art/注册生物单位图片/魔王与将领图片/瘟疫母神/将领/疫病之母·玛拉凯/icon.png"),
+        new EraGeneralManifest("general_mech_tyrant_01", "歼灭者·阿尔法", "demon_mech_tyrant", "Assets/Art/注册生物单位图片/魔王与将领图片/机械暴君/将领/歼灭者·阿尔法/icon.png"),
+        new EraGeneralManifest("general_mech_tyrant_02", "侦察者·贝塔", "demon_mech_tyrant", "Assets/Art/注册生物单位图片/魔王与将领图片/机械暴君/将领/侦察者·贝塔/icon.png"),
+        new EraGeneralManifest("general_mech_tyrant_03", "堡垒·伽马", "demon_mech_tyrant", "Assets/Art/注册生物单位图片/魔王与将领图片/机械暴君/将领/堡垒·伽马/icon.png"),
+        new EraGeneralManifest("general_mech_tyrant_04", "工程师·德尔塔", "demon_mech_tyrant", "Assets/Art/注册生物单位图片/魔王与将领图片/机械暴君/将领/工程师·德尔塔/icon.png"),
+        new EraGeneralManifest("general_mech_tyrant_05", "终结者·欧米茄二号", "demon_mech_tyrant", "Assets/Art/注册生物单位图片/魔王与将领图片/机械暴君/将领/终结者·欧米茄二号/icon.png"),
+        new EraGeneralManifest("general_time_distorter_01", "时空混乱者·克洛诺", "demon_time_distorter", "Assets/Art/注册生物单位图片/魔王与将领图片/时空扭曲者/将领/时空混乱者·克洛诺/icon.png"),
+        new EraGeneralManifest("general_time_distorter_02", "时间拨乱者·埃恩", "demon_time_distorter", "Assets/Art/注册生物单位图片/魔王与将领图片/时空扭曲者/将领/时间拨乱者·埃恩/icon.png"),
+        new EraGeneralManifest("general_time_distorter_03", "命运编织者·莫伊拉", "demon_time_distorter", "Assets/Art/注册生物单位图片/魔王与将领图片/时空扭曲者/将领/命运编织者·莫伊拉/icon.png"),
+        new EraGeneralManifest("general_time_distorter_04", "时空祭司·泰姆拉", "demon_time_distorter", "Assets/Art/注册生物单位图片/魔王与将领图片/时空扭曲者/将领/时空祭司·泰姆拉/icon.png"),
+        new EraGeneralManifest("general_time_distorter_05", "永恒者·伊特尼提", "demon_time_distorter", "Assets/Art/注册生物单位图片/魔王与将领图片/时空扭曲者/将领/永恒者·伊特尼提/icon.png"),
+        new EraGeneralManifest("general_chaos_flame_01", "火焰使者·伊格尼斯", "demon_chaos_flame", "Assets/Art/注册生物单位图片/魔王与将领图片/混沌炎魔/将领/火焰使者·伊格尼斯/icon.png"),
+        new EraGeneralManifest("general_chaos_flame_02", "熔岩巨人·玛格玛", "demon_chaos_flame", "Assets/Art/注册生物单位图片/魔王与将领图片/混沌炎魔/将领/熔岩巨人·玛格玛/icon.png"),
+        new EraGeneralManifest("general_chaos_flame_03", "地狱火焰·因菲诺", "demon_chaos_flame", "Assets/Art/注册生物单位图片/魔王与将领图片/混沌炎魔/将领/地狱火焰·因菲诺/icon.png"),
+        new EraGeneralManifest("general_chaos_flame_04", "火焰祭司·辛德拉", "demon_chaos_flame", "Assets/Art/注册生物单位图片/魔王与将领图片/混沌炎魔/将领/火焰祭司·辛德拉/icon.png"),
+        new EraGeneralManifest("general_chaos_flame_05", "焱烬之子·弗雷格", "demon_chaos_flame", "Assets/Art/注册生物单位图片/魔王与将领图片/混沌炎魔/将领/焱烬之子·弗雷格/icon.png"),
+        new EraGeneralManifest("general_abyss_god_01", "低语者·萨尔", "demon_abyss_god", "Assets/Art/注册生物单位图片/魔王与将领图片/深渊邪神/将领/低语者·萨尔/icon.PNG"),
+        new EraGeneralManifest("general_abyss_god_02", "深渊守卫·达贡", "demon_abyss_god", "Assets/Art/注册生物单位图片/魔王与将领图片/深渊邪神/将领/深渊守卫·达贡/icon.png"),
+        new EraGeneralManifest("general_abyss_god_03", "疯狂使者·尼亚拉", "demon_abyss_god", "Assets/Art/注册生物单位图片/魔王与将领图片/深渊邪神/将领/疯狂使者·尼亚拉/icon.png"),
+        new EraGeneralManifest("general_abyss_god_04", "邪教主教·海德拉", "demon_abyss_god", "Assets/Art/注册生物单位图片/魔王与将领图片/深渊邪神/将领/邪教主教·海德拉/icon.png"),
+        new EraGeneralManifest("general_abyss_god_05", "触手领主·肖格斯", "demon_abyss_god", "Assets/Art/注册生物单位图片/魔王与将领图片/深渊邪神/将领/触手领主·肖格斯/icon.png"),
+        new EraGeneralManifest("general_death_king_01", "死亡骑士·莫德雷德", "demon_death_king", "Assets/Art/注册生物单位图片/魔王与将领图片/死亡君王/将领/死亡骑士·莫德雷德/icon.png"),
+        new EraGeneralManifest("general_death_king_02", "骨龙·尼德霍格", "demon_death_king", "Assets/Art/注册生物单位图片/魔王与将领图片/死亡君王/将领/骨龙·尼德霍格/icon.png"),
+        new EraGeneralManifest("general_death_king_03", "死灵法师·凯尔苏斯", "demon_death_king", "Assets/Art/注册生物单位图片/魔王与将领图片/死亡君王/将领/死灵法师·凯尔苏斯/icon.png"),
+        new EraGeneralManifest("general_death_king_04", "亡灵祭司·莉莉丝", "demon_death_king", "Assets/Art/注册生物单位图片/魔王与将领图片/死亡君王/将领/亡灵祭司·莉莉丝/icon.png"),
+        new EraGeneralManifest("general_death_king_05", "死神使者·桑纳托斯", "demon_death_king", "Assets/Art/注册生物单位图片/魔王与将领图片/死亡君王/将领/死神使者·桑纳托斯/icon.png"),
+        new EraGeneralManifest("general_soul_weaver_01", "诱惑者·亚莉丝", "demon_soul_weaver", "Assets/Art/注册生物单位图片/魔王与将领图片/灵魂编织者/将领/诱惑者·亚莉丝/icon.png"),
+        new EraGeneralManifest("general_soul_weaver_02", "契约守护者·巴弗灭", "demon_soul_weaver", "Assets/Art/注册生物单位图片/魔王与将领图片/灵魂编织者/将领/契约守护者·巴弗灭/icon.png"),
+        new EraGeneralManifest("general_soul_weaver_03", "灵魂猎手·阿撒兹勒", "demon_soul_weaver", "Assets/Art/注册生物单位图片/魔王与将领图片/灵魂编织者/将领/灵魂猎手·阿撒兹勒/icon.png"),
+        new EraGeneralManifest("general_soul_weaver_04", "契约祭司·贝利亚尔", "demon_soul_weaver", "Assets/Art/注册生物单位图片/魔王与将领图片/灵魂编织者/将领/契约祭司·贝利亚尔/icon.png"),
+        new EraGeneralManifest("general_soul_weaver_05", "傀儡大师·墨菲斯托二世", "demon_soul_weaver", "Assets/Art/注册生物单位图片/魔王与将领图片/灵魂编织者/将领/傀儡大师·墨菲斯托二世/icon.png"),
+        new EraGeneralManifest("general_nature_wrath_01", "荆棘使者·索恩", "demon_nature_wrath", "Assets/Art/注册生物单位图片/魔王与将领图片/自然之怒/将领/荆棘使者·索恩/icon.png"),
+        new EraGeneralManifest("general_nature_wrath_02", "古树守护者·伊格德拉西尔", "demon_nature_wrath", "Assets/Art/注册生物单位图片/魔王与将领图片/自然之怒/将领/古树守护者·伊格德拉西尔/icon.png"),
+        new EraGeneralManifest("general_nature_wrath_03", "野兽之王·芬里尔", "demon_nature_wrath", "Assets/Art/注册生物单位图片/魔王与将领图片/自然之怒/将领/野兽之王·芬里尔/icon.png"),
+        new EraGeneralManifest("general_nature_wrath_04", "自然祭司·德鲁伊娜", "demon_nature_wrath", "Assets/Art/注册生物单位图片/魔王与将领图片/自然之怒/将领/自然祭司·德鲁伊娜/icon.png"),
+        new EraGeneralManifest("general_nature_wrath_05", "盖亚之子·泰坦", "demon_nature_wrath", "Assets/Art/注册生物单位图片/魔王与将领图片/自然之怒/将领/盖亚之子·泰坦/icon.png"),
+        new EraGeneralManifest("general_final_judge_01", "天使长·米迦勒", "demon_final_judge", "Assets/Art/注册生物单位图片/魔王与将领图片/终焉审判者/将领/天使长·米迦勒/icon.png"),
+        new EraGeneralManifest("general_final_judge_02", "守护天使·乌列尔", "demon_final_judge", "Assets/Art/注册生物单位图片/魔王与将领图片/终焉审判者/将领/守护天使·乌列尔/icon.png"),
+        new EraGeneralManifest("general_final_judge_03", "审判天使·加百列", "demon_final_judge", "Assets/Art/注册生物单位图片/魔王与将领图片/终焉审判者/将领/审判天使·加百列/icon.png"),
+        new EraGeneralManifest("general_final_judge_04", "救赎天使·拉斐尔", "demon_final_judge", "Assets/Art/注册生物单位图片/魔王与将领图片/终焉审判者/将领/救赎天使·拉斐尔/icon.png"),
+        new EraGeneralManifest("general_final_judge_05", "末日天使·亚兹拉尔", "demon_final_judge", "Assets/Art/注册生物单位图片/魔王与将领图片/终焉审判者/将领/末日天使·亚兹拉尔/icon.png"),
+    };
+}

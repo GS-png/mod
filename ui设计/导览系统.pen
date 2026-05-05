@@ -1,0 +1,1278 @@
+{
+  "version": "2.11",
+  "children": [
+    {
+      "type": "frame",
+      "id": "mjRTP",
+      "x": 880,
+      "y": 0,
+      "name": "导览运行时画板",
+      "clip": true,
+      "width": 1040,
+      "height": 1100,
+      "fill": "#1A1A1A00",
+      "layout": "none",
+      "children": [
+        {
+          "type": "frame",
+          "id": "Q3xfe",
+          "x": 178,
+          "y": 79,
+          "name": "导览主窗口",
+          "clip": true,
+          "width": 756,
+          "height": 928,
+          "fill": {
+            "type": "image",
+            "enabled": true,
+            "url": "../worldbox_ui_extract/windowBig.png",
+            "mode": "stretch"
+          },
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "3rumI",
+              "x": 664,
+              "y": 16,
+              "name": "关闭按钮底图",
+              "width": 64,
+              "height": 64,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/backgroundBackButton.png",
+                "mode": "stretch"
+              },
+              "layout": "none",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "NoGK2",
+                  "x": 14,
+                  "y": 14,
+                  "name": "关闭图标",
+                  "width": 36,
+                  "height": 36,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../worldbox_ui_extract/iconClose.png",
+                    "mode": "stretch"
+                  },
+                  "layout": "none"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "gLiNq",
+              "x": 208,
+              "y": 28,
+              "name": "导览窗口标题",
+              "fill": "#E7B85B",
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#1A120A99",
+                "offset": {
+                  "x": 0,
+                  "y": 2
+                },
+                "blur": 2
+              },
+              "textGrowth": "fixed-width",
+              "width": 300,
+              "content": "EraWheel 导览",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 28,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "eU0m8",
+              "x": 59,
+              "y": 95,
+              "name": "导览内容切换标签组",
+              "context": "EraWheel 导览窗口顶部内容切换长底座。当前版本来自用户指定 raw v3，华丽符文史诗魔幻风，连续实心底板，外部透明，内部承载两个纯图标切换按钮。",
+              "width": 633,
+              "height": 111,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/内容切换按钮/content_tabs_epic_rune_backplate_v3_final.png",
+                "mode": "stretch"
+              },
+              "layout": "none",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "VlPJa",
+                  "x": 229,
+                  "y": 27,
+                  "name": "导览标签选中态",
+                  "width": 88,
+                  "height": 58,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_frame_active_v4.png",
+                    "mode": "fit"
+                  },
+                  "cornerRadius": 10,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "xtv51",
+                      "name": "导览标签图标",
+                      "width": 43,
+                      "height": 44,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_guide_rune_icon_v4.png",
+                        "mode": "fit"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "OZiff",
+                  "x": 317,
+                  "y": 27,
+                  "name": "设置标签未选中态",
+                  "width": 88,
+                  "height": 58,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_frame_inactive_v4.png",
+                    "mode": "fit"
+                  },
+                  "cornerRadius": 10,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "4ZN59",
+                      "name": "设置标签图标",
+                      "width": 44,
+                      "height": 44,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_settings_rune_icon_v4.png",
+                        "mode": "fit"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "2gmt1",
+              "x": 88,
+              "y": 206,
+              "name": "导览内容滚动视口截断态",
+              "clip": true,
+              "width": 576,
+              "height": 650,
+              "fill": "#00000001",
+              "layout": "none",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "gjdBS",
+                  "x": 0,
+                  "y": 0,
+                  "name": "导览介绍标题",
+                  "fill": "#E5B960",
+                  "textGrowth": "fixed-width",
+                  "width": 576,
+                  "content": "这是什么 MOD",
+                  "fontFamily": "Inter",
+                  "fontSize": 28,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "ZRbv3",
+                  "x": 0,
+                  "y": 46,
+                  "name": "导览介绍正文",
+                  "fill": "#DDD4BB",
+                  "textGrowth": "fixed-width",
+                  "width": 576,
+                  "content": "EraWheel 是围绕‘魔王来袭 → 世界应战 → 战后成长’展开的长期循环 MOD。\n你看的不是一场单独战斗，而是整个世界一次次顶住危机。\n每轮都会留下积累，再面对更强敌人。\n这一页先帮你看懂玩法闭环、系统分工和阅读入口。",
+                  "lineHeight": 1.22,
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "text",
+                  "id": "aIsRC",
+                  "x": 0,
+                  "y": 224,
+                  "name": "导览流程标题",
+                  "fill": "#E5B960",
+                  "textGrowth": "fixed-width",
+                  "width": 576,
+                  "content": "一轮游戏怎么走",
+                  "fontFamily": "Inter",
+                  "fontSize": 28,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "0cJFf",
+                  "x": 0,
+                  "y": 270,
+                  "name": "导览流程正文",
+                  "fill": "#DDD4BB",
+                  "textGrowth": "fixed-width",
+                  "width": 576,
+                  "content": "1. 预发展：世界先扩人口、建城市，慢慢长大。\n2. 预兆：名单锁定，据点生成，军团开始出波。\n3. 苏醒：将领先上场，前线先被压一轮。\n4. 降临：魔王实体出现，真正的决战开始。\n5. 战后重建：发奖励、写历史，开启下一轮。",
+                  "lineHeight": 1.22,
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "text",
+                  "id": "PGnDl",
+                  "x": 0,
+                  "y": 451,
+                  "name": "导览系统入口标题",
+                  "fill": "#E5B960",
+                  "textGrowth": "fixed-width",
+                  "width": 576,
+                  "content": "系统入口速览",
+                  "fontFamily": "Inter",
+                  "fontSize": 28,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "LvEjo",
+                  "x": 0,
+                  "y": 497,
+                  "name": "导览系统入口正文",
+                  "fill": "#DDD4BB",
+                  "textGrowth": "fixed-width",
+                  "width": 576,
+                  "content": "导览：MOD 定位、玩法闭环、阅读入口、通用设置。\n轮回系统：阶段推进、双封印、胜利结算、下一轮重置。\n魔王系统：魔王名单、技能行为、多魔王联盟与内战。\n将领系统：登场方式、固定名单、前线职责。\n军团系统：出波间隔、数量上限、阶段压制节奏。\n轮回进阶系统：胜利奖励、世界档位、装备与特质解锁。\n等级系统：单位升级、随机成长、属性加成结果。\n王国系统：王国声望、成长进度、王国侧强化。\n英雄系统：命定英雄、家族继承、幸存强化、血脉延续。\n故事生成器：战史素材、故事生成、导出与清理。",
+                  "lineHeight": 1.22,
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "500"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "iYGtn",
+          "x": 101,
+          "y": 389,
+          "name": "左侧导览入口",
+          "context": "模块：导览。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "whKQs",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical_selected.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "x3rq2",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_guide_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "I843v",
+          "x": 101,
+          "y": 479,
+          "name": "左侧轮回入口",
+          "context": "模块：轮回系统。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "64YL4",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "yaDiV",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_cycle_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "1aaW5",
+          "x": 101,
+          "y": 569,
+          "name": "左侧魔王入口",
+          "context": "模块：魔王系统。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "sFHIo",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "zYs9l",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_demon_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "EiaVc",
+          "x": 101,
+          "y": 659,
+          "name": "左侧将领入口",
+          "context": "模块：将领系统。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "qLmzO",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "ejGSy",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_general_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "iV3xx",
+          "x": 101,
+          "y": 749,
+          "name": "左侧军团入口",
+          "context": "模块：军团系统。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "R8uoE",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "ieeKk",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_legion_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "6Oh1D",
+          "x": 168,
+          "y": 20,
+          "name": "运行时说明文字",
+          "fill": "#C9C2AE",
+          "textGrowth": "fixed-width",
+          "width": 360,
+          "content": "运行时固定尺寸截断态",
+          "textAlign": "center",
+          "fontFamily": "Inter",
+          "fontSize": 20,
+          "fontWeight": "700"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "RR1oi",
+      "x": 850,
+      "y": 1581,
+      "name": "导览设置画板",
+      "width": 1040,
+      "height": 1100,
+      "fill": "#00000000",
+      "layout": "none",
+      "children": [
+        {
+          "type": "frame",
+          "id": "t9t9d",
+          "x": 178,
+          "y": 79,
+          "name": "设置窗口副本",
+          "width": 756,
+          "height": 928,
+          "fill": {
+            "type": "image",
+            "enabled": true,
+            "url": "../worldbox_ui_extract/windowBig.png",
+            "mode": "stretch"
+          },
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "fbwMD",
+              "x": 664,
+              "y": 16,
+              "name": "关闭按钮底图",
+              "width": 64,
+              "height": 64,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/backgroundBackButton.png",
+                "mode": "stretch"
+              },
+              "layout": "none",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "NFP9O",
+                  "x": 14,
+                  "y": 14,
+                  "name": "关闭图标",
+                  "width": 36,
+                  "height": 36,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../worldbox_ui_extract/iconClose.png",
+                    "mode": "stretch"
+                  },
+                  "layout": "none"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "lN4VJ",
+              "x": 88,
+              "y": 252,
+              "name": "设置HUD内容区",
+              "width": 576,
+              "height": 117,
+              "fill": "#00000000",
+              "layout": "none",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "JhvZG",
+                  "x": 0,
+                  "y": 0,
+                  "name": "HUD勾选框",
+                  "width": 24,
+                  "height": 24,
+                  "fill": "#00000000",
+                  "cornerRadius": 1,
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 2,
+                    "fill": "#E5BB6B"
+                  },
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "hXkGU",
+                      "x": 0,
+                      "y": 0,
+                      "name": "HUD勾选标记",
+                      "fill": "#E5BB6B",
+                      "textGrowth": "fixed-width-height",
+                      "width": 24,
+                      "height": 24,
+                      "content": "✓",
+                      "textAlign": "center",
+                      "textAlignVertical": "middle",
+                      "fontFamily": "Inter",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "n8Ngo",
+                  "x": 36,
+                  "y": 0,
+                  "name": "HUD标签文字",
+                  "fill": "#DDD4BB",
+                  "textGrowth": "fixed-width",
+                  "width": 260,
+                  "content": "显示 EraWheel HUD",
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "9kJdn",
+                  "x": 0,
+                  "y": 40,
+                  "name": "HUD说明文字",
+                  "fill": "#DDD4BB",
+                  "textGrowth": "fixed-width",
+                  "width": 576,
+                  "content": "拖拽说明：按住 HUD 面板直接拖到顺手的位置。\n位置记忆：退出或重进世界后，系统继续使用上次保存的位置。\n这一页不提供 HUD 样式切换，只保留显示开关和位置记忆。",
+                  "lineHeight": 1.22,
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "cFNMf",
+              "x": 88,
+              "y": 471,
+              "name": "设置导入导出内容区",
+              "width": 576,
+              "height": 154,
+              "fill": "#00000000",
+              "layout": "none",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "G8RVy",
+                  "x": 0,
+                  "y": 0,
+                  "name": "导出按钮",
+                  "width": 168,
+                  "height": 56,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                    "mode": "stretch"
+                  },
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "XpFE1",
+                      "x": 0,
+                      "y": 0,
+                      "name": "导出按钮文字",
+                      "fill": "#F1D987",
+                      "textGrowth": "fixed-width-height",
+                      "width": 168,
+                      "height": 56,
+                      "content": "导出配置",
+                      "textAlign": "center",
+                      "textAlignVertical": "middle",
+                      "fontFamily": "Inter",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Uy1q6",
+                  "x": 186,
+                  "y": 0,
+                  "name": "导入按钮",
+                  "width": 168,
+                  "height": 56,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                    "mode": "stretch"
+                  },
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "KZ2Nw",
+                      "x": 0,
+                      "y": 0,
+                      "name": "导入按钮文字",
+                      "fill": "#F1D987",
+                      "textGrowth": "fixed-width-height",
+                      "width": 168,
+                      "height": 56,
+                      "content": "导入配置",
+                      "textAlign": "center",
+                      "textAlignVertical": "middle",
+                      "fontFamily": "Inter",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "OP2bH",
+                  "x": 0,
+                  "y": 76,
+                  "name": "导入导出说明文字",
+                  "fill": "#DDD4BB",
+                  "textGrowth": "fixed-width",
+                  "width": 576,
+                  "content": "1. 导入前先检查 config_version，版本不一致先迁移。\n2. 应用前先给玩家看差异预览，再确认是否覆盖。\n3. 系统会自动备份旧配置；如果应用失败，就回滚并给出原因。",
+                  "lineHeight": 1.22,
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "925GI",
+              "x": 88,
+              "y": 727,
+              "name": "版本安全内容区",
+              "width": 576,
+              "height": 127,
+              "fill": "#00000000",
+              "layout": "none",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "vs4qk",
+                  "x": 0,
+                  "y": 0,
+                  "name": "版本安全说明文字",
+                  "fill": "#DDD4BB",
+                  "textGrowth": "fixed-width",
+                  "width": 576,
+                  "content": "文档版本：ERA-WHEEL-DEMON-MOD 2.6（2026-04-07）。\n目标平台：WorldBox 0.51.2+，加载器为 NeoModLoader。\n安全提示：导出只包含玩法参数，不带运行态存档，也不带敏感集成字段。\n导入失败时保留旧配置，不直接把坏数据写死。",
+                  "lineHeight": 1.22,
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "d0U4C",
+              "x": 208,
+              "y": 28,
+              "name": "导览窗口标题",
+              "fill": "#E7B85B",
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#1A120A99",
+                "offset": {
+                  "x": 0,
+                  "y": 2
+                },
+                "blur": 2
+              },
+              "textGrowth": "fixed-width",
+              "width": 300,
+              "content": "EraWheel 导览",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 28,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "VvTjf",
+              "x": 59,
+              "y": 95,
+              "name": "导览内容切换标签组",
+              "context": "EraWheel 导览窗口顶部内容切换长底座。当前版本来自用户指定 raw v3，华丽符文史诗魔幻风，连续实心底板，外部透明，内部承载两个纯图标切换按钮。",
+              "width": 633,
+              "height": 111,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/内容切换按钮/content_tabs_epic_rune_backplate_v3_final.png",
+                "mode": "stretch"
+              },
+              "layout": "none",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ZH11w",
+                  "x": 317,
+                  "y": 27,
+                  "name": "导览标签选中态",
+                  "width": 88,
+                  "height": 58,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_frame_active_v4.png",
+                    "mode": "fit"
+                  },
+                  "cornerRadius": 10,
+                  "justifyContent": "center",
+                  "alignItems": "center"
+                },
+                {
+                  "type": "frame",
+                  "id": "e2rg4",
+                  "x": 229,
+                  "y": 27,
+                  "name": "设置标签未选中态",
+                  "width": 88,
+                  "height": 58,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_frame_inactive_v4.png",
+                    "mode": "fit"
+                  },
+                  "cornerRadius": 10,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "AOnKl",
+                      "name": "导览标签图标",
+                      "width": 43,
+                      "height": 44,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_guide_rune_icon_v4.png",
+                        "mode": "fit"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Xsz6E",
+                  "x": 339,
+                  "y": 34,
+                  "name": "设置标签图标",
+                  "width": 44,
+                  "height": 44,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_settings_rune_icon_v4.png",
+                    "mode": "fit"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "MDnbZ",
+              "x": 88,
+              "y": 425,
+              "name": "设置导入导出标题",
+              "fill": "#E5B960",
+              "textGrowth": "fixed-width",
+              "width": 576,
+              "content": "导入 / 导出",
+              "fontFamily": "Inter",
+              "fontSize": 28,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "4Z5nk",
+              "x": 88,
+              "y": 681,
+              "name": "设置版本安全标题",
+              "fill": "#E5B960",
+              "textGrowth": "fixed-width",
+              "width": 576,
+              "content": "版本与安全",
+              "fontFamily": "Inter",
+              "fontSize": 28,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "o6ehr",
+              "x": 88,
+              "y": 206,
+              "name": "设置HUD标题",
+              "fill": "#E5B960",
+              "textGrowth": "fixed-width",
+              "width": 576,
+              "content": "HUD",
+              "fontFamily": "Inter",
+              "fontSize": 28,
+              "fontWeight": "700"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "DxLjc",
+          "x": 101,
+          "y": 749,
+          "name": "左侧军团入口",
+          "context": "模块：军团系统。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "oyTMs",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "mqaao",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_legion_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "TsnYv",
+          "x": 101,
+          "y": 659,
+          "name": "左侧将领入口",
+          "context": "模块：将领系统。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "YjdV7",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "uTvI4",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_general_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "YfXoT",
+          "x": 101,
+          "y": 569,
+          "name": "左侧魔王入口",
+          "context": "模块：魔王系统。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "vin3u",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "W39gR",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_demon_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "18vXx",
+          "x": 101,
+          "y": 479,
+          "name": "左侧轮回入口",
+          "context": "模块：轮回系统。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "vrhEl",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "S3p9q",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_cycle_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "lC4Ob",
+          "x": 101,
+          "y": 389,
+          "name": "左侧导览入口",
+          "context": "模块：导览。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "fj5yh",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical_selected.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "Bk3Bk",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_guide_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "j6r8O",
+      "x": 1980,
+      "y": 0,
+      "name": "导览完整内容画板",
+      "clip": true,
+      "width": 1420,
+      "height": 1500,
+      "fill": "#1A1A1A00",
+      "layout": "none",
+      "children": [
+        {
+          "type": "frame",
+          "id": "4SpbT",
+          "x": 232,
+          "y": 96,
+          "name": "导览主窗口",
+          "width": 576,
+          "height": 1000,
+          "fill": "#00000000",
+          "layout": "none",
+          "children": [
+            {
+              "type": "text",
+              "id": "lZlh5",
+              "x": 0,
+              "y": 0,
+              "name": "导览介绍标题",
+              "fill": "#E5B960",
+              "textGrowth": "fixed-width",
+              "width": 576,
+              "content": "这是什么 MOD",
+              "fontFamily": "Inter",
+              "fontSize": 28,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "luMs4",
+              "x": 0,
+              "y": 46,
+              "name": "导览介绍正文",
+              "fill": "#DDD4BB",
+              "textGrowth": "fixed-width",
+              "width": 576,
+              "content": "EraWheel 是围绕‘魔王来袭 → 世界应战 → 战后成长’展开的长期循环 MOD。\n你看的不是一场单独战斗，而是整个世界一次次顶住危机。\n每轮都会留下积累，再面对更强敌人。\n这一页先帮你看懂玩法闭环、系统分工和阅读入口。",
+              "lineHeight": 1.22,
+              "fontFamily": "Inter",
+              "fontSize": 20,
+              "fontWeight": "500"
+            },
+            {
+              "type": "text",
+              "id": "PsO3P",
+              "x": 0,
+              "y": 224,
+              "name": "导览流程标题",
+              "fill": "#E5B960",
+              "textGrowth": "fixed-width",
+              "width": 576,
+              "content": "一轮游戏怎么走",
+              "fontFamily": "Inter",
+              "fontSize": 28,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "LOpjt",
+              "x": 0,
+              "y": 270,
+              "name": "导览流程正文",
+              "fill": "#DDD4BB",
+              "textGrowth": "fixed-width",
+              "width": 576,
+              "content": "1. 预发展：世界先扩人口、建城市，慢慢长大。\n2. 预兆：名单锁定，据点生成，军团开始出波。\n3. 苏醒：将领先上场，前线先被压一轮。\n4. 降临：魔王实体出现，真正的决战开始。\n5. 战后重建：发奖励、写历史，开启下一轮。",
+              "lineHeight": 1.22,
+              "fontFamily": "Inter",
+              "fontSize": 20,
+              "fontWeight": "500"
+            },
+            {
+              "type": "text",
+              "id": "WZNZ4",
+              "x": 0,
+              "y": 451,
+              "name": "导览系统入口标题",
+              "fill": "#E5B960",
+              "textGrowth": "fixed-width",
+              "width": 576,
+              "content": "系统入口速览",
+              "fontFamily": "Inter",
+              "fontSize": 28,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "jNA6a",
+              "x": 0,
+              "y": 497,
+              "name": "导览系统入口正文",
+              "fill": "#DDD4BB",
+              "textGrowth": "fixed-width",
+              "width": 576,
+              "content": "导览：MOD 定位、玩法闭环、阅读入口、通用设置。\n轮回系统：阶段推进、双封印、胜利结算、下一轮重置。\n魔王系统：魔王名单、技能行为、多魔王联盟与内战。\n将领系统：登场方式、固定名单、前线职责。\n军团系统：出波间隔、数量上限、阶段压制节奏。\n轮回进阶系统：胜利奖励、世界档位、装备与特质解锁。\n等级系统：单位升级、随机成长、属性加成结果。\n王国系统：王国声望、成长进度、王国侧强化。\n英雄系统：命定英雄、家族继承、幸存强化、血脉延续。\n故事生成器：战史素材、故事生成、导出与清理。",
+              "lineHeight": 1.22,
+              "fontFamily": "Inter",
+              "fontSize": 20,
+              "fontWeight": "500"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "toD0S",
+          "x": 340,
+          "y": 20,
+          "name": "参考说明文字",
+          "fill": "#C9C2AE",
+          "textGrowth": "fixed-width",
+          "width": 360,
+          "content": "完整内容展开参考图",
+          "textAlign": "center",
+          "fontFamily": "Inter",
+          "fontSize": 20,
+          "fontWeight": "700"
+        }
+      ]
+    }
+  ]
+}

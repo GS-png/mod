@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "EraWheel.NeomodSmoke/1.0.0": {
+        "runtime": {
+          "EraWheel.NeomodSmoke.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "EraWheel.NeomodSmoke/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

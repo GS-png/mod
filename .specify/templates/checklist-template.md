@@ -27,14 +27,18 @@
 - [ ] CHK001 Every relevant `设计/` 文档、附属文档和资源目录都已映射到实现或验收项
 - [ ] CHK002 No approved design item is marked as placeholder, TODO, stub, or later follow-up
 - [ ] CHK003 Specs, plans, tasks, and design docs stay in sync for this scope
-- [ ] CHK004 Current MOD hooks, save keys, config paths, UI routes, and resource paths touched by this feature are inventoried before rewrite or deletion
+- [ ] CHK004 Current MOD hooks, save keys, config paths, UI routes, resource paths, and original/runtime seams touched by this feature are inventoried before rewrite or deletion
+- [ ] CHK005 Every major behavior states whether it uses `原版直接复用`, `原版修改复用 + MOD 自定义`, or `MOD 自定义`
+- [ ] CHK006 Every non-direct-reuse item includes evidence proving the original/runtime chain has a real gap and defines the minimal custom segment
+- [ ] CHK007 Official MOD roots are defined and used; no shipping business logic lives in `设计/`, `api/`, `tools/`, or temporary decompile paths
 
 ## Release Readiness
 
-- [ ] CHK005 Automated and manual validation cover integrated gameplay, save/load, seam replacement, and regression risk
-- [ ] CHK006 Assets, data tables, and code hooks are connected and actually usable in-game
-- [ ] CHK007 Deleted or retired old code has a verified replacement; no live runtime seam points at removed logic
-- [ ] CHK008 The scoped content is complete enough to ship as a playable release, not just a demo
+- [ ] CHK008 Automated and manual validation cover integrated gameplay, save/load, seam replacement, regression risk, and reused original/runtime seams
+- [ ] CHK009 Assets, data tables, and code hooks are connected and actually usable in-game
+- [ ] CHK010 Deleted or retired old code has a verified replacement; no live runtime seam points at removed logic
+- [ ] CHK011 No parallel private system remains for battle, spellcasting, save/load, unit spawning, UI/HUD, equipment, or growth logic
+- [ ] CHK012 The scoped content is complete enough to ship as a playable release, not just a demo
 
 ## Notes
 

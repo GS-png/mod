@@ -1,0 +1,12 @@
+{
+  "name": "EraWheel",
+  "GUID": "EraWheel",
+  "author": "GS-png",
+  "version": "0.1.0",
+  "description": "纪元之轮：魔王轮回 MOD。当前版本先落地 NeoModLoader 模组骨架与基础入口。",
+  "RepoUrl": "https://github.com/GS-png/mod",
+  "iconPath": "icon.png",
+  "Dependencies": [],
+  "OptionalDependencies": [],
+  "IncompatibleWith": []
+}

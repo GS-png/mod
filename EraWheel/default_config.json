@@ -1,0 +1,32 @@
+{
+  "ew_group_debug": [
+    {
+      "Type": 0,
+      "Id": "ew_debug_enabled",
+      "IconPath": "ui/icons/iconOptions",
+      "BoolVal": false,
+      "Callback": ""
+    },
+    {
+      "Type": 0,
+      "Id": "ew_debug_enable_actor_detail_patch",
+      "IconPath": "ui/icons/iconOptions",
+      "BoolVal": true,
+      "Callback": ""
+    },
+    {
+      "Type": 0,
+      "Id": "ew_debug_enable_kingdom_detail_patch",
+      "IconPath": "ui/icons/iconOptions",
+      "BoolVal": true,
+      "Callback": ""
+    },
+    {
+      "Type": 0,
+      "Id": "ew_debug_enable_top_tab_retry_verbose_log",
+      "IconPath": "ui/icons/iconOptions",
+      "BoolVal": true,
+      "Callback": ""
+    }
+  ]
+}

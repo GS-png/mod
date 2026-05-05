@@ -1,0 +1,5183 @@
+{
+  "version": "2.11",
+  "children": [
+    {
+      "type": "frame",
+      "id": "K8CtiN",
+      "x": 0,
+      "y": 0,
+      "name": "军团介绍画板",
+      "clip": true,
+      "width": 1040,
+      "height": 1100,
+      "fill": "#1A1A1A00",
+      "layout": "none",
+      "children": [
+        {
+          "type": "text",
+          "id": "S1obu",
+          "x": 168,
+          "y": 20,
+          "name": "运行时说明文字",
+          "fill": "#C9C2AE",
+          "textGrowth": "fixed-width",
+          "width": 360,
+          "content": "Legion Intro Screen",
+          "textAlign": "center",
+          "fontFamily": "Inter",
+          "fontSize": 20,
+          "fontWeight": "700"
+        },
+        {
+          "type": "frame",
+          "id": "dbNF4",
+          "x": 178,
+          "y": 79,
+          "name": "军团主窗口",
+          "clip": true,
+          "width": 756,
+          "height": 928,
+          "fill": {
+            "type": "image",
+            "enabled": true,
+            "url": "../worldbox_ui_extract/windowBig.png",
+            "mode": "stretch"
+          },
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "MkskX",
+              "x": 664,
+              "y": 16,
+              "name": "关闭按钮底图",
+              "width": 64,
+              "height": 64,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/backgroundBackButton.png",
+                "mode": "stretch"
+              },
+              "layout": "none",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "nhXHk",
+                  "x": 20,
+                  "y": 20,
+                  "name": "关闭符号",
+                  "fill": "#E75B48",
+                  "textGrowth": "fixed-width-height",
+                  "width": 24,
+                  "height": 24,
+                  "content": "×",
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "lP4gY",
+              "x": 208,
+              "y": 28,
+              "name": "窗口标题",
+              "fill": "#E7B85B",
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#1A120A99",
+                "offset": {
+                  "x": 0,
+                  "y": 2
+                },
+                "blur": 2
+              },
+              "textGrowth": "fixed-width",
+              "width": 300,
+              "content": "EraWheel 军团系统",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 28,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "ACgEr",
+              "x": 88,
+              "y": 206,
+              "name": "介绍标题",
+              "fill": "#E5B960",
+              "textGrowth": "fixed-width",
+              "width": 576,
+              "content": "军团系统是什么",
+              "fontFamily": "Inter",
+              "fontSize": 28,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "jc11E",
+              "x": 88,
+              "y": 252,
+              "name": "介绍正文",
+              "fill": "#DDD4BB",
+              "textGrowth": "fixed-width",
+              "width": 576,
+              "content": "军团是魔王阵营的波次单位，用来持续给世界施压。\n它不像魔王和将领那样是少数核心，而是负责把前线一直推向玩家王国。\n玩家主要看出波节奏、当前存活数量、同时上限和下一波压力。",
+              "lineHeight": 1.22,
+              "fontFamily": "Inter",
+              "fontSize": 20,
+              "fontWeight": "500"
+            },
+            {
+              "type": "text",
+              "id": "K8kzkc",
+              "x": 88,
+              "y": 404,
+              "name": "流程标题",
+              "fill": "#E5B960",
+              "textGrowth": "fixed-width",
+              "width": 576,
+              "content": "军团什么时候出波",
+              "fontFamily": "Inter",
+              "fontSize": 28,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "l0yxH",
+              "x": 88,
+              "y": 450,
+              "name": "流程正文",
+              "fill": "#DDD4BB",
+              "textGrowth": "fixed-width",
+              "width": 576,
+              "content": "1. 预发展：军团关闭，世界只积蓄力量。\n2. 预兆：生成第一波军团，并开始按间隔出波。\n3. 苏醒 / 降临：军团继续按节奏出现，配合将领和魔王压场。\n4. 战后重建：停止出波，并清理本轮军团状态。",
+              "lineHeight": 1.22,
+              "fontFamily": "Inter",
+              "fontSize": 20,
+              "fontWeight": "500"
+            },
+            {
+              "type": "text",
+              "id": "lWGXA",
+              "x": 88,
+              "y": 606,
+              "name": "系统入口标题",
+              "fill": "#E5B960",
+              "textGrowth": "fixed-width",
+              "width": 576,
+              "content": "玩家重点看什么",
+              "fontFamily": "Inter",
+              "fontSize": 28,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "cAPHC",
+              "x": 88,
+              "y": 652,
+              "name": "系统入口正文",
+              "fill": "#DDD4BB",
+              "textGrowth": "fixed-width",
+              "width": 576,
+              "content": "军团数量会随波次递增，但不会突破同时上限。\n每一波军团共享该波随机出来的基础属性，下一波可以不同。\n胜利条件不是清空军团，而是击败本轮最后一名魔王。",
+              "lineHeight": 1.22,
+              "fontFamily": "Inter",
+              "fontSize": 20,
+              "fontWeight": "500"
+            },
+            {
+              "type": "frame",
+              "id": "hdgJM",
+              "x": 59,
+              "y": 95,
+              "name": "军团内容切换标签组",
+              "context": "EraWheel 军团系统顶部内容切换长底座。四枚页签对应：介绍、参数调整、图鉴、运行态。",
+              "width": 633,
+              "height": 111,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/内容切换按钮/content_tabs_epic_rune_backplate_v3_final.png",
+                "mode": "stretch"
+              },
+              "layout": "none",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Ek8Ld",
+                  "x": 123,
+                  "y": 27,
+                  "name": "军团标签介绍选中态",
+                  "width": 88,
+                  "height": 58,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_frame_active_v4.png",
+                    "mode": "fit"
+                  },
+                  "cornerRadius": 10,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ufZ2R",
+                      "x": 22,
+                      "y": 7,
+                      "name": "标签介绍图标",
+                      "width": 44,
+                      "height": 44,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/轮回系统页签/cycle_tab_intro_icon.png",
+                        "mode": "fit"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "L4NPSy",
+                  "x": 223,
+                  "y": 27,
+                  "name": "军团标签参数调整未选中态",
+                  "width": 88,
+                  "height": 58,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_frame_inactive_v4.png",
+                    "mode": "fit"
+                  },
+                  "cornerRadius": 10,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "N3dy1",
+                      "x": 22,
+                      "y": 7,
+                      "name": "标签参数调整图标",
+                      "width": 44,
+                      "height": 44,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/轮回系统页签/cycle_tab_params_icon.png",
+                        "mode": "fit"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "u9fCxR",
+                  "x": 323,
+                  "y": 27,
+                  "name": "军团标签图鉴未选中态",
+                  "width": 88,
+                  "height": 58,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_frame_inactive_v4.png",
+                    "mode": "fit"
+                  },
+                  "cornerRadius": 10,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ODPK3",
+                      "x": 22,
+                      "y": 7,
+                      "name": "标签图鉴图标",
+                      "width": 44,
+                      "height": 44,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/轮回系统页签/cycle_tab_codex_icon.png",
+                        "mode": "fit"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "I3gBd",
+                  "x": 423,
+                  "y": 27,
+                  "name": "军团标签运行态未选中态",
+                  "width": 88,
+                  "height": 58,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_frame_inactive_v4.png",
+                    "mode": "fit"
+                  },
+                  "cornerRadius": 10,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "R8adDR",
+                      "x": 22,
+                      "y": 7,
+                      "name": "标签运行态图标",
+                      "width": 44,
+                      "height": 44,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/轮回系统页签/cycle_tab_runtime_icon.png",
+                        "mode": "fit"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "wHliI",
+          "x": 101,
+          "y": 389,
+          "name": "左侧导览入口",
+          "context": "模块：导览。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "y75Qeh",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "KX9sk",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_guide_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "eUgjj",
+          "x": 101,
+          "y": 479,
+          "name": "左侧轮回入口",
+          "context": "模块：轮回系统。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "F4dzB",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "CDafh",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_cycle_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Y1Noc",
+          "x": 101,
+          "y": 569,
+          "name": "左侧魔王入口",
+          "context": "模块：魔王系统。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "YuNem",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "wyW7V",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_demon_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "eB6Sj",
+          "x": 101,
+          "y": 659,
+          "name": "左侧将领入口",
+          "context": "模块：将领系统。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "BAar2",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "nxsJ7",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_general_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "ZbPLG",
+          "x": 101,
+          "y": 749,
+          "name": "左侧军团入口",
+          "context": "模块：军团系统。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "r08Wa",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical_selected.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "h2R4ss",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_legion_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "M0TQg2",
+      "x": 1100,
+      "y": 0,
+      "name": "军团参数调整画板",
+      "clip": true,
+      "width": 1040,
+      "height": 2200,
+      "fill": "#1A1A1A00",
+      "layout": "none",
+      "children": [
+        {
+          "type": "text",
+          "id": "AcWkH",
+          "x": 168,
+          "y": 20,
+          "name": "参数页画布说明文字",
+          "fill": "#C9C2AE",
+          "textGrowth": "fixed-width",
+          "width": 360,
+          "content": "Legion Params Screen",
+          "textAlign": "center",
+          "fontFamily": "Inter",
+          "fontSize": 20,
+          "fontWeight": "700"
+        },
+        {
+          "type": "frame",
+          "id": "VZ0jY",
+          "x": 178,
+          "y": 79,
+          "name": "军团参数主窗口_波次节奏",
+          "clip": true,
+          "width": 756,
+          "height": 928,
+          "fill": {
+            "type": "image",
+            "enabled": true,
+            "url": "../worldbox_ui_extract/windowBig.png",
+            "mode": "stretch"
+          },
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "Y6RbLH",
+              "x": 664,
+              "y": 16,
+              "name": "关闭按钮底图",
+              "width": 64,
+              "height": 64,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/backgroundBackButton.png",
+                "mode": "stretch"
+              },
+              "layout": "none",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "u95Al",
+                  "x": 14,
+                  "y": 14,
+                  "name": "关闭图标",
+                  "width": 36,
+                  "height": 36,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../worldbox_ui_extract/iconClose.png",
+                    "mode": "stretch"
+                  },
+                  "layout": "none"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "eqZaD",
+              "x": 208,
+              "y": 28,
+              "name": "窗口标题",
+              "fill": "#E7B85B",
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#1A120A99",
+                "offset": {
+                  "x": 0,
+                  "y": 2
+                },
+                "blur": 2
+              },
+              "textGrowth": "fixed-width",
+              "width": 300,
+              "content": "EraWheel 军团系统",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 28,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "erDQv",
+              "x": 88,
+              "y": 206,
+              "name": "介绍标题",
+              "fill": "#E5B960",
+              "textGrowth": "fixed-width",
+              "width": 576,
+              "content": "军团参数调整",
+              "fontFamily": "Inter",
+              "fontSize": 28,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "xejpc",
+              "x": 59,
+              "y": 95,
+              "name": "军团内容切换标签组",
+              "context": "EraWheel 军团系统顶部内容切换长底座。四枚页签对应：介绍、参数调整、图鉴、运行态。",
+              "width": 633,
+              "height": 111,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/内容切换按钮/content_tabs_epic_rune_backplate_v3_final.png",
+                "mode": "stretch"
+              },
+              "layout": "none",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "rTWRt",
+                  "x": 123,
+                  "y": 27,
+                  "name": "军团标签介绍选中态",
+                  "width": 88,
+                  "height": 58,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_frame_inactive_v4.png",
+                    "mode": "fit"
+                  },
+                  "cornerRadius": 10,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "TWvNp",
+                      "x": 22,
+                      "y": 7,
+                      "name": "标签介绍图标",
+                      "width": 44,
+                      "height": 44,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/轮回系统页签/cycle_tab_intro_icon.png",
+                        "mode": "fit"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "bKeAH",
+                  "x": 223,
+                  "y": 27,
+                  "name": "军团标签参数调整未选中态",
+                  "width": 88,
+                  "height": 58,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_frame_active_v4.png",
+                    "mode": "fit"
+                  },
+                  "cornerRadius": 10,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "MrmgP",
+                      "x": 22,
+                      "y": 7,
+                      "name": "标签参数调整图标",
+                      "width": 44,
+                      "height": 44,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/轮回系统页签/cycle_tab_params_icon.png",
+                        "mode": "fit"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "siMwU",
+                  "x": 323,
+                  "y": 27,
+                  "name": "军团标签图鉴未选中态",
+                  "width": 88,
+                  "height": 58,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_frame_inactive_v4.png",
+                    "mode": "fit"
+                  },
+                  "cornerRadius": 10,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "XMXnB",
+                      "x": 22,
+                      "y": 7,
+                      "name": "标签图鉴图标",
+                      "width": 44,
+                      "height": 44,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/轮回系统页签/cycle_tab_codex_icon.png",
+                        "mode": "fit"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "UTcbu",
+                  "x": 423,
+                  "y": 27,
+                  "name": "军团标签运行态未选中态",
+                  "width": 88,
+                  "height": 58,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_frame_inactive_v4.png",
+                    "mode": "fit"
+                  },
+                  "cornerRadius": 10,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "pviy1",
+                      "x": 22,
+                      "y": 7,
+                      "name": "标签运行态图标",
+                      "width": 44,
+                      "height": 44,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/轮回系统页签/cycle_tab_runtime_icon.png",
+                        "mode": "fit"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "sMGcE",
+              "x": 88,
+              "y": 320,
+              "name": "内容容器",
+              "clip": true,
+              "width": 600,
+              "height": 550,
+              "fill": "#00000000",
+              "layout": "none",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Je5yg",
+                  "x": 0,
+                  "y": 0,
+                  "name": "参数行_军团生成间隔",
+                  "width": 600,
+                  "height": 56,
+                  "fill": "#00000000",
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "b6RX5P",
+                      "x": 0,
+                      "y": 14,
+                      "name": "参数名称",
+                      "fill": "#DDD4BB",
+                      "textGrowth": "fixed-width",
+                      "width": 170,
+                      "content": "生成间隔",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Na2Xv",
+                      "x": 128,
+                      "y": 0,
+                      "name": "参数值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "QHQqV",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "10年",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "S5f09H",
+                      "x": 318,
+                      "y": 8,
+                      "name": "参数说明",
+                      "fill": "#D8D0B6",
+                      "textGrowth": "fixed-width",
+                      "width": 258,
+                      "content": "说明：预兆 / 降临阶段定时出波。",
+                      "lineHeight": 1.12,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "mOrvt",
+                  "x": 0,
+                  "y": 56,
+                  "name": "参数行_军团初始数量",
+                  "width": 600,
+                  "height": 56,
+                  "fill": "#00000000",
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "SIzir",
+                      "x": 0,
+                      "y": 14,
+                      "name": "参数名称",
+                      "fill": "#DDD4BB",
+                      "textGrowth": "fixed-width",
+                      "width": 170,
+                      "content": "初始数量",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "VRcEC",
+                      "x": 128,
+                      "y": 0,
+                      "name": "参数值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Dmgbh",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "40名",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "tf0gD",
+                      "x": 318,
+                      "y": 8,
+                      "name": "参数说明",
+                      "fill": "#D8D0B6",
+                      "textGrowth": "fixed-width",
+                      "width": 258,
+                      "content": "说明：第一波军团生成数量。",
+                      "lineHeight": 1.12,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Gpa69",
+                  "x": 0,
+                  "y": 112,
+                  "name": "参数行_军团同时上限",
+                  "width": 600,
+                  "height": 56,
+                  "fill": "#00000000",
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "jXjp0",
+                      "x": 0,
+                      "y": 14,
+                      "name": "参数名称",
+                      "fill": "#DDD4BB",
+                      "textGrowth": "fixed-width",
+                      "width": 170,
+                      "content": "同时上限",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "iT95D",
+                      "x": 128,
+                      "y": 0,
+                      "name": "参数值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ZHJln",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "300名",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "r9gq9",
+                      "x": 318,
+                      "y": 8,
+                      "name": "参数说明",
+                      "fill": "#D8D0B6",
+                      "textGrowth": "fixed-width",
+                      "width": 258,
+                      "content": "说明：限制地图现存军团总量。",
+                      "lineHeight": 1.12,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Pmfet",
+                  "x": 0,
+                  "y": 168,
+                  "name": "参数行_波次数量递增",
+                  "width": 600,
+                  "height": 56,
+                  "fill": "#00000000",
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "EiOhR",
+                      "x": 0,
+                      "y": 14,
+                      "name": "参数名称",
+                      "fill": "#DDD4BB",
+                      "textGrowth": "fixed-width",
+                      "width": 170,
+                      "content": "数量递增",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "vpLVW",
+                      "x": 128,
+                      "y": 0,
+                      "name": "参数值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "L3iH0",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "15%/波",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "CYg8i",
+                      "x": 318,
+                      "y": 8,
+                      "name": "参数说明",
+                      "fill": "#D8D0B6",
+                      "textGrowth": "fixed-width",
+                      "width": 258,
+                      "content": "说明：后续波次相对上一波增长。",
+                      "lineHeight": 1.12,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "lIMOB",
+              "x": 88,
+              "y": 258,
+              "name": "参数分组栏",
+              "width": 600,
+              "height": 62,
+              "fill": "#00000000",
+              "layout": "none",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Qnsuj",
+                  "x": 0,
+                  "y": 0,
+                  "name": "分组_波次节奏_选中",
+                  "width": 112,
+                  "height": 56,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                    "mode": "stretch"
+                  },
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "M4M2Rs",
+                      "x": 0,
+                      "y": 16,
+                      "name": "分组名",
+                      "fill": "#F1D987",
+                      "textGrowth": "fixed-width",
+                      "width": 112,
+                      "content": "波次节奏",
+                      "textAlign": "center",
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "SPOIe",
+                  "x": 122,
+                  "y": 0,
+                  "name": "分组_基础范围",
+                  "width": 112,
+                  "height": 56,
+                  "fill": "#00000000",
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#6F624A"
+                  },
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "yIupU",
+                      "x": 0,
+                      "y": 16,
+                      "name": "分组名",
+                      "fill": "#D8D0B6",
+                      "textGrowth": "fixed-width",
+                      "width": 112,
+                      "content": "基础范围",
+                      "textAlign": "center",
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "sJTq5",
+          "x": 101,
+          "y": 389,
+          "name": "参数页左侧导览入口",
+          "context": "模块：导览。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "FJese",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "Q1B50g",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_guide_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "A4C8x",
+          "x": 101,
+          "y": 479,
+          "name": "参数页左侧轮回入口",
+          "context": "模块：轮回系统。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "MY4iY",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "LBxun",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_cycle_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "R3obL",
+          "x": 101,
+          "y": 569,
+          "name": "参数页左侧魔王入口",
+          "context": "模块：魔王系统。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "E5RDJ",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "VnSlI",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_demon_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "OC7Sh",
+          "x": 101,
+          "y": 659,
+          "name": "参数页左侧将领入口",
+          "context": "模块：将领系统。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "K75NC",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "pqR3E",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_general_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "t2TeZ",
+          "x": 101,
+          "y": 749,
+          "name": "参数页左侧军团入口",
+          "context": "模块：军团系统。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "RzT90",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical_selected.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "hSjGC",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_legion_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "N50Ki",
+          "x": 178,
+          "y": 1179,
+          "name": "军团参数主窗口_基础范围",
+          "clip": true,
+          "width": 756,
+          "height": 928,
+          "fill": {
+            "type": "image",
+            "enabled": true,
+            "url": "../worldbox_ui_extract/windowBig.png",
+            "mode": "stretch"
+          },
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "T13M0k",
+              "x": 664,
+              "y": 16,
+              "name": "关闭按钮底图",
+              "width": 64,
+              "height": 64,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/backgroundBackButton.png",
+                "mode": "stretch"
+              },
+              "layout": "none",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Tm9ml",
+                  "x": 14,
+                  "y": 14,
+                  "name": "关闭图标",
+                  "width": 36,
+                  "height": 36,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../worldbox_ui_extract/iconClose.png",
+                    "mode": "stretch"
+                  },
+                  "layout": "none"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "sJxW7",
+              "x": 208,
+              "y": 28,
+              "name": "窗口标题",
+              "fill": "#E7B85B",
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#1A120A99",
+                "offset": {
+                  "x": 0,
+                  "y": 2
+                },
+                "blur": 2
+              },
+              "textGrowth": "fixed-width",
+              "width": 300,
+              "content": "EraWheel 军团系统",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 28,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "D9XFY",
+              "x": 88,
+              "y": 206,
+              "name": "介绍标题",
+              "fill": "#E5B960",
+              "textGrowth": "fixed-width",
+              "width": 576,
+              "content": "军团参数调整",
+              "fontFamily": "Inter",
+              "fontSize": 28,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "U8t8I2",
+              "x": 59,
+              "y": 95,
+              "name": "军团内容切换标签组",
+              "context": "EraWheel 军团系统顶部内容切换长底座。四枚页签对应：介绍、参数调整、图鉴、运行态。",
+              "width": 633,
+              "height": 111,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/内容切换按钮/content_tabs_epic_rune_backplate_v3_final.png",
+                "mode": "stretch"
+              },
+              "layout": "none",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "exCo5",
+                  "x": 123,
+                  "y": 27,
+                  "name": "军团标签介绍选中态",
+                  "width": 88,
+                  "height": 58,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_frame_inactive_v4.png",
+                    "mode": "fit"
+                  },
+                  "cornerRadius": 10,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "EHdJ0",
+                      "x": 22,
+                      "y": 7,
+                      "name": "标签介绍图标",
+                      "width": 44,
+                      "height": 44,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/轮回系统页签/cycle_tab_intro_icon.png",
+                        "mode": "fit"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Ybk3p",
+                  "x": 223,
+                  "y": 27,
+                  "name": "军团标签参数调整未选中态",
+                  "width": 88,
+                  "height": 58,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_frame_active_v4.png",
+                    "mode": "fit"
+                  },
+                  "cornerRadius": 10,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "eogBP",
+                      "x": 22,
+                      "y": 7,
+                      "name": "标签参数调整图标",
+                      "width": 44,
+                      "height": 44,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/轮回系统页签/cycle_tab_params_icon.png",
+                        "mode": "fit"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "KBRTi",
+                  "x": 323,
+                  "y": 27,
+                  "name": "军团标签图鉴未选中态",
+                  "width": 88,
+                  "height": 58,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_frame_inactive_v4.png",
+                    "mode": "fit"
+                  },
+                  "cornerRadius": 10,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "BHMuP",
+                      "x": 22,
+                      "y": 7,
+                      "name": "标签图鉴图标",
+                      "width": 44,
+                      "height": 44,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/轮回系统页签/cycle_tab_codex_icon.png",
+                        "mode": "fit"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "OuJKL",
+                  "x": 423,
+                  "y": 27,
+                  "name": "军团标签运行态未选中态",
+                  "width": 88,
+                  "height": 58,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_frame_inactive_v4.png",
+                    "mode": "fit"
+                  },
+                  "cornerRadius": 10,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "nbNz4",
+                      "x": 22,
+                      "y": 7,
+                      "name": "标签运行态图标",
+                      "width": 44,
+                      "height": 44,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/轮回系统页签/cycle_tab_runtime_icon.png",
+                        "mode": "fit"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "mzCUR",
+              "x": 88,
+              "y": 320,
+              "name": "内容容器",
+              "clip": true,
+              "width": 600,
+              "height": 550,
+              "fill": "#00000000",
+              "layout": "none",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "c0S685",
+                  "x": 0,
+                  "y": 0,
+                  "name": "参数行_生命值",
+                  "width": 600,
+                  "height": 56,
+                  "fill": "#00000000",
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "bmeaB",
+                      "x": 0,
+                      "y": 14,
+                      "name": "参数名称",
+                      "fill": "#DDD4BB",
+                      "textGrowth": "fixed-width",
+                      "width": 104,
+                      "content": "生命值",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "e5ubD",
+                      "x": 74,
+                      "y": 2,
+                      "name": "最小值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "MUqL4",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "5000点",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "R8FQyo",
+                      "x": 242,
+                      "y": 17,
+                      "name": "参数值文字",
+                      "fill": "#F1D987",
+                      "textGrowth": "fixed-width",
+                      "width": 18,
+                      "content": "~",
+                      "textAlign": "center",
+                      "fontFamily": "Inter",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "QK7q1",
+                      "x": 260,
+                      "y": 2,
+                      "name": "最大值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "lJB45",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "10000点",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "nWDqk",
+                      "x": 428,
+                      "y": 8,
+                      "name": "参数说明",
+                      "fill": "#D8D0B6",
+                      "textGrowth": "fixed-width",
+                      "width": 258,
+                      "content": "说明：每波共享该波结果。",
+                      "lineHeight": 1.12,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "JxeDs",
+                  "x": 0,
+                  "y": 56,
+                  "name": "参数行_寿命",
+                  "width": 600,
+                  "height": 56,
+                  "fill": "#00000000",
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "iVXW3",
+                      "x": 0,
+                      "y": 14,
+                      "name": "参数名称",
+                      "fill": "#DDD4BB",
+                      "textGrowth": "fixed-width",
+                      "width": 104,
+                      "content": "寿命",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "VGIrh",
+                      "x": 74,
+                      "y": 2,
+                      "name": "最小值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "u0f4D3",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "99999年",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "qaMYG",
+                      "x": 242,
+                      "y": 17,
+                      "name": "参数值文字",
+                      "fill": "#F1D987",
+                      "textGrowth": "fixed-width",
+                      "width": 18,
+                      "content": "~",
+                      "textAlign": "center",
+                      "fontFamily": "Inter",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Ma7TM",
+                      "x": 260,
+                      "y": 2,
+                      "name": "最大值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "AxNU7",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "99999年",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "RsOuJ",
+                      "x": 428,
+                      "y": 8,
+                      "name": "参数说明",
+                      "fill": "#D8D0B6",
+                      "textGrowth": "fixed-width",
+                      "width": 258,
+                      "content": "说明：每波共享该波结果。",
+                      "lineHeight": 1.12,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "oySDq",
+                  "x": 0,
+                  "y": 112,
+                  "name": "参数行_防御",
+                  "width": 600,
+                  "height": 56,
+                  "fill": "#00000000",
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "BCs3w",
+                      "x": 0,
+                      "y": 14,
+                      "name": "参数名称",
+                      "fill": "#DDD4BB",
+                      "textGrowth": "fixed-width",
+                      "width": 104,
+                      "content": "防御",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "eXAvr",
+                      "x": 74,
+                      "y": 2,
+                      "name": "最小值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "RaDk4",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "1点",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "bh0R2",
+                      "x": 242,
+                      "y": 17,
+                      "name": "参数值文字",
+                      "fill": "#F1D987",
+                      "textGrowth": "fixed-width",
+                      "width": 18,
+                      "content": "~",
+                      "textAlign": "center",
+                      "fontFamily": "Inter",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "dATZi",
+                      "x": 260,
+                      "y": 2,
+                      "name": "最大值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "d0KlSL",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "10点",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "JfKWg",
+                      "x": 428,
+                      "y": 8,
+                      "name": "参数说明",
+                      "fill": "#D8D0B6",
+                      "textGrowth": "fixed-width",
+                      "width": 258,
+                      "content": "说明：每波共享该波结果。",
+                      "lineHeight": 1.12,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "b3z9T",
+                  "x": 0,
+                  "y": 168,
+                  "name": "参数行_伤害",
+                  "width": 600,
+                  "height": 56,
+                  "fill": "#00000000",
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "PE54X",
+                      "x": 0,
+                      "y": 14,
+                      "name": "参数名称",
+                      "fill": "#DDD4BB",
+                      "textGrowth": "fixed-width",
+                      "width": 104,
+                      "content": "伤害",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "aJ1ZG",
+                      "x": 74,
+                      "y": 2,
+                      "name": "最小值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "G3jEH",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "20点",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "xmZ8o",
+                      "x": 242,
+                      "y": 17,
+                      "name": "参数值文字",
+                      "fill": "#F1D987",
+                      "textGrowth": "fixed-width",
+                      "width": 18,
+                      "content": "~",
+                      "textAlign": "center",
+                      "fontFamily": "Inter",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "n3UFY",
+                      "x": 260,
+                      "y": 2,
+                      "name": "最大值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "w7tDq",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "100点",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "JTAVh",
+                      "x": 428,
+                      "y": 8,
+                      "name": "参数说明",
+                      "fill": "#D8D0B6",
+                      "textGrowth": "fixed-width",
+                      "width": 258,
+                      "content": "说明：每波共享该波结果。",
+                      "lineHeight": 1.12,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "VD6gh",
+                  "x": 0,
+                  "y": 224,
+                  "name": "参数行_法力",
+                  "width": 600,
+                  "height": 56,
+                  "fill": "#00000000",
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "pevQr",
+                      "x": 0,
+                      "y": 14,
+                      "name": "参数名称",
+                      "fill": "#DDD4BB",
+                      "textGrowth": "fixed-width",
+                      "width": 104,
+                      "content": "法力",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ePFlA",
+                      "x": 74,
+                      "y": 2,
+                      "name": "最小值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "G6e6P9",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "50点",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "bGvtU",
+                      "x": 242,
+                      "y": 17,
+                      "name": "参数值文字",
+                      "fill": "#F1D987",
+                      "textGrowth": "fixed-width",
+                      "width": 18,
+                      "content": "~",
+                      "textAlign": "center",
+                      "fontFamily": "Inter",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "W99MF",
+                      "x": 260,
+                      "y": 2,
+                      "name": "最大值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "x4Mi9C",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "200点",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "CLrbM",
+                      "x": 428,
+                      "y": 8,
+                      "name": "参数说明",
+                      "fill": "#D8D0B6",
+                      "textGrowth": "fixed-width",
+                      "width": 258,
+                      "content": "说明：每波共享该波结果。",
+                      "lineHeight": 1.12,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "SZtSF",
+                  "x": 0,
+                  "y": 280,
+                  "name": "参数行_耐力",
+                  "width": 600,
+                  "height": 56,
+                  "fill": "#00000000",
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "O0Br35",
+                      "x": 0,
+                      "y": 14,
+                      "name": "参数名称",
+                      "fill": "#DDD4BB",
+                      "textGrowth": "fixed-width",
+                      "width": 104,
+                      "content": "耐力",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "pdMWa",
+                      "x": 74,
+                      "y": 2,
+                      "name": "最小值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "gyhXN",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "100点",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "tmo8L",
+                      "x": 242,
+                      "y": 17,
+                      "name": "参数值文字",
+                      "fill": "#F1D987",
+                      "textGrowth": "fixed-width",
+                      "width": 18,
+                      "content": "~",
+                      "textAlign": "center",
+                      "fontFamily": "Inter",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "P0flm",
+                      "x": 260,
+                      "y": 2,
+                      "name": "最大值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "fdyaq",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "500点",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "RUNbW",
+                      "x": 428,
+                      "y": 8,
+                      "name": "参数说明",
+                      "fill": "#D8D0B6",
+                      "textGrowth": "fixed-width",
+                      "width": 258,
+                      "content": "说明：每波共享该波结果。",
+                      "lineHeight": 1.12,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "umNYz",
+                  "x": 0,
+                  "y": 336,
+                  "name": "参数行_暴击率",
+                  "width": 600,
+                  "height": 56,
+                  "fill": "#00000000",
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "fRjsn",
+                      "x": 0,
+                      "y": 14,
+                      "name": "参数名称",
+                      "fill": "#DDD4BB",
+                      "textGrowth": "fixed-width",
+                      "width": 104,
+                      "content": "暴击率",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "mfztf",
+                      "x": 74,
+                      "y": 2,
+                      "name": "最小值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "FgaRD",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "2%",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "HbeSb",
+                      "x": 242,
+                      "y": 17,
+                      "name": "参数值文字",
+                      "fill": "#F1D987",
+                      "textGrowth": "fixed-width",
+                      "width": 18,
+                      "content": "~",
+                      "textAlign": "center",
+                      "fontFamily": "Inter",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "z39Ev",
+                      "x": 260,
+                      "y": 2,
+                      "name": "最大值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "J8qksa",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "7%",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "b5gMys",
+                      "x": 428,
+                      "y": 8,
+                      "name": "参数说明",
+                      "fill": "#D8D0B6",
+                      "textGrowth": "fixed-width",
+                      "width": 258,
+                      "content": "说明：填写百分比。",
+                      "lineHeight": 1.12,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "kt2n1",
+                  "x": 0,
+                  "y": 392,
+                  "name": "参数行_移速",
+                  "width": 600,
+                  "height": 56,
+                  "fill": "#00000000",
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Jzctr",
+                      "x": 0,
+                      "y": 14,
+                      "name": "参数名称",
+                      "fill": "#DDD4BB",
+                      "textGrowth": "fixed-width",
+                      "width": 104,
+                      "content": "移速",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "bSxOH",
+                      "x": 74,
+                      "y": 2,
+                      "name": "最小值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "JvRl5",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "15点",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "O9pNd",
+                      "x": 242,
+                      "y": 17,
+                      "name": "参数值文字",
+                      "fill": "#F1D987",
+                      "textGrowth": "fixed-width",
+                      "width": 18,
+                      "content": "~",
+                      "textAlign": "center",
+                      "fontFamily": "Inter",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "U95kU",
+                      "x": 260,
+                      "y": 2,
+                      "name": "最大值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Yu0Fs",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "30点",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "k5M6q",
+                      "x": 428,
+                      "y": 8,
+                      "name": "参数说明",
+                      "fill": "#D8D0B6",
+                      "textGrowth": "fixed-width",
+                      "width": 258,
+                      "content": "说明：每波共享该波结果。",
+                      "lineHeight": 1.12,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "yoEnB",
+                  "x": 0,
+                  "y": 448,
+                  "name": "参数行_攻速",
+                  "width": 600,
+                  "height": 56,
+                  "fill": "#00000000",
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Tctjo",
+                      "x": 0,
+                      "y": 14,
+                      "name": "参数名称",
+                      "fill": "#DDD4BB",
+                      "textGrowth": "fixed-width",
+                      "width": 104,
+                      "content": "攻速",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ZTG0v",
+                      "x": 74,
+                      "y": 2,
+                      "name": "最小值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "z3bAfw",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "0.7点",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "xColD",
+                      "x": 242,
+                      "y": 17,
+                      "name": "参数值文字",
+                      "fill": "#F1D987",
+                      "textGrowth": "fixed-width",
+                      "width": 18,
+                      "content": "~",
+                      "textAlign": "center",
+                      "fontFamily": "Inter",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "IhKGC",
+                      "x": 260,
+                      "y": 2,
+                      "name": "最大值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "X6ZTAY",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "1.5点",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "FQsbv",
+                      "x": 428,
+                      "y": 8,
+                      "name": "参数说明",
+                      "fill": "#D8D0B6",
+                      "textGrowth": "fixed-width",
+                      "width": 258,
+                      "content": "说明：每波共享该波结果。",
+                      "lineHeight": 1.12,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "jmLLt",
+                  "x": 0,
+                  "y": 504,
+                  "name": "参数行_击退",
+                  "width": 600,
+                  "height": 56,
+                  "fill": "#00000000",
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "JKWD2",
+                      "x": 0,
+                      "y": 14,
+                      "name": "参数名称",
+                      "fill": "#DDD4BB",
+                      "textGrowth": "fixed-width",
+                      "width": 104,
+                      "content": "击退",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "dYzrX",
+                      "x": 74,
+                      "y": 2,
+                      "name": "最小值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "F5nsz",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "1.0点",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "F2JiF",
+                      "x": 242,
+                      "y": 17,
+                      "name": "参数值文字",
+                      "fill": "#F1D987",
+                      "textGrowth": "fixed-width",
+                      "width": 18,
+                      "content": "~",
+                      "textAlign": "center",
+                      "fontFamily": "Inter",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "wkfhb",
+                      "x": 260,
+                      "y": 2,
+                      "name": "最大值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "a4eXc",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "2.0点",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "N4zOV",
+                      "x": 428,
+                      "y": 8,
+                      "name": "参数说明",
+                      "fill": "#D8D0B6",
+                      "textGrowth": "fixed-width",
+                      "width": 258,
+                      "content": "说明：每波共享该波结果。",
+                      "lineHeight": 1.12,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "BDf8v",
+                  "x": 0,
+                  "y": 560,
+                  "name": "参数行_体形",
+                  "width": 600,
+                  "height": 56,
+                  "fill": "#00000000",
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "MFGMc",
+                      "x": 0,
+                      "y": 14,
+                      "name": "参数名称",
+                      "fill": "#DDD4BB",
+                      "textGrowth": "fixed-width",
+                      "width": 104,
+                      "content": "体形",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "xkZLE",
+                      "x": 74,
+                      "y": 2,
+                      "name": "最小值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "TOVLC",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "0.004倍",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "O8oBH",
+                      "x": 242,
+                      "y": 17,
+                      "name": "参数值文字",
+                      "fill": "#F1D987",
+                      "textGrowth": "fixed-width",
+                      "width": 18,
+                      "content": "~",
+                      "textAlign": "center",
+                      "fontFamily": "Inter",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "vRZ0F",
+                      "x": 260,
+                      "y": 2,
+                      "name": "最大值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "K6VvnN",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "0.004倍",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "KfGWS",
+                      "x": 428,
+                      "y": 8,
+                      "name": "参数说明",
+                      "fill": "#D8D0B6",
+                      "textGrowth": "fixed-width",
+                      "width": 258,
+                      "content": "说明：小数倍率显示。",
+                      "lineHeight": 1.12,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "rerPx",
+                  "x": 0,
+                  "y": 616,
+                  "name": "参数行_受力质量",
+                  "width": 600,
+                  "height": 56,
+                  "fill": "#00000000",
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "sFczL",
+                      "x": 0,
+                      "y": 14,
+                      "name": "参数名称",
+                      "fill": "#DDD4BB",
+                      "textGrowth": "fixed-width",
+                      "width": 104,
+                      "content": "受力质量",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "RjGBp",
+                      "x": 74,
+                      "y": 2,
+                      "name": "最小值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "JB7J8",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "1点",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "W4u80r",
+                      "x": 242,
+                      "y": 17,
+                      "name": "参数值文字",
+                      "fill": "#F1D987",
+                      "textGrowth": "fixed-width",
+                      "width": 18,
+                      "content": "~",
+                      "textAlign": "center",
+                      "fontFamily": "Inter",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "REBY0",
+                      "x": 260,
+                      "y": 2,
+                      "name": "最大值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "iVY2H",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "1.6点",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "IlpSf",
+                      "x": 428,
+                      "y": 8,
+                      "name": "参数说明",
+                      "fill": "#D8D0B6",
+                      "textGrowth": "fixed-width",
+                      "width": 258,
+                      "content": "说明：每波共享该波结果。",
+                      "lineHeight": 1.12,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "BxvZT",
+                  "x": 0,
+                  "y": 672,
+                  "name": "参数行_体重",
+                  "width": 600,
+                  "height": 56,
+                  "fill": "#00000000",
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "W1d7J4",
+                      "x": 0,
+                      "y": 14,
+                      "name": "参数名称",
+                      "fill": "#DDD4BB",
+                      "textGrowth": "fixed-width",
+                      "width": 104,
+                      "content": "体重",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "L4MAH6",
+                      "x": 74,
+                      "y": 2,
+                      "name": "最小值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "MgdDK",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "833点",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "B3OtH",
+                      "x": 242,
+                      "y": 17,
+                      "name": "参数值文字",
+                      "fill": "#F1D987",
+                      "textGrowth": "fixed-width",
+                      "width": 18,
+                      "content": "~",
+                      "textAlign": "center",
+                      "fontFamily": "Inter",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "P8DfEX",
+                      "x": 260,
+                      "y": 2,
+                      "name": "最大值框",
+                      "width": 168,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "cornerRadius": 3,
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 0,
+                        "fill": "#00000000"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "L5A5ex",
+                          "x": 0,
+                          "y": 0,
+                          "name": "参数值文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 168,
+                          "height": 56,
+                          "content": "2500点",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "gI8xQ",
+                      "x": 428,
+                      "y": 8,
+                      "name": "参数说明",
+                      "fill": "#D8D0B6",
+                      "textGrowth": "fixed-width",
+                      "width": 258,
+                      "content": "说明：每波共享该波结果。",
+                      "lineHeight": 1.12,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "u27Qo",
+              "x": 88,
+              "y": 258,
+              "name": "参数分组栏",
+              "width": 600,
+              "height": 62,
+              "fill": "#00000000",
+              "layout": "none",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "oeqIJ",
+                  "x": 0,
+                  "y": 0,
+                  "name": "分组_波次节奏",
+                  "width": 112,
+                  "height": 56,
+                  "fill": "#00000000",
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "#6F624A"
+                  },
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "r6dL82",
+                      "x": 0,
+                      "y": 16,
+                      "name": "分组名",
+                      "fill": "#D8D0B6",
+                      "textGrowth": "fixed-width",
+                      "width": 112,
+                      "content": "波次节奏",
+                      "textAlign": "center",
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "u2ccV",
+                  "x": 122,
+                  "y": 0,
+                  "name": "分组_基础范围_选中",
+                  "width": 112,
+                  "height": 56,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                    "mode": "stretch"
+                  },
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "cdSCJ",
+                      "x": 0,
+                      "y": 16,
+                      "name": "分组名",
+                      "fill": "#F1D987",
+                      "textGrowth": "fixed-width",
+                      "width": 112,
+                      "content": "基础范围",
+                      "textAlign": "center",
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "Eju0y",
+      "x": 2200,
+      "y": 0,
+      "name": "军团图鉴画板",
+      "clip": true,
+      "width": 1040,
+      "height": 1100,
+      "fill": "#1A1A1A00",
+      "layout": "none",
+      "children": [
+        {
+          "type": "text",
+          "id": "URkY3",
+          "x": 168,
+          "y": 20,
+          "name": "图鉴页画布说明文字",
+          "fill": "#C9C2AE",
+          "textGrowth": "fixed-width",
+          "width": 360,
+          "content": "Legion Codex Screen",
+          "textAlign": "center",
+          "fontFamily": "Inter",
+          "fontSize": 20,
+          "fontWeight": "700"
+        },
+        {
+          "type": "frame",
+          "id": "ZD9pP",
+          "x": 178,
+          "y": 79,
+          "name": "军团图鉴主窗口",
+          "clip": true,
+          "width": 756,
+          "height": 928,
+          "fill": {
+            "type": "image",
+            "enabled": true,
+            "url": "../worldbox_ui_extract/windowBig.png",
+            "mode": "stretch"
+          },
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "kcvPi",
+              "x": 664,
+              "y": 16,
+              "name": "关闭按钮底图",
+              "width": 64,
+              "height": 64,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/backgroundBackButton.png",
+                "mode": "stretch"
+              },
+              "layout": "none",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "G8XQtB",
+                  "x": 20,
+                  "y": 20,
+                  "name": "关闭符号",
+                  "fill": "#E75B48",
+                  "textGrowth": "fixed-width-height",
+                  "width": 24,
+                  "height": 24,
+                  "content": "×",
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "aTICe",
+              "x": 208,
+              "y": 28,
+              "name": "窗口标题",
+              "fill": "#E7B85B",
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#1A120A99",
+                "offset": {
+                  "x": 0,
+                  "y": 2
+                },
+                "blur": 2
+              },
+              "textGrowth": "fixed-width",
+              "width": 300,
+              "content": "EraWheel 军团系统",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 28,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "moIhy",
+              "x": 88,
+              "y": 206,
+              "name": "介绍标题",
+              "fill": "#E5B960",
+              "textGrowth": "fixed-width",
+              "width": 576,
+              "content": "军团图鉴",
+              "fontFamily": "Inter",
+              "fontSize": 28,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "w2rQ4",
+              "x": 59,
+              "y": 95,
+              "name": "军团内容切换标签组",
+              "context": "EraWheel 军团系统顶部内容切换长底座。四枚页签对应：介绍、参数调整、图鉴、运行态。",
+              "width": 633,
+              "height": 111,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/内容切换按钮/content_tabs_epic_rune_backplate_v3_final.png",
+                "mode": "stretch"
+              },
+              "layout": "none",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "utZS2",
+                  "x": 123,
+                  "y": 27,
+                  "name": "军团标签介绍选中态",
+                  "width": 88,
+                  "height": 58,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_frame_inactive_v4.png",
+                    "mode": "fit"
+                  },
+                  "cornerRadius": 10,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ICcnS",
+                      "x": 22,
+                      "y": 7,
+                      "name": "标签介绍图标",
+                      "width": 44,
+                      "height": 44,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/轮回系统页签/cycle_tab_intro_icon.png",
+                        "mode": "fit"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "cx9zW",
+                  "x": 223,
+                  "y": 27,
+                  "name": "军团标签参数调整未选中态",
+                  "width": 88,
+                  "height": 58,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_frame_inactive_v4.png",
+                    "mode": "fit"
+                  },
+                  "cornerRadius": 10,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "wdhZ3",
+                      "x": 22,
+                      "y": 7,
+                      "name": "标签参数调整图标",
+                      "width": 44,
+                      "height": 44,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/轮回系统页签/cycle_tab_params_icon.png",
+                        "mode": "fit"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "sKbCO",
+                  "x": 323,
+                  "y": 27,
+                  "name": "军团标签图鉴未选中态",
+                  "width": 88,
+                  "height": 58,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_frame_active_v4.png",
+                    "mode": "fit"
+                  },
+                  "cornerRadius": 10,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "eNA1E",
+                      "x": 22,
+                      "y": 7,
+                      "name": "标签图鉴图标",
+                      "width": 44,
+                      "height": 44,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/轮回系统页签/cycle_tab_codex_icon.png",
+                        "mode": "fit"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "AGpVx",
+                  "x": 423,
+                  "y": 27,
+                  "name": "军团标签运行态未选中态",
+                  "width": 88,
+                  "height": 58,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_frame_inactive_v4.png",
+                    "mode": "fit"
+                  },
+                  "cornerRadius": 10,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "zsWsT",
+                      "x": 22,
+                      "y": 7,
+                      "name": "标签运行态图标",
+                      "width": 44,
+                      "height": 44,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/轮回系统页签/cycle_tab_runtime_icon.png",
+                        "mode": "fit"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "T3807F",
+              "x": 88,
+              "y": 252,
+              "name": "军团图鉴规则列表",
+              "width": 625,
+              "height": 560,
+              "fill": "#00000000",
+              "layout": "none",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "VyPuu",
+                  "x": 0,
+                  "y": 0,
+                  "name": "图鉴行_阶段出波",
+                  "width": 625,
+                  "height": 72,
+                  "fill": "#00000000",
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "QKmhO",
+                      "x": 0,
+                      "y": 14,
+                      "name": "图鉴行文字",
+                      "fill": "#DDD4BB",
+                      "textGrowth": "fixed-width-height",
+                      "width": 128,
+                      "height": 28,
+                      "content": "阶段出波",
+                      "textAlignVertical": "middle",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "t41IO",
+                      "x": 134,
+                      "y": 8,
+                      "name": "图鉴说明",
+                      "fill": "#D8D0B6",
+                      "textGrowth": "fixed-width",
+                      "width": 318,
+                      "content": "预兆首波，苏醒和降临继续出波；预发展和战后重建关闭。",
+                      "lineHeight": 1.12,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "y1cdu",
+                      "x": 466,
+                      "y": 0,
+                      "name": "图鉴详情按钮",
+                      "width": 110,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Y2DdyQ",
+                          "x": 0,
+                          "y": 0,
+                          "name": "图鉴按钮文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 110,
+                          "height": 56,
+                          "content": "详情",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "o1TOa",
+                  "x": 0,
+                  "y": 72,
+                  "name": "图鉴行_数量计算",
+                  "width": 625,
+                  "height": 72,
+                  "fill": "#00000000",
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "amRrE",
+                      "x": 0,
+                      "y": 14,
+                      "name": "图鉴行文字",
+                      "fill": "#DDD4BB",
+                      "textGrowth": "fixed-width-height",
+                      "width": 128,
+                      "height": 28,
+                      "content": "数量计算",
+                      "textAlignVertical": "middle",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "G75VNK",
+                      "x": 134,
+                      "y": 8,
+                      "name": "图鉴说明",
+                      "fill": "#D8D0B6",
+                      "textGrowth": "fixed-width",
+                      "width": 318,
+                      "content": "计划数量随波次递增，实际生成不突破同时上限。",
+                      "lineHeight": 1.12,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "HjVeD",
+                      "x": 466,
+                      "y": 0,
+                      "name": "图鉴详情按钮",
+                      "width": 110,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "GjImT",
+                          "x": 0,
+                          "y": 0,
+                          "name": "图鉴按钮文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 110,
+                          "height": 56,
+                          "content": "详情",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "aoch5",
+                  "x": 0,
+                  "y": 144,
+                  "name": "图鉴行_属性随机",
+                  "width": 625,
+                  "height": 72,
+                  "fill": "#00000000",
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "h9eo0",
+                      "x": 0,
+                      "y": 14,
+                      "name": "图鉴行文字",
+                      "fill": "#DDD4BB",
+                      "textGrowth": "fixed-width-height",
+                      "width": 128,
+                      "height": 28,
+                      "content": "属性随机",
+                      "textAlignVertical": "middle",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "COU4o",
+                      "x": 134,
+                      "y": 8,
+                      "name": "图鉴说明",
+                      "fill": "#D8D0B6",
+                      "textGrowth": "fixed-width",
+                      "width": 318,
+                      "content": "每波生成时随机一次，同一波军团共享本波结果。",
+                      "lineHeight": 1.12,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "YCSVO",
+                      "x": 466,
+                      "y": 0,
+                      "name": "图鉴详情按钮",
+                      "width": 110,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Xu85u",
+                          "x": 0,
+                          "y": 0,
+                          "name": "图鉴按钮文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 110,
+                          "height": 56,
+                          "content": "详情",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "M2C9lQ",
+                  "x": 0,
+                  "y": 216,
+                  "name": "图鉴行_装备发放",
+                  "width": 625,
+                  "height": 72,
+                  "fill": "#00000000",
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "WlJS0",
+                      "x": 0,
+                      "y": 14,
+                      "name": "图鉴行文字",
+                      "fill": "#DDD4BB",
+                      "textGrowth": "fixed-width-height",
+                      "width": 128,
+                      "height": 28,
+                      "content": "装备发放",
+                      "textAlignVertical": "middle",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "X33eKj",
+                      "x": 134,
+                      "y": 8,
+                      "name": "图鉴说明",
+                      "fill": "#D8D0B6",
+                      "textGrowth": "fixed-width",
+                      "width": 318,
+                      "content": "军团生成时每个槽位按概率发放，空槽位可继续补发。",
+                      "lineHeight": 1.12,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "OOU4I",
+                      "x": 466,
+                      "y": 0,
+                      "name": "图鉴详情按钮",
+                      "width": 110,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "BJBx5",
+                          "x": 0,
+                          "y": 0,
+                          "name": "图鉴按钮文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 110,
+                          "height": 56,
+                          "content": "详情",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "nX1lX",
+                  "x": 0,
+                  "y": 288,
+                  "name": "图鉴行_据点生成",
+                  "width": 625,
+                  "height": 72,
+                  "fill": "#00000000",
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ScB9C",
+                      "x": 0,
+                      "y": 14,
+                      "name": "图鉴行文字",
+                      "fill": "#DDD4BB",
+                      "textGrowth": "fixed-width-height",
+                      "width": 128,
+                      "height": 28,
+                      "content": "据点生成",
+                      "textAlignVertical": "middle",
+                      "fontFamily": "Inter",
+                      "fontSize": 20,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "P8rDO",
+                      "x": 134,
+                      "y": 8,
+                      "name": "图鉴说明",
+                      "fill": "#D8D0B6",
+                      "textGrowth": "fixed-width",
+                      "width": 318,
+                      "content": "军团优先围绕对应魔王据点出现，形成持续前线压力。",
+                      "lineHeight": 1.12,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "500"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "n0QXOJ",
+                      "x": 466,
+                      "y": 0,
+                      "name": "图鉴详情按钮",
+                      "width": 110,
+                      "height": 56,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+                        "mode": "stretch"
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "S0ml4",
+                          "x": 0,
+                          "y": 0,
+                          "name": "图鉴按钮文字",
+                          "fill": "#F1D987",
+                          "textGrowth": "fixed-width-height",
+                          "width": 110,
+                          "height": 56,
+                          "content": "详情",
+                          "textAlign": "center",
+                          "textAlignVertical": "middle",
+                          "fontFamily": "Inter",
+                          "fontSize": 18,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "XyEb5",
+          "x": 101,
+          "y": 389,
+          "name": "图鉴页左侧导览入口",
+          "context": "模块：导览。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "ONzGy",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "MwYOu",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_guide_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "g1IHyr",
+          "x": 101,
+          "y": 479,
+          "name": "图鉴页左侧轮回入口",
+          "context": "模块：轮回系统。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "jCA8N",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "lFyQa",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_cycle_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "gRoZy",
+          "x": 101,
+          "y": 569,
+          "name": "图鉴页左侧魔王入口",
+          "context": "模块：魔王系统。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "M875z",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "vInFk",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_demon_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "B92zEA",
+          "x": 101,
+          "y": 659,
+          "name": "图鉴页左侧将领入口",
+          "context": "模块：将领系统。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "Mv5R7",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "i0ie9",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_general_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "s4LSmI",
+          "x": 101,
+          "y": 749,
+          "name": "图鉴页左侧军团入口",
+          "context": "模块：军团系统。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "K3ppr3",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical_selected.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "ju0Y6",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_legion_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "FNC2t",
+      "x": 3300,
+      "y": 0,
+      "name": "军团运行态画板",
+      "clip": true,
+      "width": 1040,
+      "height": 1100,
+      "fill": "#1A1A1A00",
+      "layout": "none",
+      "children": [
+        {
+          "type": "text",
+          "id": "iYLfK",
+          "x": 168,
+          "y": 20,
+          "name": "运行态画布说明文字",
+          "fill": "#C9C2AE",
+          "textGrowth": "fixed-width",
+          "width": 360,
+          "content": "Legion Runtime Screen",
+          "textAlign": "center",
+          "fontFamily": "Inter",
+          "fontSize": 20,
+          "fontWeight": "700"
+        },
+        {
+          "type": "frame",
+          "id": "sD5tv",
+          "x": 178,
+          "y": 79,
+          "name": "军团运行态主窗口",
+          "clip": true,
+          "width": 756,
+          "height": 928,
+          "fill": {
+            "type": "image",
+            "enabled": true,
+            "url": "../worldbox_ui_extract/windowBig.png",
+            "mode": "stretch"
+          },
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "IeDOS",
+              "x": 664,
+              "y": 16,
+              "name": "关闭按钮底图",
+              "width": 64,
+              "height": 64,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/backgroundBackButton.png",
+                "mode": "stretch"
+              },
+              "layout": "none",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Mol9B",
+                  "x": 20,
+                  "y": 20,
+                  "name": "关闭符号",
+                  "fill": "#E75B48",
+                  "textGrowth": "fixed-width-height",
+                  "width": 24,
+                  "height": 24,
+                  "content": "×",
+                  "textAlign": "center",
+                  "textAlignVertical": "middle",
+                  "fontFamily": "Inter",
+                  "fontSize": 20,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "RdjLB",
+              "x": 208,
+              "y": 28,
+              "name": "窗口标题",
+              "fill": "#E7B85B",
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#1A120A99",
+                "offset": {
+                  "x": 0,
+                  "y": 2
+                },
+                "blur": 2
+              },
+              "textGrowth": "fixed-width",
+              "width": 300,
+              "content": "EraWheel 军团系统",
+              "textAlign": "center",
+              "fontFamily": "Inter",
+              "fontSize": 28,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "uIMfi",
+              "x": 88,
+              "y": 206,
+              "name": "介绍标题",
+              "fill": "#E5B960",
+              "textGrowth": "fixed-width",
+              "width": 576,
+              "content": "本轮军团概览",
+              "fontFamily": "Inter",
+              "fontSize": 28,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "whnBe",
+              "x": 88,
+              "y": 252,
+              "name": "介绍正文",
+              "fill": "#DDD4BB",
+              "textGrowth": "fixed-width",
+              "width": 576,
+              "content": "当前阶段：降临。\n当前波次：第 6 波。\n下一波倒计时：4 年。\n计划数量：80，当前存活：236 / 300。",
+              "lineHeight": 1.22,
+              "fontFamily": "Inter",
+              "fontSize": 20,
+              "fontWeight": "500"
+            },
+            {
+              "type": "text",
+              "id": "pYtbo",
+              "x": 88,
+              "y": 407,
+              "name": "流程标题",
+              "fill": "#E5B960",
+              "textGrowth": "fixed-width",
+              "width": 576,
+              "content": "数量上限",
+              "fontFamily": "Inter",
+              "fontSize": 28,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "Mtuih",
+              "x": 88,
+              "y": 453,
+              "name": "流程正文",
+              "fill": "#DDD4BB",
+              "textGrowth": "fixed-width",
+              "width": 576,
+              "content": "军团同时上限：300。\n上限剩余空间：64。\n本次实际出波：min(80, 300 - 236) = 64。",
+              "lineHeight": 1.22,
+              "fontFamily": "Inter",
+              "fontSize": 20,
+              "fontWeight": "500"
+            },
+            {
+              "type": "text",
+              "id": "Xvfs0",
+              "x": 88,
+              "y": 584,
+              "name": "系统入口标题",
+              "fill": "#E5B960",
+              "textGrowth": "fixed-width",
+              "width": 576,
+              "content": "据点与胜利条件",
+              "fontFamily": "Inter",
+              "fontSize": 28,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "r6FeN",
+              "x": 88,
+              "y": 630,
+              "name": "系统入口正文",
+              "fill": "#DDD4BB",
+              "textGrowth": "fixed-width",
+              "width": 576,
+              "content": "据点数量：2 个，军团优先围绕据点生成。\n军团用于持续施压，但不会改写胜利条件。\n本轮胜利仍是击败最后一名存活魔王。",
+              "lineHeight": 1.22,
+              "fontFamily": "Inter",
+              "fontSize": 20,
+              "fontWeight": "500"
+            },
+            {
+              "type": "frame",
+              "id": "unWGO",
+              "x": 59,
+              "y": 95,
+              "name": "军团内容切换标签组",
+              "context": "EraWheel 军团系统顶部内容切换长底座。四枚页签对应：介绍、参数调整、图鉴、运行态。",
+              "width": 633,
+              "height": 111,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/内容切换按钮/content_tabs_epic_rune_backplate_v3_final.png",
+                "mode": "stretch"
+              },
+              "layout": "none",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "YDs0r",
+                  "x": 123,
+                  "y": 27,
+                  "name": "军团标签介绍选中态",
+                  "width": 88,
+                  "height": 58,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_frame_inactive_v4.png",
+                    "mode": "fit"
+                  },
+                  "cornerRadius": 10,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "RF3jy",
+                      "x": 22,
+                      "y": 7,
+                      "name": "标签介绍图标",
+                      "width": 44,
+                      "height": 44,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/轮回系统页签/cycle_tab_intro_icon.png",
+                        "mode": "fit"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "W34wv",
+                  "x": 223,
+                  "y": 27,
+                  "name": "军团标签参数调整未选中态",
+                  "width": 88,
+                  "height": 58,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_frame_inactive_v4.png",
+                    "mode": "fit"
+                  },
+                  "cornerRadius": 10,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "wQqIu",
+                      "x": 22,
+                      "y": 7,
+                      "name": "标签参数调整图标",
+                      "width": 44,
+                      "height": 44,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/轮回系统页签/cycle_tab_params_icon.png",
+                        "mode": "fit"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "W7Ni89",
+                  "x": 323,
+                  "y": 27,
+                  "name": "军团标签图鉴未选中态",
+                  "width": 88,
+                  "height": 58,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_frame_inactive_v4.png",
+                    "mode": "fit"
+                  },
+                  "cornerRadius": 10,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "XD5rU",
+                      "x": 22,
+                      "y": 7,
+                      "name": "标签图鉴图标",
+                      "width": 44,
+                      "height": 44,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/轮回系统页签/cycle_tab_codex_icon.png",
+                        "mode": "fit"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "MVUdD",
+                  "x": 423,
+                  "y": 27,
+                  "name": "军团标签运行态未选中态",
+                  "width": 88,
+                  "height": 58,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "../EraWheel/Assets/Art/内容切换按钮/content_tab_frame_active_v4.png",
+                    "mode": "fit"
+                  },
+                  "cornerRadius": 10,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "JCttn",
+                      "x": 22,
+                      "y": 7,
+                      "name": "标签运行态图标",
+                      "width": 44,
+                      "height": 44,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "../EraWheel/Assets/Art/轮回系统页签/cycle_tab_runtime_icon.png",
+                        "mode": "fit"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "zyo9G",
+          "x": 101,
+          "y": 389,
+          "name": "运行态左侧导览入口",
+          "context": "模块：导览。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "Waeta",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "sa32l",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_guide_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Msxjm",
+          "x": 101,
+          "y": 479,
+          "name": "运行态左侧轮回入口",
+          "context": "模块：轮回系统。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "nD2sB",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "B4r2X",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_cycle_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "FDXDh",
+          "x": 101,
+          "y": 569,
+          "name": "运行态左侧魔王入口",
+          "context": "模块：魔王系统。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "FlL39",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "wnI8C",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_demon_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Ug8rF",
+          "x": 101,
+          "y": 659,
+          "name": "运行态左侧将领入口",
+          "context": "模块：将领系统。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "zokrZ",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "VJQlT",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_general_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "WLHAx",
+          "x": 101,
+          "y": 749,
+          "name": "运行态左侧军团入口",
+          "context": "模块：军团系统。仅通过悬浮提示显示名称。",
+          "width": 90,
+          "height": 90,
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "QrHde",
+              "x": 0,
+              "y": 0,
+              "name": "背景",
+              "width": 90,
+              "height": 90,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../worldbox_ui_extract/tab_button_vertical_selected.png",
+                "mode": "stretch"
+              }
+            },
+            {
+              "type": "ellipse",
+              "id": "SU392",
+              "x": 5,
+              "y": 5,
+              "name": "徽章",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "../EraWheel/Assets/Art/左侧导航图标/side_legion_rune_icon.png",
+                "mode": "fit"
+              },
+              "width": 80,
+              "height": 80
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "finalJudgeLegionModal",
+      "x": 2400,
+      "y": 1176,
+      "name": "终焉审判者军团图片弹窗示例",
+      "width": 640,
+      "height": 560,
+      "fill": {
+        "type": "image",
+        "enabled": true,
+        "url": "../EraWheel/Assets/Art/魔王系统弹窗框/demon_selector_modal_frame_rune_20260426_013510_448x336_clean.png",
+        "mode": "stretch"
+      },
+      "stroke": {
+        "align": "inside",
+        "thickness": 0,
+        "fill": "#00000000"
+      },
+      "layout": "none",
+      "children": [
+        {
+          "type": "frame",
+          "id": "odF3L",
+          "x": 186,
+          "y": 146,
+          "name": "最终审判者图标展示",
+          "width": 268,
+          "height": 268,
+          "fill": {
+            "type": "image",
+            "enabled": true,
+            "url": "../EraWheel/Assets/Art/注册生物单位图片/魔王与将领图片/终焉审判者/终焉审判者军团/icon.png",
+            "mode": "fit"
+          },
+          "stroke": {
+            "align": "inside",
+            "thickness": 0,
+            "fill": "#00000000"
+          },
+          "layout": "none"
+        },
+        {
+          "type": "frame",
+          "id": "MwR4V",
+          "x": 455,
+          "y": 430,
+          "name": "确认按钮",
+          "width": 110,
+          "height": 45,
+          "fill": {
+            "type": "image",
+            "enabled": true,
+            "url": "../EraWheel/Assets/Art/设置按钮框/io_action_button_frame_mythic_candidate.png",
+            "mode": "stretch"
+          },
+          "cornerRadius": 3,
+          "stroke": {
+            "align": "inside",
+            "thickness": 0,
+            "fill": "#00000000"
+          },
+          "layout": "none",
+          "children": [
+            {
+              "type": "text",
+              "id": "W7XGy",
+              "x": 0,
+              "y": 0,
+              "name": "按钮文字",
+              "fill": "#F1D987",
+              "textGrowth": "fixed-width-height",
+              "width": 110,
+              "height": 45,
+              "content": "确认",
+              "textAlign": "center",
+              "textAlignVertical": "middle",
+              "fontFamily": "Inter",
+              "fontSize": 16,
+              "fontWeight": "700"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

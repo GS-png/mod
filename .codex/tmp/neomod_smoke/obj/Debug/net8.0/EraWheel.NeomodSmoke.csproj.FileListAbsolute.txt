@@ -1,0 +1,13 @@
+/home/wuxu/mod-1/.codex/tmp/neomod_smoke/obj/Debug/net8.0/EraWheel.NeomodSmoke.csproj.AssemblyReference.cache
+/home/wuxu/mod-1/.codex/tmp/neomod_smoke/obj/Debug/net8.0/EraWheel.NeomodSmoke.GeneratedMSBuildEditorConfig.editorconfig
+/home/wuxu/mod-1/.codex/tmp/neomod_smoke/obj/Debug/net8.0/EraWheel.NeomodSmoke.AssemblyInfoInputs.cache
+/home/wuxu/mod-1/.codex/tmp/neomod_smoke/obj/Debug/net8.0/EraWheel.NeomodSmoke.AssemblyInfo.cs
+/home/wuxu/mod-1/.codex/tmp/neomod_smoke/obj/Debug/net8.0/EraWheel.NeomodSmoke.csproj.CoreCompileInputs.cache
+/home/wuxu/mod-1/.codex/tmp/neomod_smoke/obj/Debug/net8.0/EraWheel.NeomodSmoke.sourcelink.json
+/home/wuxu/mod-1/.codex/tmp/neomod_smoke/bin/Debug/net8.0/EraWheel.NeomodSmoke.deps.json
+/home/wuxu/mod-1/.codex/tmp/neomod_smoke/bin/Debug/net8.0/EraWheel.NeomodSmoke.dll
+/home/wuxu/mod-1/.codex/tmp/neomod_smoke/bin/Debug/net8.0/EraWheel.NeomodSmoke.pdb
+/home/wuxu/mod-1/.codex/tmp/neomod_smoke/obj/Debug/net8.0/EraWheel.NeomodSmoke.dll
+/home/wuxu/mod-1/.codex/tmp/neomod_smoke/obj/Debug/net8.0/refint/EraWheel.NeomodSmoke.dll
+/home/wuxu/mod-1/.codex/tmp/neomod_smoke/obj/Debug/net8.0/EraWheel.NeomodSmoke.pdb
+/home/wuxu/mod-1/.codex/tmp/neomod_smoke/obj/Debug/net8.0/ref/EraWheel.NeomodSmoke.dll

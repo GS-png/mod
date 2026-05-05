@@ -1,0 +1,28 @@
+model_provider = "yunyi"
+model = "gpt-5.4"
+model_reasoning_effort = "xhigh"
+service_tier = "fast"
+
+[model_providers.yunyi]
+name = "yunyi"
+base_url = "https://yunyi.cfd/codex"
+wire_api = "responses"
+experimental_bearer_token = "B8UEG1RV-3QE3-38Z9-PP04-G5EEDT2QRFM9"
+requires_openai_auth = true
+
+[mcp_servers.context7]
+url = "https://mcp.context7.com/mcp"
+
+[mcp_servers.context7.http_headers]
+CONTEXT7_API_KEY = "ctx7sk-13d3d37e-d569-4d51-a9b6-f2a0246c604d"
+
+[mcp_servers.penpot]
+url = "http://localhost:4401/mcp"
+
+[projects."/home/wuxu/mod-1"]
+trust_level = "trusted"
+
+[features]
+fast_mode = true
+enable_request_compression = true
+multi_agent = true
