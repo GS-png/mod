@@ -1,4 +1,0 @@
-interface:
-  display_name: "SpecKit Tasks To Issues"
-  short_description: "Turn tasks.md into matching GitHub issues"
-  default_prompt: "Use $speckit-taskstoissues to convert the active Spec Kit tasks into matching GitHub issues."

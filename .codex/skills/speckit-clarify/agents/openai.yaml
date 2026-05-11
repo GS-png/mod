@@ -1,4 +1,0 @@
-interface:
-  display_name: "SpecKit Clarify"
-  short_description: "Clarify underspecified parts of the active spec"
-  default_prompt: "Use $speckit-clarify to find and resolve underspecified parts of the active Spec Kit specification."

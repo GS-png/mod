@@ -1,4 +1,0 @@
-interface:
-  display_name: "SpecKit Analyze"
-  short_description: "Review spec, plan, and tasks for consistency"
-  default_prompt: "Use $speckit-analyze to review the active spec, plan, and tasks for consistency before implementation."

@@ -1,4 +1,0 @@
-interface:
-  display_name: "SpecKit Implement"
-  short_description: "Execute tasks.md and implement the feature"
-  default_prompt: "Use $speckit-implement to execute the active Spec Kit tasks and implement the feature."

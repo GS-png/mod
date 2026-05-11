@@ -1,4 +1,0 @@
-interface:
-  display_name: "SpecKit Constitution"
-  short_description: "Create or update the project constitution"
-  default_prompt: "Use $speckit-constitution to create or update this project constitution for Spec Kit."

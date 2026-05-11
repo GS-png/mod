@@ -1,149 +1,132 @@
-# 证据标签
+# AGENTS 任务执行规范
 
-所有关键判断只允许使用下面 4 种标签：
+## 1 最小必要确认
 
-- `Observed`：直接在源码、配置、命令输出、测试结果、运行行为或官方文档里看到。
-- `Inferred`：由多个 `Observed` 推导出来。
-- `Assumption`：为推进任务暂时采用的假设，必须说明风险。
-- `Unknown`：当前没有证据，必须保持未知。
+先确认必要边界；规则冲突时优先具体、贴近任务且更安全的规则；触及安全、用户改动、不可逆数据或权限边界时优先保护，无法调和则停止并说明原因。
 
-禁止把 `Unknown` 写成事实。
-禁止把猜测写成已确认结论。
-禁止虚构路径、函数、字段、命令、版本、配置、测试结果、兼容结论、接口行为和运行结果。
+- **保护用户改动**：动代码前先确认工作区状态，禁止覆盖、回退、删除或清理任何未授权改动；发现已有改动时必须先区分用户改动与当前任务改动，再继续操作。
+- **先明边界，再动代码**：任务开始前先确认范围、入口、影响和必要上下文；风险越高，检查、实现和验证越严格。
+- **显式假设，歧义停问**：不确定时先说明假设、歧义和取舍；不能确认边界或意图时停止实现并请求澄清，不得默默选择一种解释继续执行。
+- **证据优先，源头可追溯**：判断、结论、改动和验证结果必须有可追溯证据；证据不足标未知，不猜测、不编造、不伪造。
+- **按需命中，精准读取**：根据任务本质和影响范围读取相关任务、工程规范；命中什么读什么，命中多项全部读，不做无关扩展。
 
-# 风险等级
+## 2 实现前门禁
 
-- `low`：局部改动；不改共享接口、共享类型、依赖、配置、数据结构或状态边界；验证直接；回滚简单。
-- `medium`：多文件局部改动；会改行为；需要同步测试、文档、配置或调用方；可能扩散。
-- `high`：涉及公共接口、共享类型、跨模块数据流、schema、依赖、环境、权限、安全、隐私、并发、性能热点、兼容边界或发布链路。
+- owner、调用路径、跨模块关系和影响面使用 Graphify 定位线索，先看 `graphify-out/GRAPH_REPORT.md`，有 wiki 优先看 wiki；跨模块关系优先用 `graphify query "<question>"`、`graphify path "<A>" "<B>"`、`graphify explain "<concept>"`，会遍历图谱中的 EXTRACTED 和 INFERRED 边。
+- 使用GitNexus mcp工具分析代码影响面，查询代码图谱，查看概念、符号上下文、上下游影响、调用方和相关执行流，只能作为定位线索，最终判断必须回到源码、测试、配置和命令输出确认。
+- **DDD 领域归属建模**：代码应按业务领域归属组织，让业务概念、规则和状态变化有明确边界，围绕真实业务概念组织代码，避免职责混杂、跨领域泄漏和贫血式过程代码。
+- **高内聚、低耦合**：相关逻辑应集中在明确职责边界内，模块之间只通过必要、稳定、清晰的接口协作，避免职责混杂、跨层依赖、隐式共享状态和修改连锁扩散。
+- **沿用权威路径，谨慎复用抽象**：实现前先确认既有实现的领域归属、职责边界和契约是否适配；适配时优先在既有体系内小范围复用或扩展，不适配时不得强行沿用；只有稳定复用需求、清晰契约和低耦合维护边界成立时，才提取公共能力，没有明确时，不提前抽象。
+- **保持单一真相与单一路径**：同一业务事实、状态、规则和流程必须有明确权威来源，避免产生影子状态、并行实现、重复判断、循环依赖、隐式状态和相互冲突的逻辑分支，确保行为一致、边界清楚、维护可控。
+- **PDD 提示驱动开发**：实现前先明确需求意图、任务边界、上下文证据、约束条件和验收标准；再拆解执行步骤，按规格执行，实现结果必须能被规格和验证结果确认。。
+- **BDD 行为驱动开发**：实现前先明确用户可感知的业务行为、触发条件和预期结果；代码必须围绕行为完成，正确性以行为是否满足验收为准，并通过测试或可执行规格验证。
+- **TDD 测试驱动开发**：实现或修改代码前，先明确可验证行为并编写能失败的测试；再用最小实现让测试通过；重构必须保持测试通过，避免无验证实现、过度实现和改坏既有行为。
 
-风险拿不准时，默认上调一级。
+## 3 实现与收口
 
-# 0. 开始前先报卡
+- **简洁优先**：代码只解决当前明确需求，采用直接、必要、可验证的实现；不添加未确认能力，不提前抽象，不引入无必要的配置、扩展点、容错分支或复杂流程；实现复杂度必须匹配问题规模，发现过度设计时必须简化，避免臃肿。
+- **手术式变更**：只修改完成当前任务所必需的内容；不得顺手重构、格式化、改写或清理无关代码；发现无关问题可以说明，但不得擅自处理。
+- **同步修改**：变更必须覆盖所有受影响的权威来源、依赖关系和验证入口，确保代码、契约、数据、配置、测试和文档保持一致；不得只改局部而留下新旧逻辑并存、状态不一致或验证断裂。
+- **收口同步**：新路径替代旧路径时必须完成迁移闭环，及时删除、废弃旧路径；并同步清理所有受影响的代码、依赖、配置、测试、文档和调试残留，避免新旧路径并存、重复逻辑和孤儿内容继续污染系统。
+- **引用复查**：改动完成后必须回查受影响的引用、依赖和验证链路，确认相关入口、调用方、约束、配置、文档和测试保持一致，不留下遗漏引用、失效路径或行为回归。
+- **验证收口**：运行与风险匹配的测试、类型检查、lint 或构建；无法运行时说明原因和剩余风险。
 
-任何任务开始前，先交代这 5 项：
+## 4 交付说明
 
-- 任务类型
-- 风险等级和理由
-- 已证实事实 `Observed`
-- 未证实项 `Unknown / Assumption`
-- 验证计划：准备怎么验证；哪些暂时无法验证
+- 命中的任务规范和工程规范；owner、边界和权威路径；主要变更或审查结论；已运行的验证；未验证项、剩余风险、回滚方式和未知项。
 
-没有这 5 项，不进入设计和修改。
+## 5. 执行底线
 
-# 1. 认知与证据
+- **代码安全优先**：写代码时默认外部输入、权限边界、资源访问和副作用操作都可能被滥用，必须以纵深防御、显式校验、最小权限、默认拒绝、敏感数据不泄露、依赖受约束、错误不扩散、变更有测试为基本原则。
+- **失败显式可恢复**：关键流程失败时不得静默吞掉异常、不得留下状态不明的半成功结果；必须明确返回错误、保留必要上下文、保持状态一致，并在可恢复场景提供重试、回滚、降级或补偿路径。
+- **边界、幂等、并发明确**：关键代码必须明确职责边界、输入输出边界、数据修改边界和失败影响范围；重复执行时结果应可预期；并发执行时状态必须一致，避免职责失控、重复副作用和并发状态错乱。
+- **契约与数据一致**：代码必须维护清晰稳定的接口契约、数据结构、状态流转和业务规则，确保数据在模块、接口、存储、缓存、消息和前后端之间含义一致、状态一致、变更可追踪。
+- **中文优先，简洁高效**：所有说明、规则和文档默认用中文；表达要短句、直白、可执行，明确“何时触发、做什么、在哪做、怎么验证、例外如何处理”；删除空话、口号、重复和模糊描述，保留必要边界，不因简短牺牲准确性。
+- **必要注释，代码同步**：注释补充代码本身无法清楚表达的意图、约束和关键原因；必须准确、简洁、可验证，并随代码同步更新；不得用注释替代清晰代码，也不得保留过时、未实现或误导性说明。
 
-- 先查真实代码、配置、测试、相邻实现和权威文档，再下结论，再设计，再动手。
-- 没看到的内容不能写成事实；不确定的接口、行为、版本、兼容性、调用关系不能靠猜。
-- 关键结论必须能回指到证据；证据不够时，任务应先收缩成 `investigation`，而不是硬写实现。
+## 6. 任务规范路由
 
-# 2. 设计与复杂度
+| 任务本质 | 必读规范 |
+|---|---|
+| 缺陷修复 | `.agents/tasks/bugfix.md` |
+| 既有能力增强 | `.agents/tasks/existing-enhancement.md` |
+| 实现替换 | `.agents/tasks/implementation-replacement.md` |
+| 行为变更 | `.agents/tasks/behavior-change.md` |
+| 新增能力 | `.agents/tasks/new-capability.md` |
+| 架构迁移 | `.agents/tasks/architecture-migration.md` |
+| 配置环境发布 | `.agents/tasks/config-env-release.md` |
+| 重构清理 | `.agents/tasks/refactor-cleanup.md` |
+| 纯文档修改 | `.agents/tasks/docs-only.md` |
+| 审查评估 | `.agents/tasks/review.md` |
 
-- 先写清目标、范围、非目标、输入输出、副作用、失败方式和验证方式。
-- 只为当前问题设计最小够用的方案，禁止为了假想未来提前加抽象层、通用框架、配置开关、包装层、helper 或额外复杂度。
-- 改公共接口、共享类型、依赖、数据格式、权限模型、兼容边界时，必须同时说明影响面、迁移方式和回滚办法。
-- 方案除了能工作，还必须保持职责清晰、边界稳定、层级克制；巨型模块、职责混杂、层层包装、结构明显背离现有主流实现，都视为设计退化。
-- 不能把“多加一层更安全”当默认真理；复杂度本身就是成本和债务。
+## 7. 工程规范路由
 
-# 3. 实现与演进质量
+| 影响领域 | 必读规范 |
+|---|---|
+| 架构边界 | `.agents/engineering/architecture-boundaries.md` |
+| 正确性与失败处理 | `.agents/engineering/correctness-failure-handling.md` |
+| 数据契约与迁移 | `.agents/engineering/data-schema-migration.md` |
+| 安全隐私权限 | `.agents/engineering/security-privacy-permissions.md` |
+| 性能资源并发 | `.agents/engineering/performance-resource-concurrency.md` |
+| 测试验证 | `.agents/engineering/testing-verification.md` |
+| 依赖环境发布 | `.agents/engineering/dependencies-env-release.md` |
+| 文档可观测性 | `.agents/engineering/docs-comments-observability.md` |
+| 工作区命令安全 | `.agents/engineering/workspace-command-safety.md` |
 
-- 实现必须完整、可运行、可解释；不能只交半成品、占位实现或“以后再补”的关键分支。
-- 禁止无意义代码、复制粘贴扩散、风格漂移、代码膨胀、无关重构和只为看起来整洁而增加包装。
-- 实现应贴近仓库现有主流命名、目录组织、错误处理、测试写法和格式风格；没有明确收益，不得额外引入新的风格分支。
-- 新增实现时，必须主动收敛被替代的旧实现、死代码、死参数、废弃开关和注释掉的大段旧逻辑。
-- 同一概念只允许一个权威来源；禁止双写、影子状态、重复配置、重复缓存和长期并存的新旧逻辑。
-- 如果必须短期并存，必须写清边界、迁移条件和收口方式，不能无限期拖着。
+## 8. 项目事实模板
 
-# 4. 正确性与健壮性
+项目事实未填写视为“未知”，不得猜测。
 
-- 不能只让 happy path 跑通；必须同时考虑正常、边界、失败、空值、重入、回退和部分失败。
-- 异常处理要保留上下文和失败原因；禁止吞异常、扩大 `try/catch` 掩盖问题、失败后伪造成功结果。
-- 修改状态、缓存、文件、事务、消息、数据库或外部调用时，必须说明一致性策略和失败恢复方式。
-- 修复失败一次后，必须先回到根因分析；同类问题再次出现时，必须补机械防线，例如回归测试、断言、类型约束、静态检查或运行时校验。
+| 项目 | 内容 |
+|---|---|
+| 项目名称 | `<填写真实名称>` |
+| 项目类型 | `<填写真实类型>` |
+| 主要语言/运行时 | `<填写真实版本>` |
+| 包管理器 | `<填写>` |
+| 数据存储 | `<填写或 None>` |
+| 部署环境 | `<填写或未知>` |
+| 代码生成来源 | `<填写或 None>` |
 
-# 5. 跨边界风险
+<!-- gitnexus:start -->
+# GitNexus — Code Intelligence
 
-- 外部输入、跨模块数据、文件/网络/数据库 IO、权限边界、第三方依赖、环境差异、并发共享状态，都默认不可信。
-- 安全、隐私、性能、线程安全、依赖兼容都不能靠经验拍脑袋，必须基于真实代码、配置、官方文档或可重复验证。
-- 禁止泄露密钥、令牌、密码、连接串、PII 和其他敏感信息到代码、日志、测试、注释、文档或工件里。
-- 涉及热路径、大循环、大对象、共享状态、锁、超时、取消、重试、资源释放、依赖新增或升级时，必须明确风险、代价和处理策略。
-- 涉及热路径、高频路径或大数据量路径时，至少说明复杂度、主要瓶颈和资源释放点；不能把“暂时能跑”当成性能结论。
-- 依赖变更默认从严处理；优先复用已有稳定依赖，版本依据必须来自锁文件、清单、构建配置或官方文档。
-- 没有证据，不得宣称“兼容没问题”“性能没问题”“没有风险”。
+This project is indexed by GitNexus as **mod** (5383 symbols, 17341 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
-# 6. 验证与交付质量
+> If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
-- 没验证，不算完成。
-- 至少运行最相关的测试、构建或检查；没有自动化时，必须写可复现的手工验证步骤和真实结果。
-- `bugfix` 优先补回归验证；测试不能只追覆盖率、只做快照、只测 happy path，而要在代码坏掉时真实失败。
-- 行为、接口、配置或排障方式发生变化时，必须同步补足必要文档、注释和排障说明；缺失时不得按“已完成”交付。
-- 文档、注释、日志只保留真正有助于理解、回归和排障的内容。
-- 注释解释“为什么/约束”，不是复述代码；日志要有上下文，能支持定位问题，同时不能泄露敏感信息。
-- 除日志外，关键失败路径还应保留足够的可观测信号，例如错误分类、上下文标识、必要指标或其他可定位信息。
+## Always Do
 
-# 7. 硬停止
+- **MUST run impact analysis before editing any symbol.** Before modifying a function, class, or method, run `gitnexus_impact({target: "symbolName", direction: "upstream"})` and report the blast radius (direct callers, affected processes, risk level) to the user.
+- **MUST run `gitnexus_detect_changes()` before committing** to verify your changes only affect expected symbols and execution flows.
+- **MUST warn the user** if impact analysis returns HIGH or CRITICAL risk before proceeding with edits.
+- When exploring unfamiliar code, use `gitnexus_query({query: "concept"})` to find execution flows instead of grepping. It returns process-grouped results ranked by relevance.
+- When you need full context on a specific symbol — callers, callees, which execution flows it participates in — use `gitnexus_context({name: "symbolName"})`.
 
-出现以下任一情况，必须停止实施，转调查、澄清或阻塞说明：
+## Never Do
 
-- 真实入口、调用链、失败现象、目标行为或权威来源不清
-- `bugfix` 没有失败证据、报错信息、复现路径或最小线索
-- 缺少必要验证路径，尤其是 `medium / high` 风险任务
-- 安全、数据、权限、迁移、兼容或删除边界不清
-- 与现有改动直接冲突，且无法安全并存
-- 第一次修复失败后，还没有重新做根因分析
-- 没有真实验证结果，却被要求宣称“已完成”“已修复”“测试通过”或“无风险”
+- NEVER edit a function, class, or method without first running `gitnexus_impact` on it.
+- NEVER ignore HIGH or CRITICAL risk warnings from impact analysis.
+- NEVER rename symbols with find-and-replace — use `gitnexus_rename` which understands the call graph.
+- NEVER commit changes without running `gitnexus_detect_changes()` to check affected scope.
 
-# 8. 结束时固定交付
+## Resources
 
-最终必须交代：
+| Resource | Use for |
+|----------|---------|
+| `gitnexus://repo/mod/context` | Codebase overview, check index freshness |
+| `gitnexus://repo/mod/clusters` | All functional areas |
+| `gitnexus://repo/mod/processes` | All execution flows |
+| `gitnexus://repo/mod/process/{name}` | Step-by-step execution trace |
 
-- 任务类型和风险等级
-- 关键证据：`Observed / Inferred / Assumption / Unknown`
-- 改了什么，以及为什么这么改
-- 做了什么验证，真实结果是什么
-- 哪些没有验证，为什么没验证
-- 残余风险、兼容影响、回滚方式或下一步建议
+## CLI
 
+| Task | Read this skill file |
+|------|---------------------|
+| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md` |
+| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
+| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md` |
+| Rename / extract / split / refactor | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
+| Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
+| Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
 
-# 9 项目架构
-
-- 仓库概览：`这是一个面向 WorldBox 0.51.2+ 与 NeoModLoader 的 EraWheel MOD 设计与实现仓库。`
-- 关键目录与入口：`/home/wuxu/mod-1/设计文档是唯一的MOD设计想法与实现权威`
-- 权威来源：
-  - 总原则：`设计/` 下的 Markdown 文档是玩法设计、实现意图和参数口径的第一权威；`设计/美术资源/` 是交付资产与素材边界，不作为玩法规则、实现链路或运行判定的主来源。
-  - 在执行编写修改代码的时候，先看设计文档，确认玩法设计、实现口径和参数口径；再看设计附属文档，确认名册、字段、原版对照和专题说明；再看 api/ 文档，确认接口定义和使用说明；再看 tools/WorldBox.Managed/ 中对应 DLL 的代码实现，确认真实逻辑和边界；必要时再用 tools/ilspycmd/ilspycmd 或反编译结果补证据。
-  - 设计文档树：
-    ```text
-    设计/
-    ├── EraWheel_Redesign.md
-    │   这份文档负责：玩法总览、阅读入口、资料导航。
-    ├── EraWheel_实现口径.md
-    │   这份文档负责：实现链路、运行边界、UI 复用、存档与 API 接口口径。
-    └── ERRE附属文档/
-        ├── 系统参数总表.md
-        │   这份文档负责：所有可调参数、默认值、控件类型。
-        ├── 魔王名册与技能表.md
-        │   这份文档负责：魔王条目与技能配置的单一来源。
-        ├── 将领名册.md
-        │   这份文档负责：将领名单、归属与固定配置的单一来源。
-        ├── 轮回阶位详表.md
-        │   这份文档负责：轮回装备、轮回特质、档位解锁的单一来源。
-        ├── 轮回装备锻造对比表.md
-        │   这份文档负责：轮回装备锻造口径、扣材字段映射与专题说明。
-        ├── 公共特质表.md
-        │   这份文档负责：公共特质条目与默认授予配置的单一来源。
-        ├── 特质签数对比表.md
-        │   这份文档负责：出生、遗传、成长签数分布与池子占比对照。
-        ├── 属性字段速查.md
-        │   这份文档负责：属性字段命名、用途与填写方式速查。
-        └── 游戏原版特质与效果清单.md
-            这份文档负责：原版特质、法术、效果与触发链路对照。
-    ```
-- 特殊工具链：`涉及第三方库、框架、版本差异、API 用法不确定时先走 Context7 MCP 查官方资料。`
-- 根据设计内容实现走游戏原版逻辑，mod设计实现融合游戏原本逻辑。查看游戏真实代码逻辑和真实路径，确保MOD实现完美融合游戏原本逻辑，不要写一堆自以为是的屎山、错误代码实现。
-- 每次修改优化mod之后把MOD的文件夹覆盖到"C:\Users\14745\Desktop\worldbox\worldbox\Mods"，我进行测试看能不能游玩
-- 语言与受众：全程使用中文回答，语言要通俗易懂，默认面向编程新手。遇到专业术语时，主动用生活化比喻或具体例子解释。
-- 兼容要求：实现时优先遵守项目当前实际使用的语言版本、框架版本、平台约束和已有目录结构；没有证据时不要假设“最新版一定能用”。
-- 强制验证命令：按项目实际提供的测试、构建、静态检查命令执行；如果仓库没有现成命令，至少做可复现的手工验证说明，并明确缺失的自动化保障。
-- 文档风格：文档分段使用标题，标题不超过三级；每段控制在 3 到 4 句话内；每句话尽量短，优先主动语态、列表和可执行步骤；避免空洞总结、跳转式引用和套话。
-- 特殊禁用项：禁止情绪化输出代替分析；禁止只为“防出错”就堆多层降级和兜底；禁止没有证据的兼容性猜测；禁止把“以后可能会用到”当成今天加复杂度的理由。
+<!-- gitnexus:end -->

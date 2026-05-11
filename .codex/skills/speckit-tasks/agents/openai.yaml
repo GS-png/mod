@@ -1,4 +1,0 @@
-interface:
-  display_name: "SpecKit Tasks"
-  short_description: "Generate dependency-ordered implementation tasks"
-  default_prompt: "Use $speckit-tasks to generate dependency-ordered implementation tasks for the active Spec Kit feature."
