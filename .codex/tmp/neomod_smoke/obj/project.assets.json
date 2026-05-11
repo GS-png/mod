@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/wuxu/mod-1/.codex/tmp/neomod_smoke/EraWheel.NeomodSmoke.csproj",
+      "projectUniqueName": "/mnt/c/Users/14745/Desktop/mod/.codex/tmp/neomod_smoke/EraWheel.NeomodSmoke.csproj",
       "projectName": "EraWheel.NeomodSmoke",
-      "projectPath": "/home/wuxu/mod-1/.codex/tmp/neomod_smoke/EraWheel.NeomodSmoke.csproj",
+      "projectPath": "/mnt/c/Users/14745/Desktop/mod/.codex/tmp/neomod_smoke/EraWheel.NeomodSmoke.csproj",
       "packagesPath": "/home/wuxu/.nuget/packages/",
-      "outputPath": "/home/wuxu/mod-1/.codex/tmp/neomod_smoke/obj/",
+      "outputPath": "/mnt/c/Users/14745/Desktop/mod/.codex/tmp/neomod_smoke/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/wuxu/.nuget/NuGet/NuGet.Config"

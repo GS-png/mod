@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EraWheel.NeomodSmoke")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c81742650d709e9cbebf128877ac9b568e4030ed")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1bbd255bdbbffeccbddf6a315d9970ea13503a8b")]
 [assembly: System.Reflection.AssemblyProductAttribute("EraWheel.NeomodSmoke")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EraWheel.NeomodSmoke")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
