@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="../../../EraWheel/src/**/*.cs" />
+    <Compile Include="../../../src/**/*.cs" />
   </ItemGroup>
 
   <ItemGroup>
