@@ -105,7 +105,6 @@ public sealed class EraReincarnationParameters
 public sealed class EraDemonParameters
 {
     public IReadOnlyList<EraDemonKind> EnabledDemons { get; set; } = new EraDemonKind[0];
-    public EraDemonAwakeningMode AwakeningMode { get; set; }
     public int AwakeningCount { get; set; }
     public EraDemonInteractionMode InteractionMode { get; set; }
     public EraDuration RelationshipCheckInterval { get; set; } = EraDuration.FromYears(0f);

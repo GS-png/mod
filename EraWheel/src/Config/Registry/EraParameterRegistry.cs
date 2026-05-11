@@ -80,7 +80,6 @@ public sealed class EraParameterRegistry
                     EraDemonKind.NatureWrath,
                     EraDemonKind.FinalJudge,
                 },
-                AwakeningMode = EraDemonAwakeningMode.Random,
                 AwakeningCount = 1,
                 InteractionMode = EraDemonInteractionMode.Random,
                 RelationshipCheckInterval = EraDuration.FromYears(3f),

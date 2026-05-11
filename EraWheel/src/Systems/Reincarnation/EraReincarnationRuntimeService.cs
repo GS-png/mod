@@ -825,9 +825,9 @@ public sealed class EraReincarnationRuntimeService
         }
 
         int targetCount = Math.Max(1, Math.Min(_parameterRegistry.Current.Demons.AwakeningCount, candidates.Count));
-        if (_parameterRegistry.Current.Demons.AwakeningMode == EraDemonAwakeningMode.Specified)
+        if (candidates.Count <= targetCount)
         {
-            return candidates.Take(targetCount).ToList();
+            return candidates;
         }
 
         List<EraDemonManifest> selected = new List<EraDemonManifest>(targetCount);

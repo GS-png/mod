@@ -167,12 +167,6 @@ public sealed class EraMultiSelectBinding : EraParameterBindingBase
 
 public static class EraParameterUiBindings
 {
-    private static readonly IReadOnlyList<EraEnumOptionBinding> DemonAwakeningModes = new[]
-    {
-        new EraEnumOptionBinding("指定", (int)EraDemonAwakeningMode.Specified),
-        new EraEnumOptionBinding("随机", (int)EraDemonAwakeningMode.Random),
-    };
-
     private static readonly IReadOnlyList<EraEnumOptionBinding> DemonInteractionModes = new[]
     {
         new EraEnumOptionBinding("联盟", (int)EraDemonInteractionMode.Alliance),
@@ -291,14 +285,7 @@ public static class EraParameterUiBindings
                         enabled => parameters.EnabledDemons = ToggleEnumValue(parameters.EnabledDemons, kind, enabled)
                     )).ToArray()
                 ),
-                Enum(
-                    "魔王苏醒模式",
-                    "可选 指定 / 随机。",
-                    () => (int)parameters.AwakeningMode,
-                    value => parameters.AwakeningMode = (EraDemonAwakeningMode)value,
-                    DemonAwakeningModes
-                ),
-                Number("苏醒数量", "同轮同时苏醒的魔王数量。", () => parameters.AwakeningCount, value => parameters.AwakeningCount = Math.Max(1, ToInt(value)), wholeNumbers: true)
+                Number("苏醒数量", "候选池多于该数量时，会从启用魔王池里稳定随机抽取。", () => parameters.AwakeningCount, value => parameters.AwakeningCount = Math.Max(1, ToInt(value)), wholeNumbers: true)
             ),
             Group(
                 "多魔王模式",

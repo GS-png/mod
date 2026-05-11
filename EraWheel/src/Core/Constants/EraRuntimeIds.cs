@@ -58,12 +58,6 @@ public enum EraFactionKind
     Demon = 2,
 }
 
-public enum EraDemonAwakeningMode
-{
-    Specified = 0,
-    Random = 1,
-}
-
 public enum EraDemonInteractionMode
 {
     Alliance = 0,
