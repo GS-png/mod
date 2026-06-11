@@ -14,91 +14,29 @@
 
 按触达领域额外读取 correctness、data、security、performance、dependency、docs 规则。
 
-## 2. 目标
+# 新增能力
 
-用清晰的 architecture landing、owner、public surface、tests 和 integration path 添加能力，不污染已有模块。
+## 任务本质
+为系统新增一个清晰、可用、可演进的能力单元。
+目标不是“接入一段新逻辑”，而是“让新能力在正确边界内稳定成立”。
+要求边界清楚、owner 清楚、契约清楚、可验证、可发布、可回退。
 
-## 3. 必查项
+## 必读规范
+- 先明确新增的是什么能力，而不是只描述要改哪些文件。
+- 新能力必须落在明确的业务能力边界和 owner 上，禁止散落式拼接实现。
+- 优先复用既有抽象、模块、配置、发布链路与监控面；无必要不平行造轮子。
+- 新能力入口、契约、数据边界、依赖关系必须清楚，避免隐式耦合。
+- 涉及外部接口、事件、数据结构时，默认考虑兼容性和演进策略。
+- 高风险新增默认使用特性开关、灰度、金丝雀或分阶段发布。
+- 必须同时验证两件事：新能力可用，既有能力未退化。
+- 新能力上线后必须可观测、可定位、可回退。
+- 过渡性开关、临时桥接、试验性兼容层必须可收口，不得长期残留。
+- 完成以“能力真实成立并稳定可用”为准，不以“代码已合入”算完成。
 
-编码前检查：
-
-- 现有目录树和模块边界。
-- 类似 features 的结构。
-- UI、API、jobs、commands、integrations、services 的现有入口模式。
-- 现有 domain vocabulary 和 ownership。
-- 当前 shared utilities 是否是真实 authority。
-- 现有 tests 和 fixtures。
-- config、schema、permission、data、logging、deployment patterns。
-
-## 4. 新模块信号
-
-任一成立时，优先新建 file / module / directory：
-
-- 有独立 business concept。
-- 有自己的 lifecycle、state、workflow 或 side effects。
-- 引入新的 entry point、page、endpoint、command、job、queue consumer 或 integration。
-- 有自己的 data model、schema、permission、config 或 error handling。
-- 可能被多个 entry points 使用。
-- 现有文件名无法准确描述新职责。
-- 加入已有文件会让其拥有多个业务概念。
-- 需要独立 tests、fixtures、docs、metrics 或 troubleshooting。
-- 会把大量 types、validators、adapters、side-effect handlers 塞入旧模块。
-
-只有当新行为只是已有文件当前职责的一小部分时，才直接修改已有文件。
-
-## 5. 架构落点决策
-
-实现前声明：
-
-- 哪个 domain 或 technical layer 拥有该能力。
-- 是否存在 existing owner module。
-- 为什么选定 module / new module 是正确落点。
-- 新能力暴露什么 public surface。
-- 哪些 callers 可以调用。
-- 哪些 layers 不得调用。
-- 是否需要 new schema、type、config、permission、route、test、doc 或 migration。
-
-不要因为方便、相邻、已有文件很大或 diff 更小而选择位置。小 diff 不等于正确架构。
-
-## 6. 设计规则
-
-- 写 internals 前先定义 public surface。
-- 在项目架构支持时，domain logic 与 transport、UI、framework、storage、external API details 分离。
-- 使用项目已有 routes、services、repositories、hooks、components、jobs、commands、tests 模式。
-- 至少两个真实调用方且 authority 清晰时，才提取 generic shared utility。
-- 不重复 schema、validation、permission 或 data access logic。
-- 不绕过已有 config、auth、logging、error modules。
-
-## 7. 实现规则
-
-- ownership 更清晰时新建文件。
-- 文件按职责命名并保持 cohesive。
-- 通过既有 architecture boundaries 接入。
-- tests 靠近 owner 或按项目约定放置。
-- docs、examples、config、generated sources 只在直接受影响时更新。
-- 删除实现过程中的临时 scaffolding。
-
-## 8. 验证
-
-验证：
-
-- Main success path。
-- Boundary and invalid input paths。
-- Failure paths and error reporting。
-- Permission paths if applicable。
-- Data persistence or migration if applicable。
-- Integration points and affected existing behavior。
-
-## 9. 交付
-
-```text
-分类理由：<为什么是新能力>
-架构落点：<owner/layer/path>
-新文件 / 模块：<responsibilities>
-调用图：<entry point -> core logic>
-Public surface：<API/command/component/job/etc>
-禁止调用方：<forbidden callers/layers>
-验证：<tests/checks>
-未验证区域：<known gaps>
-回滚：<notes>
-```
+## 完成定义
+- 新能力有明确 owner、入口、契约、数据边界和责任落点。
+- 目标场景已打通，关键链路验证通过。
+- 既有能力未被破坏，兼容性结论明确。
+- 发布、监控、告警、回退路径齐备且可执行。
+- 无重复实现、无无主开关、无长期过渡胶水残留。
+- 系统新增的是一个正式能力，不是一组临时补丁。

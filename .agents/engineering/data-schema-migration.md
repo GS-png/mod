@@ -16,103 +16,38 @@
 - Config format。
 - OpenAPI、GraphQL、Prisma、Protobuf 等生成源。
 
-## 3. 必查项
+# 数据契约与迁移
 
-变更前识别：
+## 任务本质
+先定义数据契约，再设计迁移。
+目标不是把表、字段或消息“改过去”，而是在演进中保持兼容、控制风险、保证数据正确，并让切换与回退可控。
+契约不清或迁移不可验证的改动，一律视为高风险改动。
 
-- 当前 source of truth。
-- 所有 readers 和 writers。
-- 现有数据形态。
-- 新数据形态。
-- 兼容要求。
-- 校验和默认值。
-- 迁移工具与命令。
-- 回滚路径。
-- 部分失败行为。
-- 环境差异。
+## 必读规范
+- 先定义契约；字段语义、类型、约束、默认值、可空性、枚举、版本和兼容性策略不清，不开始迁移。
+- 数据契约不只包含 schema，还包含质量规则、兼容性要求和 producer / consumer 约束。
+- 变更必须先判断兼容性；优先做向后兼容变更，避免一次性破坏旧消费者。
+- 不兼容变更必须拆成 expand、migrate、contract 三段；不要一步硬切。
+- 迁移必须把结构变更、数据回填、应用切换、旧结构删除分开推进。
+- 新旧版本共存期间，读写路径、默认值、双写/回填、去重和 source of truth 必须明确。
+- 删除、重命名、拆分、合并字段或表之前，必须先完成兼容层、数据迁移和依赖切换。
+- 跨服务数据契约必须显式版本化；禁止靠隐式约定或口头同步推进迁移。
+- 切换前必须验证新旧消费者、历史数据、增量数据和回填结果都能正确工作。
+- 迁移必须定义回退或收口方式；不能把失败留成半迁移状态。
+- 大规模迁移必须说明停机影响、双写窗口、一致性策略和最终下线条件。
+- 新增或修改契约与迁移方案，必须写清收益、代价、兼容性影响和切换条件。
 
-## 4. Schema 规则
+## 完成标准
+- 能明确说清当前契约、目标契约和兼容性策略。
+- 能明确说清哪些消费者受影响，哪些版本可共存，何时可以删除旧结构。
+- 能明确说清数据如何迁移、如何校验、如何切换、如何回退。
+- 新旧路径共存期间，数据不丢、不重、不乱序，source of truth 清楚。
+- 切换完成后，新契约稳定生效，旧契约和兼容层已按计划下线。
 
-- 不静默改变字段含义。
-- 没有兼容或迁移计划时，不删除字段、enum value、config key 或 payload member。
-- 没有默认值或 staged rollout 时，不新增 required field，除非所有 writer 能原子更新。
-- 不在多个层重复 schema 定义。
-- schema source 变化时，更新源头并重新生成产物。
-- validators、types、docs、tests、examples 必须同步。
-- 对外 API schema、message schema、DB schema 的 source of truth 必须唯一；生成产物不得成为手工维护源头。
-
-## 5. 迁移规则
-
-迁移必须考虑：
-
-- 重复执行。
-- 部分成功。
-- rollback 或 forward-fix。
-- 生产既有数据。
-- 混合版本部署。
-- 长时间运行影响。
-- locks、indexes、timeouts、大表成本。
-- 可观测性和失败报告。
-
-删除代码兼容能力不等于迁移了旧数据。
-
-## 6. 在线迁移与 Backfill
-
-大表、线上数据或高风险迁移必须评估：
-
-- 是否会锁表、锁行或阻塞写入。
-- index 创建方式和耗时。
-- batch size、rate limit、timeout、retry。
-- 断点续跑和幂等重跑。
-- 进度观测、失败记录、恢复命令。
-- rollback 代价和 forward-fix 方案。
-- 迁移期间新旧版本读写兼容。
-
-Backfill 应支持分批、断点续跑、幂等重跑和进度观测。
-
-## 7. 推荐兼容模式
-
-风险数据变更优先 staged change：
-
-1. 增加新的 optional field / path，旧 reader 仍可工作。
-2. 更新 writer 写入新格式。
-3. 更新 reader 读取双格式或优先新格式。
-4. Backfill / migrate 现有数据。
-5. 验证旧格式已无依赖。
-6. 兼容期后删除旧 field / path。
-
-删除字段、enum、配置 key 或旧格式前，必须确认线上没有旧 reader / writer 和旧数据依赖。
-
-## 8. 数据完整性
-
-- 多写必须一起成功或一起失败时，使用 transaction。
-- retry 必须幂等或 duplicate-safe。
-- 在信任边界校验数据。
-- 不把未知或部分状态写成完整状态。
-- 不记录敏感 payload。
-- 保留必要 audit fields。
-
-## 9. 验证
-
-按需使用：
-
-- migration up/down 或等效验证。
-- model / schema validation tests。
-- API contract tests。
-- 旧数据 fixture 的 reader 兼容测试。
-- 新数据 writer 测试。
-- backfill dry run 或 sample run。
-- rollback / recovery procedure review。
-
-## 10. 交付补充
-
-```text
-数据变更：<schema/field/format>
-Source of truth：<权威定义位置>
-Readers：<受影响 readers>
-Writers：<受影响 writers>
-兼容性：<compatible / staged / breaking>
-迁移：<none / up-down / backfill / manual>
-回滚：<如何恢复>
-验证：<commands and results>
-```
+## 反例信号
+- 先改表或消息，再补契约说明。
+- 直接重命名、删除或改类型，未做兼容层和分阶段迁移。
+- 只迁了结构，没处理历史数据、增量数据或旧消费者。
+- 双写、回填、切流、下线混在一次发布里完成。
+- 切换后是否可回退、旧版本是否仍可读写，说不清。
+- 数据看似迁完，但 source of truth、去重规则或一致性策略不清。

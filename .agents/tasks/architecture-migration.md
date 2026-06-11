@@ -19,76 +19,30 @@
 
 按触达领域额外读取 data、security、dependency、release、performance、docs 规则。
 
-## 2. 目标
+# 架构迁移
 
-迁到新架构，同时避免永久双路径、行为漂移、owner 不清、旧路径残留和不可回滚迁移。
+## 任务本质
+把系统从旧架构安全迁移到目标架构。
+目标不是“重写完成”，而是“目标架构稳定接管且旧架构可退役”。
+要求策略正确、切片清楚、业务不断、契约稳定、数据正确、可验证、可回退。
 
-## 3. 必查项
+## 必读规范
+- 先明确迁移目标、迁移对象、目标架构、迁移策略，不默认一律重构或重写。
+- 迁移切片必须按能力边界、依赖关系、数据边界来划分，禁止无边界散改。
+- 迁移过程中优先稳住外部契约和关键质量属性，不得为迁移方便破坏核心可用性、性能、安全性或稳定性。
+- 默认采用增量迁移，不做无验证的大爆炸切换。
+- 新旧架构允许短期并存，但并存必须服务于迁移，不得长期双轨失控。
+- 通过代理、门面、抽象层或路由层承接迁移流量，逐步把责任从旧架构切到新架构。
+- 高风险迁移默认使用双跑比对、契约验证、灰度、金丝雀或分阶段导流。
+- 发布必须可观测、可比较、可回退；异常先止损，再继续迁移。
+- 涉及数据模型、事件、接口、身份、权限时，默认先处理兼容性与顺序问题。
+- 迁移完成后必须退役旧架构、清理过渡层、临时桥接、兼容胶水和死代码。
+- 完成以“新架构稳定承接并形成新边界”为准，不以“新代码已上线”算完成。
 
-迁移前识别：
-
-- 旧架构和旧 authority path。
-- 目标新 authority path。
-- 所有 callers、imports、routes、jobs、tests、mocks、docs、config、generated artifacts、data paths。
-- 兼容要求和 rollout 限制。
-- 迁移是 atomic 还是 staged。
-- rollback plan。
-
-## 4. 迁移类型
-
-必须声明一种：
-
-1. Atomic migration：所有 callers 一次迁移，旧路径同改动中删除。
-2. Staged migration：旧新路径临时共存。
-3. Compatibility adapter：旧接口委托到新 authority，直到 callers 迁完。
-4. Experimental path：新路径隔离存在，尚非 authority。
-
-Staged migration 必须定义：
-
-- Authority path。
-- Caller migration order。
-- Compatibility layer owner。
-- Divergence prevention。
-- Deletion condition。
-- Verification at each stage。
-
-## 5. 设计规则
-
-- 不创建两个永久 source of truth。
-- 不留下未说明的可达旧路径。
-- 不只迁移可见入口，而让 tests、mocks、docs、config 仍基于旧假设。
-- Compatibility code 必须隔离且易删除。
-- 优先带测试迁移行为，再做大结构移动。
-- 不把无关 refactor 混入迁移。
-- Feature flag、adapter、compat layer 必须有 owner、触发条件和删除条件。
-
-## 6. 实现规则
-
-- 有计划地迁移 callers。
-- 同步更新 imports、tests、mocks、docs、generated sources、config。
-- 安全时删除 obsolete files。
-- 不能删除时，标记 deprecated 并写删除条件。
-- 除非显式行为变更，否则保留 error behavior、data semantics、logging、permission checks、retry behavior。
-
-## 7. 验证
-
-验证：
-
-- 旧预期行为在新路径上成立。
-- 所有迁移 callers。
-- Compatibility path if present。
-- 没有意外 import retired modules。
-- 有测试能发现旧新路径 divergence。
-
-## 8. 交付
-
-```text
-迁移类型：<atomic / staged / adapter / experimental>
-旧路径：<old authority>
-新 authority：<new authority>
-调用方迁移：<summary>
-旧路径收口：<deleted / deprecated / pending and why>
-兼容计划：<if any>
-验证：<commands/results>
-回滚：<rollback notes>
-```
+## 完成定义
+- 迁移策略明确且与目标匹配。
+- 目标架构已承接目标能力、流量或关键调用路径。
+- 外部契约、关键数据和关键质量属性成立。
+- 双跑/验证/灰度/回退链路已证明可用。
+- 旧架构与过渡层已按计划退役和清理。
+- 系统最终收敛到一个稳定、清楚、可持续演进的正式架构。

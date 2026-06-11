@@ -22,56 +22,29 @@
 
 按触达领域额外读取 architecture、data、security、dependency、release、docs 规则。
 
-## 2. 目标
+# 行为变更
 
-把行为变化显式化，必要时保持兼容，并验证所有受影响调用方。
+## 任务本质
+有意识地改变系统对外可观察的行为。
+目标不是“代码不同”，而是“目标语义被正确替换且影响受控”。
+要求行为定义清楚、兼容性清楚、可验证、可回退、可沟通。
 
-## 3. 必查项
+## 必读规范
+- 先明确旧行为、新行为、触发条件、影响对象、影响范围。
+- 只要结果语义、默认值、校验规则、副作用、错误语义或返回内容发生变化，就按行为变更处理，不按纯内部重构处理。
+- 先判断这是兼容变更还是破坏性变更；破坏性变更不得伪装成普通修改。
+- 优先稳住既有契约；必须破坏契约时，显式做版本、弃用、迁移或通知策略。
+- 影响评估以真实调用方/消费者为准，不只看本模块自测是否通过。
+- 高风险行为变更默认用特性开关、灰度、金丝雀或分阶段发布承接。
+- 同时验证两件事：新行为符合目标，未改行为未被连带破坏。
+- 发布必须可观测、可比较、可回退；异常先止损，再排查。
+- 行为变更完成后，应清理临时开关、过渡逻辑和过期兼容层。
+- 完成以“目标行为稳定成立且外部影响已被控制”为准，不以“代码已合入”算完成。
 
-变更前识别：
-
-- 当前行为和定义位置。
-- 请求的新行为。
-- 所有 public / internal callers。
-- tests、docs、examples、clients、SDKs、schema、generated code、contracts 中编码的旧行为。
-- 数据兼容和迁移需求。
-- 权限、安全、日志、可观测性影响。
-- 是否需要兼容期、版本化、feature flag、fallback 或 release note。
-
-## 4. 设计规则
-
-- 区分有意行为变更和偶然实现变更。
-- 不把行为变更藏在 refactor 内。
-- 除非任务明确允许 breaking change，否则保持兼容。
-- 需要兼容时，设计 versioning、feature flag、fallback 或 migration path。
-- Breaking change 必须更新 contracts、docs、tests、release notes where applicable。
-- 默认行为必须明确。
-- package、SDK、公共 API 要考虑 semver、下游客户端和迁移说明。
-
-## 5. 实现规则
-
-- 更新所有受影响 contract definitions、types、schemas、validation、tests、docs。
-- Producer 和 consumer 在同仓库时必须同步更新。
-- 旧新行为共存时必须隔离。
-- 不在同一 patch 中改变无关行为。
-
-## 6. 验证
-
-验证：
-
-- 新行为成立。
-- 旧行为按设计保留或明确拒绝。
-- 受影响 callers 已更新。
-- error、permission、data cases 正确。
-- contract tests 或 schema checks pass where available。
-
-## 7. 交付
-
-```text
-当前行为：<current>
-新行为：<new>
-兼容状态：<compatible / migration period / breaking>
-受影响调用方和契约：<callers/contracts>
-验证：<commands/results>
-回滚 / feature flag：<notes>
-```
+## 完成定义
+- 旧行为与新行为边界清楚，目标语义已落地。
+- 兼容性结论明确，并已执行对应版本/弃用/迁移策略。
+- 关键消费者、关键链路、关键场景验证通过。
+- 灰度或生产观测证明新行为稳定，无异常扩散。
+- 回退路径有效，必要时可快速恢复旧行为。
+- 未留下无主开关、隐式 breaking change 或未说明的外部影响。

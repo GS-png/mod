@@ -18,62 +18,28 @@
 
 - `.agents/engineering/docs-comments-observability.md`
 
-## 2. 目标
+# 纯文档修改
 
-让文档准确、简洁、可执行，并与真实仓库行为一致。
+## 任务本质
+在不改变代码、配置、接口、数据和运行行为的前提下，修正文档。
+目标不是“改了文字”，而是“文档更准确、更清楚、更一致、更可用”。
+要求事实不变、类型正确、表达收敛、可验证。
 
-## 3. 必查项
+## 必读规范
+- 只改文档，不借文档修改之名隐式改变产品语义、默认值、接口约定或操作结果。
+- 先判断文档类型：教程、操作指南、参考、解释；不得混写错位。
+- 文档内容必须与当前事实一致；不确定的内容不得臆写。
+- 优先修正错误事实、过期信息、歧义表达、结构混乱、命名不一致、链接失效和示例失真。
+- 表达必须简洁、直接、易扫读；删除无信息增量的废话。
+- 操作型文档以完成任务为导向；参考型文档以准确、完整、可靠为导向。
+- 文档应纳入版本控制、评审和必要检查，与代码同样可追溯。
+- 纯文档修改默认不引入行为变更；若发现必须改行为定义，应升级任务类型，不继续伪装为文档修改。
+- 完成以“文档更正确、更清楚、更一致”为准，不以“字面改过”算完成。
 
-编辑文档前，检查定义所述行为的代码、配置、脚本、测试或现有文档。
-
-不得把 aspirational behavior 写成 already implemented behavior。
-
-## 4. 写作规则
-
-- 用精确指令代替模糊原则。
-- 保持文档短到可读，同时完整到能防止关键错误。
-- 区分 mandatory rules 和 recommendations。
-- 已知时使用具体 file paths 和 commands。
-- 避免重复章节造成漂移。
-- 不包含 secrets、tokens、private URLs 或 production-only values。
-- examples 匹配项目语言、包管理器和目录结构。
-
-## 5. AGENTS.md 专用规则
-
-- 常驻必需规则放根 `AGENTS.md`。
-- workflow-specific 细节放 `.agents/tasks/`。
-- cross-cutting engineering 规则放 `.agents/engineering/`。
-- 如果期望读取子文档，根 `AGENTS.md` 必须显式路由。
-- 不依赖普通 Markdown 自动加载，除非 Codex discovery / config 明确支持。
-- 根文件应保持轻量，避免把所有子规范内容重复塞进去。
-
-## 6. 发现代码 / 配置不一致时
-
-如果文档审查发现代码或配置与文档不一致，不要默默改代码。
-
-只能二选一：
-
-- 保持 docs-only，只修文档并报告不一致。
-- 重新分类任务，读取相关 task / engineering 文件后，再修改代码或配置。
-
-## 7. 验证
-
-至少检查：
-
-- 内部 links 和 paths 是否合理。
-- Commands 是否匹配 package manager 和 scripts。
-- Examples 使用真实名称或明确 placeholder。
-- 没有引入 obsolete references。
-- AGENTS 路由路径存在且命名一致。
-
-命令无法验证时，交付说明。
-
-## 8. 交付
-
-```text
-文档变更：<docs changed>
-依据来源：<code/config/scripts/tests/docs inspected>
-检查结果：<links/commands/examples checked>
-剩余占位：<project-specific placeholders>
-未验证项：<if any>
-```
+## 完成定义
+- 文档事实与当前实现、当前流程、当前命名一致。
+- 文档类型正确，结构与读者目标匹配。
+- 歧义、重复、过期、失效链接和错误示例已清理。
+- 表达更简洁、更易找、更易执行。
+- 全程未引入代码、配置、接口、数据或行为变更。
+- 修改可追溯、可评审，必要检查通过。

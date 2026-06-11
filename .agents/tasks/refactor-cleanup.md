@@ -1,4 +1,4 @@
-# Task：重构或清理
+# Task：重构清理
 
 ## 1. 触发条件
 
@@ -16,56 +16,27 @@
 
 按触达领域额外读取 correctness、data、security、performance、dependency、docs 规则。
 
-## 2. 目标
+# 重构清理
 
-在保持外部行为不变的前提下改善内部结构，并降低未来维护风险。
+## 任务本质
+在不改变外部行为的前提下，改善内部结构并清除代码库噪音。
+目标不是“代码更花哨”，而是“更易读、更易改、更易测、更易维护”。
+要求行为不变、改动收敛、清理彻底、验证充分。
 
-## 3. 必查项
+## 必读规范
+- 只做行为保持型修改；凡是外部语义变化，一律不按重构清理处理。
+- 优先处理会持续增加维护成本的结构问题：重复、过长、过深、职责混乱、隐式耦合、死代码、临时分支、过期兼容层。
+- 清理必须落在真实责任点，禁止无边界搬动和大面积表面整形。
+- 优先删除无用代码、无效配置、无主开关、过期桥接和低价值测试残留。
+- 测试应验证行为而不是实现细节；纯重构不应迫使既有行为测试大改。
+- 风格统一、命名统一、结构收敛应服从可读性和可维护性，不做无收益美化。
+- 小步修改，随改随验，避免把重构清理与行为变更混在一起。
+- 完成后不得留下死代码、重复实现、调试残留、临时注释块或伪清理。
 
-变更前识别：
-
-- 必须保持的当前行为。
-- 保护行为的现有 tests。
-- 实际要解决的 duplication、responsibility mixing 或 complexity。
-- module boundaries 和 authority paths。
-- 受影响 imports、callers、tests、docs、generated artifacts。
-
-## 4. 设计规则
-
-- Refactor 必须有明确目的。
-- 不把无关 cleanup 混入 feature work，除非 feature 必须。
-- 不无必要地大范围 rename、move、format。
-- Preserve public contracts。
-- Shared logic 保持单一 authority。
-- 优先 incremental refactor，保证 tests 仍有意义。
-- 没有真实当前调用方和清晰 owner 时，不新增抽象。
-- 大规模格式化、codemod、批量 rename 应单独成任务或明确隔离。
-
-## 5. 实现规则
-
-- 只做 behavior-preserving changes。
-- 随被移动代码一起移动 tests 或更新 imports。
-- 删除 dead code 必须有证据：code search、tests 或项目约定。
-- 只在必要时保留 compatibility exports，并写 deletion conditions。
-- 避免 large diff noise。
-- 不顺手改变错误文案、日志字段、排序、默认值、权限结果或响应结构。
-
-## 6. 验证
-
-验证：
-
-- Affected area existing tests。
-- imports / types 改动后的 build / typecheck / lint。
-- 测试不足时 manual behavior check。
-- cleanup 目标相关的 old imports 或 duplicate authorities 已移除。
-
-## 7. 交付
-
-```text
-重构目的：<purpose>
-行为保持：<what preserved>
-移动 / 重命名 / 删除：<files and why>
-验证：<tests/checks>
-未做清理：<remaining cleanup>
-回滚：<notes>
-```
+## 完成定义
+- 外部行为保持不变，关键场景验证通过。
+- 代码结构更清楚，职责更收敛，重复和噪音显著减少。
+- 死代码、过期分支、无主开关、低价值残留已清理。
+- 既有行为测试仍成立，测试抽象层级合理。
+- 改动边界清楚，没有借清理之名混入新行为。
+- 系统维护成本下降，而不是只得到一份更大的 diff。

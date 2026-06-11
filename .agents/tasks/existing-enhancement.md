@@ -14,68 +14,29 @@
 
 按触达领域额外读取 correctness、data、security、performance、dependency、docs 规则。
 
-## 2. 目标
+# 既有能力增强
 
-扩展既有能力，同时不污染职责、不复制 authority、不把小增强变成隐藏新能力。
+## 任务本质
+在既有责任边界内增强现有能力。
+目标不是另起一套，而是在不破坏既有正确性的前提下，把现有能力做强。
+要求复用既有路径、保持兼容、可验证、可回退。
 
-## 3. 必查项
+## 必读规范
+- 先明确要增强的是哪项既有能力，以及它当前的 owner、入口、契约、数据边界。
+- 优先在现有实现上增量演进；禁止无必要地平行重做、外围包一层、复制一套相似能力。
+- 默认保持向后兼容；旧调用方、旧数据、旧行为不能被无意破坏。
+- 新增能力应优先复用既有抽象、模块、配置、发布链路与监控面。
+- 只有在新旧语义明显不兼容时，才引入适配层；适配层必须有明确边界和退场条件。
+- 改动应小步推进，避免一次性大改穿透多个边界。
+- 高风险增强默认使用特性开关、灰度、金丝雀或分阶段发布。
+- 必须验证既有能力未退化，同时验证新增能力确实生效。
+- 同步补齐测试、监控、文档和必要的兼容策略。
+- 完成以“能力增强后仍稳定可用”为准，不以“新逻辑已接入”算完成。
 
-确认：
-
-- 该能力的现有 owner module。
-- 当前行为和 public contract。
-- 新行为是否属于同一职责。
-- 类似行为的现有 tests 和 examples。
-- 现有 validation、error handling、logging、config、permission patterns。
-- 是否触达 data、schema、external IO、security、release concerns。
-
-## 4. Fit Check
-
-只有全部为真时，才安全修改已有文件：
-
-- 文件当前名称和职责能准确描述新行为。
-- 新行为是同一概念的小扩展。
-- 文件不会成为多个无关概念的 owner。
-- 没有新增 independent lifecycle、data model、permission boundary 或 entry point。
-- 结果代码仍清晰，不制造大杂烩文件。
-
-任一为假，切换到 new capability 或 architecture-boundary design。
-
-## 5. 增强 vs 新能力边界
-
-- 只改变已有入口中的一个已有职责，且不新增 lifecycle、state、permission、data model、external integration 或独立测试对象：既有能力增强。
-- 新 endpoint、page、command、job、integration、business concept、data model、permission boundary 或独立 lifecycle：新增能力，即使改动很小。
-- Public contract 改变时，额外读取 `.agents/tasks/behavior-change.md`。
-
-## 6. 设计规则
-
-- 仅在 extension point 是正确 authority 时复用它。
-- 不把相似逻辑 copy 到第二处。
-- 没有真实重复使用和明确 owner 时，不新增 generic helper。
-- Validation 和 errors 与邻近代码保持一致。
-- 不借增强之名做无关 cleanup。
-
-## 7. 实现规则
-
-- 修改最小正确 owner module。
-- 新文件只在能澄清 ownership 或分离真实职责时新增。
-- 命名使用项目已有 domain language。
-- docs、examples、config、tests 只更新直接受影响处。
-
-## 8. 验证
-
-验证：
-
-- 既有行为仍工作。
-- 新行为正常路径。
-- 边界和 invalid input。
-- 触达的 permission、data、external IO、config path。
-
-## 9. 交付
-
-```text
-分类理由：<为什么是增强而不是新能力>
-Owner：<chosen files and why>
-验证：<tests/manual checks>
-影响 / 风险 / 回滚：<notes>
-```
+## 完成定义
+- 既有能力的原有契约仍成立，兼容性未被破坏。
+- 新能力已在正确责任点落地，不是旁路拼接。
+- 相关调用链、数据链、配置链、发布链已打通并验证通过。
+- 既有场景无回退，新场景可用且结果正确。
+- 风险控制、监控观测、回滚路径齐备。
+- 未留下重复实现、临时桥接、脏开关或无主代码。

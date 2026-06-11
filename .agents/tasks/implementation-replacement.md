@@ -18,76 +18,29 @@
 
 按触达领域额外读取 correctness、data、security、performance、dependency、release、docs 规则。
 
-## 2. 目标
+# 实现替换
 
-替换内部实现，同时避免旧新双权威、兼容缺口和未验证行为漂移。
+## 任务本质
+在尽量不破坏外部契约的前提下，用新实现替换旧实现。
+目标不是“写出新版本”，而是“让新实现稳定接管并退役旧实现”。
+要求新旧可并存、可切换、可验证、可回退、可清理。
 
-## 3. 必查项
+## 必读规范
+- 先明确被替换对象、调用入口、外部契约、数据边界、依赖关系。
+- 优先保持调用方契约稳定；非必要不同时改调用方与被替换方。
+- 深层内部替换优先用抽象层承接；边界替换优先用代理/门面渐进导流。
+- 允许新旧实现短期并存，但并存必须服务于替换，不得演变成长期双轨。
+- 默认分阶段切换，禁止无验证的一次性硬切。
+- 发布必须可观测、可回退；异常先切回旧实现，再定位原因。
+- 涉及数据、消息、缓存、接口时，默认保持向后兼容。
+- 必须同时验证两件事：新实现正确，旧契约未破坏。
+- 替换完成后必须下线旧实现、移除临时路由、开关、兼容胶水和死代码。
+- 完成以“新实现稳定接管且旧实现已退役”为准，不以“新代码已合入”算完成。
 
-变更前识别：
-
-- 当前 implementation owner。
-- 必须保持稳定的 public contract。
-- 所有 direct / indirect callers。
-- 定义当前行为的 tests。
-- 旧实现使用的数据、config、cache、generated code 或 external systems。
-- error types、log fields、metrics、permission checks、retry behavior。
-- performance、resource、concurrency assumptions。
-- 旧新实现是否需要临时共存。
-
-## 4. 替换类型
-
-必须声明一种：
-
-1. Drop-in replacement：同改动删除旧路径。
-2. Adapter replacement：接口不变，内部依赖替换。
-3. Compatibility migration：旧新路径短期共存。
-4. Behavior-changing replacement：额外读取 `.agents/tasks/behavior-change.md`。
-
-## 5. 实现替换 vs 架构迁移
-
-- 只替换一个 owner 内部实现，调用方和 authority 基本不变：实现替换。
-- 变更 authority path、模块边界、调用方向、目录职责，或需要迁移调用方 / 删除旧路径：架构迁移。
-- 替换导致旧路径收口或调用方迁移时，同时读取 `.agents/tasks/architecture-migration.md`。
-
-## 6. 设计规则
-
-- 除非明确行为变更，否则保持 external contract。
-- 保持单一 authority path。
-- 旧新共存时必须定义 authority path、trigger conditions、data/cache compatibility、divergence detection、deletion condition。
-- 不留下意外可达的旧实现。
-- 不创建只掩盖设计冲突的 wrapper。
-- 不静默改变 error semantics、retry behavior、permissions、data format。
-- 替换依赖时，必须加载配置 / 依赖相关规范并更新 lockfiles。
-
-## 7. 实现规则
-
-- 更新所有 callers，或让它们通过选择的 authority 调用。
-- 删除或明确废弃旧路径相关 stale files、flags、imports、tests、mocks、docs、config。
-- Adapter boundary 保持窄。
-- 涉及 generated code 时，更新 source specification 并 regenerate。
-- 旧新短期共存时，尽量增加输出对比或 divergence 检测。
-
-## 8. 验证
-
-验证：
-
-- Existing behavior compatibility。
-- New implementation normal path。
-- Old edge cases and failure cases。
-- Error、logging、metrics、retry、timeout、permission behavior if touched。
-- Migration / fallback path if coexist。
-- 高风险替换时，用 representative fixtures 比较旧新输出。
-
-## 9. 交付
-
-```text
-替换类型：<drop-in / adapter / compatibility / behavior-changing>
-旧 authority：<old>
-新 authority：<new>
-调用方迁移：<summary>
-旧路径清理 / 共存计划：<status>
-兼容验证：<commands/results>
-行为漂移风险：<remaining risk>
-回滚：<notes>
-```
+## 完成定义
+- 新实现已承接目标流量或目标调用路径。
+- 外部契约、关键数据、上下游兼容性成立。
+- 灰度、验证、回退路径都已证明可用。
+- 监控与证据表明替换后行为稳定。
+- 旧实现、临时桥接、过渡开关、冗余代码已收口清理。
+- 系统最终只保留一个明确 owner 的正式实现。

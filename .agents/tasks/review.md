@@ -6,65 +6,29 @@
 
 按审查对象加载相关 engineering files。
 
-## 2. 目标
+# 审查评估
 
-基于证据发现 correctness、architecture、security、data、testing、maintainability 和 release 风险。
+## 任务本质
+基于目标、约束、质量属性和证据，对方案或实现做出明确判断。
+目标不是“给意见”，而是“判断是否可接受，并识别主要风险、权衡、可优化点与收口动作”。
+要求结论清楚、依据充分、风险明确、边界明确、优化价值明确。
 
-## 3. 必查项
+## 必读规范
+- 先明确评估对象、评估目标、业务约束、非功能要求和成功标准。
+- 审查评估必须围绕关键质量属性展开，不只看代码表面或局部实现。
+- 重点判断整体设计是否合理、责任边界是否清楚、依赖关系是否健康、复杂度是否可控、演进路径是否可持续。
+- 必须显式识别风险、权衡、限制条件、证据不足点，以及明确存在的可优化点，不做模糊背书。
+- 结论应明确分为：可接受、附条件可接受、不可接受；禁止只给散点建议不下判断。
+- 影响业务目标、可靠性、安全、性能、成本、运维性和整体 code health 的事项优先评估。
+- 评估以证据为准，不以个人偏好、风格好恶或局部习惯为准。
+- 发现问题或优化机会时，必须指出级别、影响范围、预期收益、优先级和建议收口方向。
+- 纯审查评估默认不混入实现改动；若需要落地修改，应切换到对应任务类型。
+- 完成以“结论明确、风险清楚、权衡清楚、优化价值清楚、收口方向明确”为准，不以“看过了”算完成。
 
-审查：
-
-- 请求范围内的 changed files 或目标文件。
-- 相关 callers 和 tests。
-- Architecture boundaries 和 source of truth。
-- Data 和 compatibility impact。
-- Security、permission、privacy impact。
-- Test coverage 和 verification quality。
-- Unintended behavior changes。
-- Workspace / generated / dependency / release risks if relevant。
-
-## 4. 审查规则
-
-- 优先真实风险，不输出纯风格意见。
-- 尽量引用具体 file、function、behavior 或 command。
-- 区分 blocking issues 和 suggestions。
-- 没有 failure path 不声称存在 bug。
-- 不要求大范围重写，除非指出具体风险。
-- 建议必须可执行。
-- 证据不足时明确说明。
-
-## 5. 严重程度
-
-- Critical：data loss、security issue、production outage、broken public contract、irreversible migration risk。
-- High：likely correctness bug、permission gap、incompatible behavior、missing migration、unverified release risk。
-- Medium：maintainability problem likely to cause defects、incomplete tests、unclear ownership。
-- Low：readability、naming、local cleanup、non-blocking documentation。
-
-## 6. AGENTS / 规则文档审查附加项
-
-审查 AGENTS、rules、developer docs 时额外检查：
-
-- 根文件是否过大、是否重复子规范内容。
-- 子规范是否被根文件显式路由。
-- 任务分类 trigger 是否可判定。
-- 是否存在互相冲突或会漂移的重复规则。
-- 是否缺少失败处理、验证、回滚、权限、数据、命令安全规则。
-- 指令是否可被 agent 执行，而不是只表达抽象理念。
-- 交付格式是否按实现 / 审查 / 纯文档区分。
-- 缺失子规范或无法读取时是否有处理规则。
-
-## 7. 输出格式
-
-```text
-Summary: <overall judgment and reviewed scope>
-Blocking issues:
-- <issue, evidence, why it matters, suggested fix>
-Non-blocking suggestions:
-- <suggestion>
-Verification gaps:
-- <missing test/check/evidence>
-Questions:
-- <only questions that cannot be answered from repository inspection>
-```
-
-如果没有发现问题，说明审查范围和支持该结论的证据。不要只写“looks good”。
+## 完成定义
+- 评估对象、目标、约束和标准已明确。
+- 已给出清晰结论，并说明依据。
+- 关键风险、关键权衡、关键阻塞点和关键可优化点已识别并排序。
+- 已区分已证实问题、待验证问题、证据不足项和可选优化项。
+- 已给出是否可继续推进、哪些必须处理、哪些值得优化及其收口建议。
+- 结论可追溯、可复核，而不是主观印象。

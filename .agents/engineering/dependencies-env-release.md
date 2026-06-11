@@ -15,89 +15,39 @@
 - deployment scripts、release docs。
 - generated code commands 或 source specs。
 
-## 3. 必查文件
+# 依赖环境发布
 
-按项目实际检查：
+## 任务本质
+显式管理依赖，隔离环境差异，稳定发布同一构件。
+目标不是“代码能上线”，而是依赖可控、配置可控、环境可复现、发布可验证、失败可回退。
+依赖、环境或发布边界不清的改动，一律视为高风险改动。
 
-- `package.json`、lockfiles、workspace config。
-- `pyproject.toml`、`requirements.txt`、lockfiles。
-- `go.mod`、`go.sum`。
-- `Cargo.toml`、`Cargo.lock`。
-- Dockerfile、compose、CI workflows、Makefile、scripts。
-- `.env.example`、config modules、deployment docs。
-- language / runtime version files。
+## 必读规范
+- 先识别运行依赖、构建依赖、外部资源和环境差异；对象不清，不开始改动。
+- 依赖必须显式声明并隔离；不要依赖隐式安装、本机状态或未锁定版本。
+- 配置必须与代码分离；环境差异通过配置表达，不通过改代码表达。
+- 外部服务按附加资源处理；数据库、缓存、消息队列、第三方服务都要显式接入，不要写死到实现里。
+- 严格分离 build、release、run；不要在运行时改构件，不要把构件与环境配置混成一次性产物。
+- 优先构建一次、按环境提升同一发布构件；不要为不同环境重新编译出不同业务版本。
+- 发布必须可审计、可重复、可自动化；步骤、配置、依赖版本和产物来源要能追踪。
+- 配置输入必须校验；坏配置不能直接带着系统进入新状态。
+- 生产发布必须采用安全发布策略；按小流量、分批、金丝雀、蓝绿、流量切分或功能开关逐步放量。
+- 发布必须定义自动或快速回滚条件；监控窗口、触发指标和回退路径要明确。
+- 依赖升级、环境变更、配置变更都算发布风险；不能只把代码改动当风险。
+- 新增或修改依赖、环境、发布策略，必须写清影响面、兼容性、验证方式和收口方式。
 
-使用真实项目文件，不基于猜测。
+## 完成标准
+- 能明确说清依赖清单、版本边界、外部资源和环境差异。
+- 能明确说清哪些是构件，哪些是配置，哪些在 build、release、run 阶段生效。
+- 同一发布构件可在不同环境通过配置安全运行。
+- 发布过程可重复、可审计、可逐步放量，失败时可快速回退。
+- 配置错误、依赖异常或环境差异不会直接把系统带入不可控状态。
+- 结论基于依赖、配置、发布证据，而不是“本地跑过”或“线上应该可以”。
 
-## 4. 依赖规则
-
-- 只在必要时新增依赖。
-- 修改依赖版本、核心框架、语言版本、构建工具或运行时，必须依据项目 manifest、lockfile、目标环境约束、官方文档、release notes 或安全公告；没有依据时不修改。
-- 安全、协议、加密、解析、序列化等高风险领域，优先使用项目已有成熟依赖。
-- 不为少量简单逻辑引入重依赖。
-- 不改变 package manager。
-- 不更新无关依赖。
-- 不静默升级核心框架、语言版本、构建工具或运行时。
-- lockfile 变更必须由正确 package manager 产生。
-
-## 5. Monorepo 与包管理一致性
-
-- Monorepo 中新增依赖必须放在实际消费该依赖的 package，而不是默认放根目录。
-- 遵守项目已声明的 package manager、workspace、engine、runtime 和 lockfile 规则。
-- 不混用 npm / pnpm / yarn / bun 生成多个锁文件。
-- 不把 dev dependency 放进 production dependency，反之亦然。
-- 不能为了本地方便修改全局工具版本或系统级配置。
-
-## 6. 环境变量规则
-
-每个新增或修改的 env var 必须定义：
-
-- 名称。
-- required / optional。
-- 默认行为。
-- 校验规则。
-- 安全的示例值。
-- 消费位置。
-- 缺失或非法时的行为。
-
-相关位置必须同步：config validation、`.env.example`、docs、CI、deployment、tests。
-
-## 7. 构建与 CI 规则
-
-- 本地命令和 CI 命令保持一致。
-- 不删除检查，除非说明替代覆盖。
-- 变更 build output 时识别消费者。
-- 变更 generated code 时更新 source spec 和 generation command。
-- 变更 Docker / runtime 时验证启动，或说明未验证原因。
-
-## 8. 发布与回滚
-
-发布相关变更必须识别：
-
-- 影响环境。
-- rollout 顺序。
-- 向后兼容。
-- rollback 步骤。
-- 数据或配置前置条件。
-- 失败检测的 observability。
-
-## 9. 验证
-
-按需使用：
-
-- package manager install 或 lockfile check。
-- lint / typecheck / build。
-- unit / integration tests。
-- startup / smoke test。
-- Docker build 或 CI-equivalent check。
-- generation command 和 diff review。
-
-## 10. 交付补充
-
-```text
-依赖 / 环境面：<what changed>
-原因：<why needed>
-兼容性：<impact>
-验证：<commands/results>
-回滚：<steps or notes>
-```
+## 反例信号
+- 依赖未锁版本，靠本机环境、全局安装或人工补包才能运行。
+- 不同环境使用不同代码分支、不同构件或临时改代码适配环境。
+- 配置写死在代码、脚本或构件里，发布时靠手工改文件。
+- 发布时同时改代码、改配置、改依赖、改基础设施，却没有分阶段验证。
+- 上线只能一次性全量切换，没有金丝雀、流量切分或回滚路径。
+- 配置输错、依赖失配或外部资源变更后，系统直接进入坏状态且难以恢复。
