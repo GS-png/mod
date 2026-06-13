@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using EraWheel.Config.Schema;
 using EraWheel.Core.Constants;
 using NeoModLoader.api;
+using Newtonsoft.Json;
 
 namespace EraWheel.Config.Registry;
 
@@ -10,19 +11,12 @@ public sealed class EraParameterRegistry
 {
     private readonly Dictionary<Type, object> _sections = new Dictionary<Type, object>();
 
-    public EraRuntimeParameters Current { get; }
+    public EraRuntimeParameters Current { get; private set; }
 
     private EraParameterRegistry(EraRuntimeParameters current)
     {
-        Current = current;
-        Register(current.Reincarnation);
-        Register(current.Demons);
-        Register(current.Legions);
-        Register(current.Advancement);
-        Register(current.Levels);
-        Register(current.Kingdoms);
-        Register(current.Heroes);
-        Register(current.Growth);
+        Current = CloneParameters(current);
+        RebuildSections();
     }
 
     public static EraParameterRegistry Create(ModConfig? config)
@@ -44,6 +38,42 @@ public sealed class EraParameterRegistry
     public string CreateStatusReport()
     {
         return $"已装载 {_sections.Count} 个参数分区；启用魔王 {Current.Demons.EnabledDemons.Count} 个；轮回进阶随机属性 {Current.Advancement.RandomAttributes.CandidateAttributeIds.Count} 项；等级随机属性 {Current.Levels.RandomAttributes.CandidateAttributeIds.Count} 项。";
+    }
+
+    public EraRuntimeParameters CloneCurrent()
+    {
+        return CloneParameters(Current);
+    }
+
+    public void ReplaceCurrent(EraRuntimeParameters source)
+    {
+        Current = CloneParameters(source);
+        RebuildSections();
+    }
+
+    public void UpdateCurrent(Action<EraRuntimeParameters> mutation)
+    {
+        if (mutation == null)
+        {
+            throw new ArgumentNullException(nameof(mutation));
+        }
+
+        EraRuntimeParameters next = CloneCurrent();
+        mutation(next);
+        ReplaceCurrent(next);
+    }
+
+    private void RebuildSections()
+    {
+        _sections.Clear();
+        Register(Current.Reincarnation);
+        Register(Current.Demons);
+        Register(Current.Legions);
+        Register(Current.Advancement);
+        Register(Current.Levels);
+        Register(Current.Kingdoms);
+        Register(Current.Heroes);
+        Register(Current.Growth);
     }
 
     private void Register<TSection>(TSection section)
@@ -434,5 +464,11 @@ public sealed class EraParameterRegistry
         }
 
         return map;
+    }
+
+    private static EraRuntimeParameters CloneParameters(EraRuntimeParameters? parameters)
+    {
+        string json = JsonConvert.SerializeObject(parameters ?? new EraRuntimeParameters());
+        return JsonConvert.DeserializeObject<EraRuntimeParameters>(json) ?? new EraRuntimeParameters();
     }
 }

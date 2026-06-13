@@ -32,27 +32,3 @@ public static class EraWorldboxAdvancementCraftCandidatePatch
         );
     }
 }
-
-[HarmonyPatch(typeof(BaseUnlockableAsset), nameof(BaseUnlockableAsset.isAvailable))]
-public static class EraWorldboxHeritageAvailabilityPatch
-{
-    [HarmonyPostfix]
-    public static void Postfix(BaseUnlockableAsset __instance, ref bool __result)
-    {
-        if (__result)
-        {
-            return;
-        }
-
-        EraAdvancementRuntimeService? runtime = EraAdvancementRuntimeBridge.Current;
-        if (runtime == null || __instance == null || string.IsNullOrWhiteSpace(__instance.id))
-        {
-            return;
-        }
-
-        if (runtime.TryGetEditorManualAvailability(__instance.id, out bool available))
-        {
-            __result = available;
-        }
-    }
-}

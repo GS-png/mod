@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using EraWheel.Combat.Effects;
 using EraWheel.Combat.Statuses;
+using EraWheel.Core;
 using EraWheel.Core.Logging;
 using EraWheel.Core.Random;
 
@@ -11,6 +12,9 @@ namespace EraWheel.Combat.Triggers;
 public sealed class EraTriggerService
 {
     private const int TriggerFailureFuseThreshold = 5;
+    private const int MaxQueuedTickContexts = 4096;
+    private const int MaxTickContextsPerDrain = 512;
+    private static readonly TimeSpan QueueGovernanceLogInterval = TimeSpan.FromSeconds(10);
 
     private readonly object _definitionsLock = new();
     private readonly object _queuedContextsLock = new();
@@ -19,7 +23,12 @@ public sealed class EraTriggerService
     private readonly Dictionary<string, int> _consecutiveFailuresByDefinitionId = new();
     private readonly Dictionary<string, string> _lastFailureSummaryByDefinitionId = new();
     private readonly HashSet<string> _fusedDefinitionIds = new();
-    private readonly List<EraTriggerContext> _queuedTickContexts = new();
+    private readonly Queue<string> _queuedTickKeys = new();
+    private readonly Dictionary<string, EraTriggerContext> _queuedTickContextsByKey = new();
+    private long _queuedTickDropped;
+    private long _queuedTickMerged;
+    private long _queuedTickSkippedDead;
+    private DateTime _lastQueueGovernanceLogUtc = DateTime.MinValue;
 
     public EraEffectService Effects { get; }
     public EraStatusRuntimeService Statuses { get; }
@@ -221,11 +230,39 @@ public sealed class EraTriggerService
     {
         if (context.TriggerType == EraTriggerType.OnTick)
         {
+            string key = BuildQueuedTickKey(context);
+            long dropped = 0;
+            long merged = 0;
+            int backlog;
             lock (_queuedContextsLock)
             {
-                _queuedTickContexts.Add(context);
+                if (_queuedTickContextsByKey.ContainsKey(key))
+                {
+                    _queuedTickContextsByKey[key] = context;
+                    _queuedTickMerged++;
+                    merged = 1;
+                    backlog = _queuedTickContextsByKey.Count;
+                }
+                else
+                {
+                    while (_queuedTickContextsByKey.Count >= MaxQueuedTickContexts && _queuedTickKeys.Count > 0)
+                    {
+                        string oldestKey = _queuedTickKeys.Dequeue();
+                        if (_queuedTickContextsByKey.Remove(oldestKey))
+                        {
+                            _queuedTickDropped++;
+                            dropped++;
+                            break;
+                        }
+                    }
+
+                    _queuedTickKeys.Enqueue(key);
+                    _queuedTickContextsByKey[key] = context;
+                    backlog = _queuedTickContextsByKey.Count;
+                }
             }
 
+            LogQueueGovernanceIfNeeded("enqueue", context.WorldTime, dropped, merged, 0, backlog);
             return;
         }
 
@@ -234,27 +271,54 @@ public sealed class EraTriggerService
 
     public void DrainQueued()
     {
-        List<EraTriggerContext> snapshot;
+        List<EraTriggerContext> batch = new List<EraTriggerContext>(MaxTickContextsPerDrain);
+        int backlog;
         lock (_queuedContextsLock)
         {
-            if (_queuedTickContexts.Count == 0)
+            while (batch.Count < MaxTickContextsPerDrain && _queuedTickKeys.Count > 0)
             {
-                return;
+                string key = _queuedTickKeys.Dequeue();
+                if (!_queuedTickContextsByKey.TryGetValue(key, out EraTriggerContext context))
+                {
+                    continue;
+                }
+
+                _queuedTickContextsByKey.Remove(key);
+                batch.Add(context);
             }
 
-            snapshot = _queuedTickContexts.ToList();
-            _queuedTickContexts.Clear();
+            backlog = _queuedTickContextsByKey.Count;
         }
 
-        foreach (EraTriggerContext context in snapshot)
+        if (batch.Count == 0)
         {
-            if (context.SourceActor != null && !context.SourceActor.isAlive())
+            return;
+        }
+
+        int skippedDead = 0;
+        float worldTime = 0f;
+        foreach (EraTriggerContext context in batch)
+        {
+            worldTime = context.WorldTime;
+            if ((context.SourceActor != null && !context.SourceActor.isAlive()) ||
+                (context.TargetActor != null && !context.TargetActor.isAlive()))
             {
+                skippedDead++;
                 continue;
             }
 
             DispatchNow(context);
         }
+
+        if (skippedDead > 0)
+        {
+            lock (_queuedContextsLock)
+            {
+                _queuedTickSkippedDead += skippedDead;
+            }
+        }
+
+        LogQueueGovernanceIfNeeded("drain", worldTime, 0, 0, skippedDead, backlog);
     }
 
     private void DispatchNow(EraTriggerContext context)
@@ -268,7 +332,7 @@ public sealed class EraTriggerService
                 return;
             }
 
-            snapshot = definitions.ToArray().ToList();
+            snapshot = new List<EraTriggerDefinition>(definitions);
         }
 
         foreach (EraTriggerDefinition definition in snapshot)
@@ -318,6 +382,9 @@ public sealed class EraTriggerService
         int total;
         int fused;
         int queued;
+        long dropped;
+        long merged;
+        long skippedDead;
         lock (_definitionsLock)
         {
             total = _definitions.Values.Sum(item => item.Count);
@@ -326,10 +393,13 @@ public sealed class EraTriggerService
 
         lock (_queuedContextsLock)
         {
-            queued = _queuedTickContexts.Count;
+            queued = _queuedTickContextsByKey.Count;
+            dropped = _queuedTickDropped;
+            merged = _queuedTickMerged;
+            skippedDead = _queuedTickSkippedDead;
         }
 
-        return $"定义={total}；主动={Count(EraTriggerType.Active)}；命中={Count(EraTriggerType.OnHit)}；受击={Count(EraTriggerType.OnGetHit)}；死亡={Count(EraTriggerType.OnDeath)}；轮询={Count(EraTriggerType.OnTick)}；轮询排队={queued}；熔断={fused}";
+        return $"定义={total}；主动={Count(EraTriggerType.Active)}；命中={Count(EraTriggerType.OnHit)}；受击={Count(EraTriggerType.OnGetHit)}；死亡={Count(EraTriggerType.OnDeath)}；轮询={Count(EraTriggerType.OnTick)}；轮询排队={queued}；轮询丢弃={dropped}；轮询合并={merged}；轮询跳过死亡={skippedDead}；熔断={fused}";
     }
 
     private bool PassChance(EraTriggerDefinition definition, EraTriggerContext context)
@@ -415,6 +485,70 @@ public sealed class EraTriggerService
         }
 
         return false;
+    }
+
+    private void LogQueueGovernanceIfNeeded(
+        string stage,
+        float worldTime,
+        long dropped,
+        long merged,
+        int skippedDead,
+        int backlog
+    )
+    {
+        if (dropped <= 0 && merged <= 0 && skippedDead <= 0 && backlog <= MaxTickContextsPerDrain)
+        {
+            return;
+        }
+
+        DateTime now = DateTime.UtcNow;
+        lock (_queuedContextsLock)
+        {
+            if (now - _lastQueueGovernanceLogUtc < QueueGovernanceLogInterval)
+            {
+                return;
+            }
+
+            _lastQueueGovernanceLogUtc = now;
+        }
+
+        EraLog.Event(
+            EraLogCategory.Combat,
+            "on_tick_queue",
+            stage,
+            EraRuntimeBootstrap.RuntimeSave?.CurrentState.CompletedCycles ?? 0,
+            worldTime,
+            "governed",
+            ("dropped", dropped),
+            ("merged", merged),
+            ("backlog", backlog),
+            ("skippedDead", skippedDead)
+        );
+    }
+
+    private static string BuildQueuedTickKey(EraTriggerContext context)
+    {
+        string sourceScopeId = NormalizeQueuedTickSourceId(context.SourceId);
+        long sourceObjectId = context.Source?.getID() ?? 0L;
+        long targetObjectId = context.Target?.getID() ?? 0L;
+        long sourceActorId = context.SourceActor?.getID() ?? 0L;
+        long targetActorId = context.TargetActor?.getID() ?? 0L;
+        long worldTick = (long)Math.Floor(context.WorldTime * 1000.0);
+        return $"{sourceScopeId}:{sourceObjectId}:{targetObjectId}:{sourceActorId}:{targetActorId}:{worldTick}";
+    }
+
+    private static string NormalizeQueuedTickSourceId(string sourceId)
+    {
+        if (string.IsNullOrWhiteSpace(sourceId))
+        {
+            return "runtime";
+        }
+
+        return sourceId
+            .Replace(':', '_')
+            .Replace('|', '_')
+            .Replace('\r', '_')
+            .Replace('\n', '_');
     }
 
     private List<EraTriggerDefinition> GetOrCreateBucketLocked(EraTriggerType type)

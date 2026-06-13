@@ -23,12 +23,12 @@ public sealed class EraStatusRegistrationReport
 
 public static class EraStatusRegistrationService
 {
-    public static EraStatusRegistrationReport Register(bool reloadMode = false)
+    public static EraStatusRegistrationReport Register()
     {
         int registered = 0;
         int skipped = 0;
 
-        if (RegisterCivilWarWinnerStatus(reloadMode))
+        if (RegisterCivilWarWinnerStatus())
         {
             registered++;
         }
@@ -37,15 +37,15 @@ public static class EraStatusRegistrationService
             skipped++;
         }
 
-        int combatRegistered = EraCombatStatusCatalog.RegisterCustomStatuses(reloadMode);
+        int combatRegistered = EraCombatStatusCatalog.RegisterCustomStatuses();
         registered += combatRegistered;
 
         return new EraStatusRegistrationReport(registered, skipped);
     }
 
-    private static bool RegisterCivilWarWinnerStatus(bool reloadMode)
+    private static bool RegisterCivilWarWinnerStatus()
     {
-        if (!reloadMode && AssetManager.status.has(EraStatusIds.CivilWarWinner))
+        if (AssetManager.status.has(EraStatusIds.CivilWarWinner))
         {
             return false;
         }

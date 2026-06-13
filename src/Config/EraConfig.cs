@@ -28,6 +28,36 @@ public static class EraConfig
     public static ModConfig? RawConfig => _config;
     public static EraRuntimeParameters Parameters => ParameterRegistry.Current;
 
+    internal static EraConfigSnapshot CaptureSnapshot()
+    {
+        return new EraConfigSnapshot(
+            _config,
+            ParameterRegistry,
+            ConfigMigrator,
+            BackupPolicy,
+            ImportExport,
+            VersioningSnapshot,
+            DevelopmentMode,
+            EnableActorDetailPatch,
+            EnableKingdomDetailPatch,
+            EnableTopTabRetryVerboseLog
+        );
+    }
+
+    internal static void RestoreSnapshot(EraConfigSnapshot snapshot)
+    {
+        _config = snapshot.Config;
+        ParameterRegistry = snapshot.ParameterRegistry;
+        ConfigMigrator = snapshot.ConfigMigrator;
+        BackupPolicy = snapshot.BackupPolicy;
+        ImportExport = snapshot.ImportExport;
+        VersioningSnapshot = snapshot.VersioningSnapshot;
+        DevelopmentMode = snapshot.DevelopmentMode;
+        EnableActorDetailPatch = snapshot.EnableActorDetailPatch;
+        EnableKingdomDetailPatch = snapshot.EnableKingdomDetailPatch;
+        EnableTopTabRetryVerboseLog = snapshot.EnableTopTabRetryVerboseLog;
+    }
+
     [Hotfixable]
     public static void Initialize(ModDeclare declaration, ModConfig? config)
     {
@@ -62,7 +92,7 @@ public static class EraConfig
         ImportExport = EraConfigImportExportService.Create(
             ConfigMigrator,
             BackupPolicy,
-            ParameterRegistry.Current);
+            ParameterRegistry);
         VersioningSnapshot = ConfigMigrator.Snapshot(ParameterRegistry.Current);
     }
 
@@ -85,5 +115,44 @@ public static class EraConfig
         }
 
         return defaultValue;
+    }
+}
+
+internal sealed class EraConfigSnapshot
+{
+    public ModConfig? Config { get; }
+    public EraParameterRegistry ParameterRegistry { get; }
+    public EraConfigMigrator ConfigMigrator { get; }
+    public EraConfigBackupPolicy BackupPolicy { get; }
+    public EraConfigImportExportService? ImportExport { get; }
+    public EraConfigMigrationResult VersioningSnapshot { get; }
+    public bool DevelopmentMode { get; }
+    public bool EnableActorDetailPatch { get; }
+    public bool EnableKingdomDetailPatch { get; }
+    public bool EnableTopTabRetryVerboseLog { get; }
+
+    public EraConfigSnapshot(
+        ModConfig? config,
+        EraParameterRegistry parameterRegistry,
+        EraConfigMigrator configMigrator,
+        EraConfigBackupPolicy backupPolicy,
+        EraConfigImportExportService? importExport,
+        EraConfigMigrationResult versioningSnapshot,
+        bool developmentMode,
+        bool enableActorDetailPatch,
+        bool enableKingdomDetailPatch,
+        bool enableTopTabRetryVerboseLog
+    )
+    {
+        Config = config;
+        ParameterRegistry = parameterRegistry;
+        ConfigMigrator = configMigrator;
+        BackupPolicy = backupPolicy;
+        ImportExport = importExport;
+        VersioningSnapshot = versioningSnapshot;
+        DevelopmentMode = developmentMode;
+        EnableActorDetailPatch = enableActorDetailPatch;
+        EnableKingdomDetailPatch = enableKingdomDetailPatch;
+        EnableTopTabRetryVerboseLog = enableTopTabRetryVerboseLog;
     }
 }

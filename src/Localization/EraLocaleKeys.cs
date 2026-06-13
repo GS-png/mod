@@ -62,7 +62,6 @@ public static class EraLocaleKeys
 
     public const string DebugButtonOpenConfig = "ew_debug_button_open_config";
     public const string DebugButtonRefresh = "ew_debug_button_refresh";
-    public const string DebugButtonReloadMod = "ew_debug_button_reload_mod";
     public const string DebugButtonLogReflection = "ew_debug_button_log_reflection";
     public const string DebugButtonFocusWorldCenter = "ew_debug_button_focus_world_center";
     public const string DebugButtonJumpToOmen = "ew_debug_button_jump_to_omen";
@@ -80,22 +79,8 @@ public static class EraLocaleKeys
     public const string DebugStatusHousesBuilt = "ew_debug_status_houses_built";
     public const string DebugStatusHousesDestroyed = "ew_debug_status_houses_destroyed";
     public const string DebugStatusWorldTime = "ew_debug_status_world_time";
-    public const string DebugStatusLastReload = "ew_debug_status_last_reload";
-    public const string DebugStatusLastReloadReport = "ew_debug_status_last_reload_report";
     public const string DebugStatusReady = "ew_debug_status_ready";
     public const string DebugStatusMissing = "ew_debug_status_missing";
     public const string DebugStatusOn = "ew_debug_status_on";
     public const string DebugStatusOff = "ew_debug_status_off";
-    public const string DebugReloadHintSuccess = "ew_debug_reload_hint_success";
-    public const string DebugReloadHintRestartRequired = "ew_debug_reload_hint_restart_required";
-    public const string DebugReloadHintFailed = "ew_debug_reload_hint_failed";
-
-    public const string DebugReloadReportEmpty = "ew_debug_reload_report_empty";
-    public const string DebugReloadReportSuccess = "ew_debug_reload_report_success";
-    public const string DebugReloadReportFailed = "ew_debug_reload_report_failed";
-    public const string DebugReloadReportLastStage = "ew_debug_reload_report_last_stage";
-    public const string DebugReloadReportRollbackSuccess = "ew_debug_reload_report_rollback_success";
-    public const string DebugReloadReportRollbackFailed = "ew_debug_reload_report_rollback_failed";
-    public const string DebugReloadReportRollbackSkipped = "ew_debug_reload_report_rollback_skipped";
-    public const string DebugReloadReportIssueCount = "ew_debug_reload_report_issue_count";
 }

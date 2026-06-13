@@ -167,6 +167,15 @@ public sealed class EraMultiSelectBinding : EraParameterBindingBase
 
 public static class EraParameterUiBindings
 {
+    private static EraRuntimeParameters Current => EraConfig.ParameterRegistry.Current;
+    private static EraReincarnationParameters Reincarnation => Current.Reincarnation;
+    private static EraDemonParameters Demons => Current.Demons;
+    private static EraLegionParameters Legions => Current.Legions;
+    private static EraAdvancementParameters Advancement => Current.Advancement;
+    private static EraLevelParameters Levels => Current.Levels;
+    private static EraKingdomParameters Kingdoms => Current.Kingdoms;
+    private static EraHeroParameters Heroes => Current.Heroes;
+
     private static readonly IReadOnlyList<EraEnumOptionBinding> DemonInteractionModes = new[]
     {
         new EraEnumOptionBinding("联盟", (int)EraDemonInteractionMode.Alliance),
@@ -242,33 +251,31 @@ public static class EraParameterUiBindings
 
     private static IReadOnlyList<EraParameterGroupBinding> BuildReincarnationBindings()
     {
-        EraReincarnationParameters parameters = EraConfig.Parameters.Reincarnation;
         return new[]
         {
             Group(
                 "预兆触发",
                 "控制世界什么时候从平稳发展切到战前预兆。",
-                Number("世界现存人口阈值", "预发展阶段检查人口时读取。", () => parameters.OmenPopulationThreshold, value => parameters.OmenPopulationThreshold = ToInt(value), wholeNumbers: true),
-                Number("预发展检查间隔", "只影响多久检查一次，不改阈值本身。", () => parameters.PreDevelopmentCheckInterval.Years, value => parameters.PreDevelopmentCheckInterval.Years = value, suffix: "年")
+                Number("世界现存人口阈值", "预发展阶段检查人口时读取。", () => Reincarnation.OmenPopulationThreshold, value => UpdateCurrent(parameters => parameters.Reincarnation.OmenPopulationThreshold = ToInt(value)), wholeNumbers: true),
+                Number("预发展检查间隔", "只影响多久检查一次，不改阈值本身。", () => Reincarnation.PreDevelopmentCheckInterval.Years, value => UpdateCurrent(parameters => parameters.Reincarnation.PreDevelopmentCheckInterval.Years = value), suffix: "年")
             ),
             Group(
                 "将领封印",
                 "将领封印归零后进入苏醒阶段。",
-                Number("将领封印初始强度", "进入预兆时写入。", () => parameters.GeneralSealInitialPercent, value => parameters.GeneralSealInitialPercent = value, suffix: "%"),
-                Number("将领封印衰减速率", "预兆阶段持续衰减。", () => parameters.GeneralSealDecayPercentPerYear, value => parameters.GeneralSealDecayPercentPerYear = value, suffix: "%/年")
+                Number("将领封印初始强度", "进入预兆时写入。", () => Reincarnation.GeneralSealInitialPercent, value => UpdateCurrent(parameters => parameters.Reincarnation.GeneralSealInitialPercent = value), suffix: "%"),
+                Number("将领封印衰减速率", "预兆阶段持续衰减。", () => Reincarnation.GeneralSealDecayPercentPerYear, value => UpdateCurrent(parameters => parameters.Reincarnation.GeneralSealDecayPercentPerYear = value), suffix: "%/年")
             ),
             Group(
                 "魔王封印",
                 "魔王封印归零后进入降临阶段。",
-                Number("魔王封印初始强度", "进入苏醒时写入。", () => parameters.DemonSealInitialPercent, value => parameters.DemonSealInitialPercent = value, suffix: "%"),
-                Number("魔王封印衰减速率", "苏醒阶段持续衰减。", () => parameters.DemonSealDecayPercentPerYear, value => parameters.DemonSealDecayPercentPerYear = value, suffix: "%/年")
+                Number("魔王封印初始强度", "进入苏醒时写入。", () => Reincarnation.DemonSealInitialPercent, value => UpdateCurrent(parameters => parameters.Reincarnation.DemonSealInitialPercent = value), suffix: "%"),
+                Number("魔王封印衰减速率", "苏醒阶段持续衰减。", () => Reincarnation.DemonSealDecayPercentPerYear, value => UpdateCurrent(parameters => parameters.Reincarnation.DemonSealDecayPercentPerYear = value), suffix: "%/年")
             ),
         };
     }
 
     private static IReadOnlyList<EraParameterGroupBinding> BuildDemonBindings()
     {
-        EraDemonParameters parameters = EraConfig.Parameters.Demons;
         IReadOnlyList<EraDemonKind> allDemons = System.Enum.GetValues(typeof(EraDemonKind)).Cast<EraDemonKind>().ToArray();
         return new[]
         {
@@ -281,87 +288,85 @@ public static class EraParameterUiBindings
                     allDemons.Select(kind => new EraMultiSelectOptionBinding(
                         GetDemonLabel(kind),
                         "预兆阶段确定本轮名单时读取。",
-                        () => parameters.EnabledDemons.Contains(kind),
-                        enabled => parameters.EnabledDemons = ToggleEnumValue(parameters.EnabledDemons, kind, enabled)
+                        () => Demons.EnabledDemons.Contains(kind),
+                        enabled => UpdateCurrent(parameters => parameters.Demons.EnabledDemons = ToggleEnumValue(parameters.Demons.EnabledDemons, kind, enabled))
                     )).ToArray()
                 ),
-                Number("苏醒数量", "候选池多于该数量时，会从启用魔王池里稳定随机抽取。", () => parameters.AwakeningCount, value => parameters.AwakeningCount = Math.Max(1, ToInt(value)), wholeNumbers: true)
+                Number("苏醒数量", "候选池多于该数量时，会从启用魔王池里稳定随机抽取。", () => Demons.AwakeningCount, value => UpdateCurrent(parameters => parameters.Demons.AwakeningCount = Math.Max(1, ToInt(value))), wholeNumbers: true)
             ),
             Group(
                 "多魔王模式",
                 "同轮存在至少两名魔王时，这一组参数才真正参与计算。",
-                Enum("互动模式", "可选 联盟 / 内战 / 随机。", () => (int)parameters.InteractionMode, value => parameters.InteractionMode = (EraDemonInteractionMode)value, DemonInteractionModes),
-                Number("关系校验间隔", "只在随机模式下真正使用。", () => parameters.RelationshipCheckInterval.Years, value => parameters.RelationshipCheckInterval.Years = value, suffix: "年"),
-                Number("联盟强度系数", "控制联盟模式下的整体压制力。", () => parameters.AllianceStrengthPercent, value => parameters.AllianceStrengthPercent = value, suffix: "%"),
-                Number("内战强度系数", "控制内战模式下的整体强度修正。", () => parameters.CivilWarStrengthPercent, value => parameters.CivilWarStrengthPercent = value, suffix: "%")
+                Enum("互动模式", "可选 联盟 / 内战 / 随机。", () => (int)Demons.InteractionMode, value => UpdateCurrent(parameters => parameters.Demons.InteractionMode = (EraDemonInteractionMode)value), DemonInteractionModes),
+                Number("关系校验间隔", "只在随机模式下真正使用。", () => Demons.RelationshipCheckInterval.Years, value => UpdateCurrent(parameters => parameters.Demons.RelationshipCheckInterval.Years = value), suffix: "年"),
+                Number("联盟强度系数", "控制联盟模式下的整体压制力。", () => Demons.AllianceStrengthPercent, value => UpdateCurrent(parameters => parameters.Demons.AllianceStrengthPercent = value), suffix: "%"),
+                Number("内战强度系数", "控制内战模式下的整体强度修正。", () => Demons.CivilWarStrengthPercent, value => UpdateCurrent(parameters => parameters.Demons.CivilWarStrengthPercent = value), suffix: "%")
             ),
             Group(
                 "内战主导权",
                 "只影响内战胜者那一套奖励。",
-                Number("内战最大魔王数", "限制一轮里可参与主导权结算的魔王数量。", () => parameters.CivilWarMaxDemons, value => parameters.CivilWarMaxDemons = Math.Max(1, ToInt(value)), wholeNumbers: true),
-                Number("加成时长", "内战胜者限时加成持续时间。", () => parameters.CivilWarWinnerBonusDuration.Years, value => parameters.CivilWarWinnerBonusDuration.Years = value, suffix: "年"),
-                Number("加成属性比例", "只影响内战胜者。", () => parameters.CivilWarWinnerBonusPercent, value => parameters.CivilWarWinnerBonusPercent = value, suffix: "%")
+                Number("内战最大魔王数", "限制一轮里可参与主导权结算的魔王数量。", () => Demons.CivilWarMaxDemons, value => UpdateCurrent(parameters => parameters.Demons.CivilWarMaxDemons = Math.Max(1, ToInt(value))), wholeNumbers: true),
+                Number("加成时长", "内战胜者限时加成持续时间。", () => Demons.CivilWarWinnerBonusDuration.Years, value => UpdateCurrent(parameters => parameters.Demons.CivilWarWinnerBonusDuration.Years = value), suffix: "年"),
+                Number("加成属性比例", "只影响内战胜者。", () => Demons.CivilWarWinnerBonusPercent, value => UpdateCurrent(parameters => parameters.Demons.CivilWarWinnerBonusPercent = value), suffix: "%")
             ),
         };
     }
 
     private static IReadOnlyList<EraParameterGroupBinding> BuildLegionBindings()
     {
-        EraLegionParameters parameters = EraConfig.Parameters.Legions;
         return new[]
         {
             Group(
                 "波次节奏",
                 "控制预兆和降临阶段的持续出波。",
-                Number("军团生成间隔", "预发展和战后重建不读取这项。", () => parameters.SpawnInterval.Years, value => parameters.SpawnInterval.Years = value, suffix: "年"),
-                Number("军团初始数量", "第一波压力。", () => parameters.InitialCount, value => parameters.InitialCount = Math.Max(1, ToInt(value)), wholeNumbers: true),
-                Number("军团同时上限", "每次准备出波时按上限裁剪。", () => parameters.ConcurrentLimit, value => parameters.ConcurrentLimit = Math.Max(1, ToInt(value)), wholeNumbers: true)
+                Number("军团生成间隔", "预发展和战后重建不读取这项。", () => Legions.SpawnInterval.Years, value => UpdateCurrent(parameters => parameters.Legions.SpawnInterval.Years = value), suffix: "年"),
+                Number("军团初始数量", "第一波压力。", () => Legions.InitialCount, value => UpdateCurrent(parameters => parameters.Legions.InitialCount = Math.Max(1, ToInt(value))), wholeNumbers: true),
+                Number("军团同时上限", "每次准备出波时按上限裁剪。", () => Legions.ConcurrentLimit, value => UpdateCurrent(parameters => parameters.Legions.ConcurrentLimit = Math.Max(1, ToInt(value))), wholeNumbers: true)
             ),
             Group(
                 "波次数量",
                 "只影响相对上一波的增长比例。",
-                Number("波次数量递增", "后续波次增长速度。", () => parameters.GrowthPercentPerWave, value => parameters.GrowthPercentPerWave = value, suffix: "%/波")
+                Number("波次数量递增", "后续波次增长速度。", () => Legions.GrowthPercentPerWave, value => UpdateCurrent(parameters => parameters.Legions.GrowthPercentPerWave = value), suffix: "%/波")
             ),
         };
     }
 
     private static IReadOnlyList<EraParameterGroupBinding> BuildAdvancementBindings()
     {
-        EraAdvancementParameters parameters = EraConfig.Parameters.Advancement;
         List<EraParameterGroupBinding> groups = new List<EraParameterGroupBinding>
         {
             Group(
                 "档位推进",
                 "这组参数决定世界档位怎么跨轮变化。",
-                Number("轮回阶位上限", "世界档位最终会被截断到这个上限。", () => parameters.MaxTier, value => parameters.MaxTier = Math.Max(1, ToInt(value)), wholeNumbers: true),
-                Number("每轮回档位提升", "只在自动推进模式下生效。", () => parameters.TierIncreasePerCycle, value => parameters.TierIncreasePerCycle = Math.Max(0, ToInt(value)), wholeNumbers: true),
-                Enum("档位推进模式", "可选 自动推进 / 手动控制。", () => (int)parameters.ProgressionMode, value => parameters.ProgressionMode = (EraWorldTierProgressionMode)value, WorldTierModes),
-                Number("手动世界档位", "推进模式为手动控制时直接读取。", () => parameters.ManualWorldTier, value => parameters.ManualWorldTier = Math.Max(1, ToInt(value)), wholeNumbers: true),
-                Enum("王国档位模式", "决定王国侧装备和特质的档位读取方式。", () => (int)parameters.KingdomTierMode, value => parameters.KingdomTierMode = (EraKingdomTierMode)value, KingdomTierModes)
+                Number("轮回阶位上限", "世界档位最终会被截断到这个上限。", () => Advancement.MaxTier, value => UpdateCurrent(parameters => parameters.Advancement.MaxTier = Math.Max(1, ToInt(value))), wholeNumbers: true),
+                Number("每轮回档位提升", "只在自动推进模式下生效。", () => Advancement.TierIncreasePerCycle, value => UpdateCurrent(parameters => parameters.Advancement.TierIncreasePerCycle = Math.Max(0, ToInt(value))), wholeNumbers: true),
+                Enum("档位推进模式", "可选 自动推进 / 手动控制。", () => (int)Advancement.ProgressionMode, value => UpdateCurrent(parameters => parameters.Advancement.ProgressionMode = (EraWorldTierProgressionMode)value), WorldTierModes),
+                Number("手动世界档位", "推进模式为手动控制时直接读取。", () => Advancement.ManualWorldTier, value => UpdateCurrent(parameters => parameters.Advancement.ManualWorldTier = Math.Max(1, ToInt(value))), wholeNumbers: true),
+                Enum("王国档位模式", "决定王国侧装备和特质的档位读取方式。", () => (int)Advancement.KingdomTierMode, value => UpdateCurrent(parameters => parameters.Advancement.KingdomTierMode = (EraKingdomTierMode)value), KingdomTierModes)
             ),
             Group(
                 "新王国起步",
                 "用于计算王国档位基值。",
-                Number("新王国档位下限", "新王国起始强度。", () => parameters.Control.NewKingdomFloorTier, value => parameters.Control.NewKingdomFloorTier = Math.Max(1, ToInt(value)), wholeNumbers: true),
-                Number("掌控度刷新间隔", "运行中重算掌控度时读取。", () => parameters.Control.RefreshInterval.Years, value => parameters.Control.RefreshInterval.Years = value, suffix: "年"),
-                Number("掌控度基础分", "王国档位基线。", () => parameters.Control.BaseScore, value => parameters.Control.BaseScore = value)
+                Number("新王国档位下限", "新王国起始强度。", () => Advancement.Control.NewKingdomFloorTier, value => UpdateCurrent(parameters => parameters.Advancement.Control.NewKingdomFloorTier = Math.Max(1, ToInt(value))), wholeNumbers: true),
+                Number("掌控度刷新间隔", "运行中重算掌控度时读取。", () => Advancement.Control.RefreshInterval.Years, value => UpdateCurrent(parameters => parameters.Advancement.Control.RefreshInterval.Years = value), suffix: "年"),
+                Number("掌控度基础分", "王国档位基线。", () => Advancement.Control.BaseScore, value => UpdateCurrent(parameters => parameters.Advancement.Control.BaseScore = value))
             ),
             Group(
                 "掌控度规模类",
                 "城市、人口、军力和书籍共同组成王国掌控度。",
-                Number("城市阈值", "达到后城市项按满额算。", () => parameters.Control.Cities.Threshold, value => parameters.Control.Cities.Threshold = Math.Max(1, ToInt(value)), wholeNumbers: true),
-                Number("人口阈值", "达到后人口项按满额算。", () => parameters.Control.Population.Threshold, value => parameters.Control.Population.Threshold = Math.Max(1, ToInt(value)), wholeNumbers: true),
-                Number("军力阈值", "达到后军力项按满额算。", () => parameters.Control.Military.Threshold, value => parameters.Control.Military.Threshold = Math.Max(1, ToInt(value)), wholeNumbers: true),
-                Number("书籍阈值", "达到后书籍项按满额算。", () => parameters.Control.Books.Threshold, value => parameters.Control.Books.Threshold = Math.Max(1, ToInt(value)), wholeNumbers: true),
-                Number("城市权重", "城市项贡献比例。", () => parameters.Control.Cities.Weight, value => parameters.Control.Cities.Weight = value),
-                Number("人口权重", "人口项贡献比例。", () => parameters.Control.Population.Weight, value => parameters.Control.Population.Weight = value),
-                Number("军力权重", "军力项贡献比例。", () => parameters.Control.Military.Weight, value => parameters.Control.Military.Weight = value),
-                Number("书籍权重", "书籍项贡献比例。", () => parameters.Control.Books.Weight, value => parameters.Control.Books.Weight = value)
+                Number("城市阈值", "达到后城市项按满额算。", () => Advancement.Control.Cities.Threshold, value => UpdateCurrent(parameters => parameters.Advancement.Control.Cities.Threshold = Math.Max(1, ToInt(value))), wholeNumbers: true),
+                Number("人口阈值", "达到后人口项按满额算。", () => Advancement.Control.Population.Threshold, value => UpdateCurrent(parameters => parameters.Advancement.Control.Population.Threshold = Math.Max(1, ToInt(value))), wholeNumbers: true),
+                Number("军力阈值", "达到后军力项按满额算。", () => Advancement.Control.Military.Threshold, value => UpdateCurrent(parameters => parameters.Advancement.Control.Military.Threshold = Math.Max(1, ToInt(value))), wholeNumbers: true),
+                Number("书籍阈值", "达到后书籍项按满额算。", () => Advancement.Control.Books.Threshold, value => UpdateCurrent(parameters => parameters.Advancement.Control.Books.Threshold = Math.Max(1, ToInt(value))), wholeNumbers: true),
+                Number("城市权重", "城市项贡献比例。", () => Advancement.Control.Cities.Weight, value => UpdateCurrent(parameters => parameters.Advancement.Control.Cities.Weight = value)),
+                Number("人口权重", "人口项贡献比例。", () => Advancement.Control.Population.Weight, value => UpdateCurrent(parameters => parameters.Advancement.Control.Population.Weight = value)),
+                Number("军力权重", "军力项贡献比例。", () => Advancement.Control.Military.Weight, value => UpdateCurrent(parameters => parameters.Advancement.Control.Military.Weight = value)),
+                Number("书籍权重", "书籍项贡献比例。", () => Advancement.Control.Books.Weight, value => UpdateCurrent(parameters => parameters.Advancement.Control.Books.Weight = value))
             ),
             Group(
                 "魔王装备发放",
                 "空槽位继续补发，有更高值装备就替换。",
-                Number("刷新间隔", "魔王与将领换装频率。", () => parameters.DemonEquipmentRefreshInterval.Years, value => parameters.DemonEquipmentRefreshInterval.Years = value, suffix: "年")
+                Number("刷新间隔", "魔王与将领换装频率。", () => Advancement.DemonEquipmentRefreshInterval.Years, value => UpdateCurrent(parameters => parameters.Advancement.DemonEquipmentRefreshInterval.Years = value), suffix: "年")
             ),
             Group(
                 "随机候选池",
@@ -370,13 +375,13 @@ public static class EraParameterUiBindings
                     "随机属性候选",
                     "发放轮回装备 / 特质实例时可抽中的属性集合。",
                     BuildAttributeOptions(
-                        parameters.RandomAttributes.CandidateAttributeIds,
-                        attributeId => parameters.RandomAttributes.CandidateAttributeIds.Contains(attributeId),
-                        (attributeId, enabled) => parameters.RandomAttributes.CandidateAttributeIds = ToggleStringValue(parameters.RandomAttributes.CandidateAttributeIds, attributeId, enabled)
+                        () => Advancement.RandomAttributes.CandidateAttributeIds,
+                        attributeId => Advancement.RandomAttributes.CandidateAttributeIds.Contains(attributeId),
+                        (attributeId, enabled) => UpdateCurrent(parameters => parameters.Advancement.RandomAttributes.CandidateAttributeIds = ToggleStringValue(parameters.Advancement.RandomAttributes.CandidateAttributeIds, attributeId, enabled))
                     )
                 ),
-                Number("每件装备随机属性数", "单件装备能抽到多少条随机属性。", () => parameters.RandomAttributes.EquipmentAttributesPerItem, value => parameters.RandomAttributes.EquipmentAttributesPerItem = Math.Max(0, ToInt(value)), wholeNumbers: true),
-                Number("每条特质随机属性数", "单条特质能抽到多少条随机属性。", () => parameters.RandomAttributes.TraitAttributesPerItem, value => parameters.RandomAttributes.TraitAttributesPerItem = Math.Max(0, ToInt(value)), wholeNumbers: true)
+                Number("每件装备随机属性数", "单件装备能抽到多少条随机属性。", () => Advancement.RandomAttributes.EquipmentAttributesPerItem, value => UpdateCurrent(parameters => parameters.Advancement.RandomAttributes.EquipmentAttributesPerItem = Math.Max(0, ToInt(value))), wholeNumbers: true),
+                Number("每条特质随机属性数", "单条特质能抽到多少条随机属性。", () => Advancement.RandomAttributes.TraitAttributesPerItem, value => UpdateCurrent(parameters => parameters.Advancement.RandomAttributes.TraitAttributesPerItem = Math.Max(0, ToInt(value))), wholeNumbers: true)
             ),
         };
 
@@ -384,7 +389,7 @@ public static class EraParameterUiBindings
             Group(
                 "属性独立区间",
                 "每个属性都在自己的区间里结算，不会共用一个总随机池。",
-                BuildRangeBindings(parameters.RandomAttributes.AttributeRanges, suffix: string.Empty).ToArray()
+                BuildRangeBindings(parameters => parameters.Advancement.RandomAttributes.AttributeRanges, suffix: string.Empty).ToArray()
             )
         );
 
@@ -394,7 +399,6 @@ public static class EraParameterUiBindings
 
     private static IReadOnlyList<EraParameterGroupBinding> BuildLevelBindings()
     {
-        EraLevelParameters parameters = EraConfig.Parameters.Levels;
         return new[]
         {
             Group(
@@ -404,44 +408,43 @@ public static class EraParameterUiBindings
                     "随机属性候选",
                     "单位升级结算时可抽中的属性集合。",
                     BuildAttributeOptions(
-                        parameters.RandomAttributes.CandidateAttributeIds,
-                        attributeId => parameters.RandomAttributes.CandidateAttributeIds.Contains(attributeId),
-                        (attributeId, enabled) => parameters.RandomAttributes.CandidateAttributeIds = ToggleStringValue(parameters.RandomAttributes.CandidateAttributeIds, attributeId, enabled)
+                        () => Levels.RandomAttributes.CandidateAttributeIds,
+                        attributeId => Levels.RandomAttributes.CandidateAttributeIds.Contains(attributeId),
+                        (attributeId, enabled) => UpdateCurrent(parameters => parameters.Levels.RandomAttributes.CandidateAttributeIds = ToggleStringValue(parameters.Levels.RandomAttributes.CandidateAttributeIds, attributeId, enabled))
                     )
                 ),
-                Number("每级随机属性数", "单次升级能抽到多少项属性。", () => parameters.RandomAttributes.AttributesPerLevel, value => parameters.RandomAttributes.AttributesPerLevel = Math.Max(0, ToInt(value)), wholeNumbers: true)
+                Number("每级随机属性数", "单次升级能抽到多少项属性。", () => Levels.RandomAttributes.AttributesPerLevel, value => UpdateCurrent(parameters => parameters.Levels.RandomAttributes.AttributesPerLevel = Math.Max(0, ToInt(value))), wholeNumbers: true)
             ),
             Group(
                 "升级属性独立加成",
                 "每次命中就直接叠加这个固定值。",
-                BuildNumberBindings(parameters.RandomAttributes.AttributeValues).ToArray()
+                BuildNumberBindings(parameters => parameters.Levels.RandomAttributes.AttributeValues).ToArray()
             ),
         };
     }
 
     private static IReadOnlyList<EraParameterGroupBinding> BuildKingdomBindings()
     {
-        EraKingdomParameters parameters = EraConfig.Parameters.Kingdoms;
         List<EraParameterGroupBinding> groups = new List<EraParameterGroupBinding>
         {
             Group(
                 "声望等级成长",
                 "声望达到累计门槛后立即升级，不消耗、不清零。",
-                Number("等级上限", "达到后总声望继续累计，但不再升。", () => parameters.MaxLevel, value => parameters.MaxLevel = Math.Max(1, ToInt(value)), wholeNumbers: true)
+                Number("等级上限", "达到后总声望继续累计，但不再升。", () => Kingdoms.MaxLevel, value => UpdateCurrent(parameters => parameters.Kingdoms.MaxLevel = Math.Max(1, ToInt(value))), wholeNumbers: true)
             ),
         };
 
-        for (int i = 0; i < parameters.RenownBands.Count; i++)
+        for (int i = 0; i < Kingdoms.RenownBands.Count; i++)
         {
-            EraKingdomRenownBand band = parameters.RenownBands[i];
             int bandIndex = i + 1;
+            int bandOffset = i;
             groups.Add(
                 Group(
                     $"声望阈值分段（第 {bandIndex} 段）",
                     "三段必须连续覆盖整个等级区间。",
-                    Number("起始等级", "读取该段配置时使用。", () => band.StartLevel, value => band.StartLevel = Math.Max(1, ToInt(value)), wholeNumbers: true),
-                    Number("结束等级", "读取该段配置时使用。", () => band.EndLevel, value => band.EndLevel = Math.Max(band.StartLevel, ToInt(value)), wholeNumbers: true),
-                    Number("每级所需声望", "用累计总声望判定。", () => band.RenownPerLevel, value => band.RenownPerLevel = Math.Max(1, ToInt(value)), wholeNumbers: true)
+                    Number("起始等级", "读取该段配置时使用。", () => GetRenownBand(bandOffset).StartLevel, value => UpdateRenownBand(bandOffset, band => band.StartLevel = Math.Max(1, ToInt(value))), wholeNumbers: true),
+                    Number("结束等级", "读取该段配置时使用。", () => GetRenownBand(bandOffset).EndLevel, value => UpdateRenownBand(bandOffset, band => band.EndLevel = Math.Max(band.StartLevel, ToInt(value))), wholeNumbers: true),
+                    Number("每级所需声望", "用累计总声望判定。", () => GetRenownBand(bandOffset).RenownPerLevel, value => UpdateRenownBand(bandOffset, band => band.RenownPerLevel = Math.Max(1, ToInt(value))), wholeNumbers: true)
                 )
             );
         }
@@ -454,12 +457,12 @@ public static class EraParameterUiBindings
                     "随机属性候选",
                     "王国每次声望升级时可抽中的属性集合。",
                     BuildAttributeOptions(
-                        parameters.RandomAttributes.CandidateAttributeIds,
-                        attributeId => parameters.RandomAttributes.CandidateAttributeIds.Contains(attributeId),
-                        (attributeId, enabled) => parameters.RandomAttributes.CandidateAttributeIds = ToggleStringValue(parameters.RandomAttributes.CandidateAttributeIds, attributeId, enabled)
+                        () => Kingdoms.RandomAttributes.CandidateAttributeIds,
+                        attributeId => Kingdoms.RandomAttributes.CandidateAttributeIds.Contains(attributeId),
+                        (attributeId, enabled) => UpdateCurrent(parameters => parameters.Kingdoms.RandomAttributes.CandidateAttributeIds = ToggleStringValue(parameters.Kingdoms.RandomAttributes.CandidateAttributeIds, attributeId, enabled))
                     )
                 ),
-                Number("每级随机属性数", "单次升级能抽到多少项属性。", () => parameters.RandomAttributes.AttributesPerLevel, value => parameters.RandomAttributes.AttributesPerLevel = Math.Max(0, ToInt(value)), wholeNumbers: true)
+                Number("每级随机属性数", "单次升级能抽到多少项属性。", () => Kingdoms.RandomAttributes.AttributesPerLevel, value => UpdateCurrent(parameters => parameters.Kingdoms.RandomAttributes.AttributesPerLevel = Math.Max(0, ToInt(value))), wholeNumbers: true)
             )
         );
 
@@ -467,7 +470,7 @@ public static class EraParameterUiBindings
             Group(
                 "声望属性加成",
                 "每次命中就直接叠加固定值。",
-                BuildNumberBindings(parameters.RandomAttributes.AttributeValues).ToArray()
+                BuildNumberBindings(parameters => parameters.Kingdoms.RandomAttributes.AttributeValues).ToArray()
             )
         );
 
@@ -476,99 +479,97 @@ public static class EraParameterUiBindings
 
     private static IReadOnlyList<EraParameterGroupBinding> BuildHeroBindings()
     {
-        EraHeroParameters parameters = EraConfig.Parameters.Heroes;
         return new[]
         {
             Group(
                 "英雄上限与晋升条件",
                 "先检查上限，再检查繁荣或危机触发。",
-                Number("每王国英雄上限", "达到后该王国不再新增命定英雄。", () => parameters.HeroesPerKingdomLimit, value => parameters.HeroesPerKingdomLimit = Math.Max(0, ToInt(value)), wholeNumbers: true),
-                Number("世界总英雄上限", "达到后全世界都不再新增命定英雄。", () => parameters.HeroesWorldLimit, value => parameters.HeroesWorldLimit = Math.Max(0, ToInt(value)), wholeNumbers: true),
-                Number("王国每次人口增长阈值", "每累计增长到整数倍就触发一次。", () => parameters.ProsperityPopulationGrowthThreshold, value => parameters.ProsperityPopulationGrowthThreshold = Math.Max(1, ToInt(value)), wholeNumbers: true),
-                Number("统计窗口", "危机链路观察范围。", () => parameters.CrisisWindow.Years, value => parameters.CrisisWindow.Years = value, suffix: "年"),
-                Number("王国人口跌幅", "达到这个跌幅后触发一次晋升。", () => parameters.CrisisPopulationLossPercent, value => parameters.CrisisPopulationLossPercent = value, suffix: "%")
+                Number("每王国英雄上限", "达到后该王国不再新增命定英雄。", () => Heroes.HeroesPerKingdomLimit, value => UpdateCurrent(parameters => parameters.Heroes.HeroesPerKingdomLimit = Math.Max(0, ToInt(value))), wholeNumbers: true),
+                Number("世界总英雄上限", "达到后全世界都不再新增命定英雄。", () => Heroes.HeroesWorldLimit, value => UpdateCurrent(parameters => parameters.Heroes.HeroesWorldLimit = Math.Max(0, ToInt(value))), wholeNumbers: true),
+                Number("王国每次人口增长阈值", "每累计增长到整数倍就触发一次。", () => Heroes.ProsperityPopulationGrowthThreshold, value => UpdateCurrent(parameters => parameters.Heroes.ProsperityPopulationGrowthThreshold = Math.Max(1, ToInt(value))), wholeNumbers: true),
+                Number("统计窗口", "危机链路观察范围。", () => Heroes.CrisisWindow.Years, value => UpdateCurrent(parameters => parameters.Heroes.CrisisWindow.Years = value), suffix: "年"),
+                Number("王国人口跌幅", "达到这个跌幅后触发一次晋升。", () => Heroes.CrisisPopulationLossPercent, value => UpdateCurrent(parameters => parameters.Heroes.CrisisPopulationLossPercent = value), suffix: "%")
             ),
             Group(
                 "候选与评分",
                 "综合分 = Σ(min(指标/阈值,1) × 权重)。",
-                Number("等级权重", "与其它权重共同组成总分。", () => parameters.ScoreProfile.LevelWeight, value => parameters.ScoreProfile.LevelWeight = value),
-                Number("击杀权重", "与其它权重共同组成总分。", () => parameters.ScoreProfile.KillWeight, value => parameters.ScoreProfile.KillWeight = value),
-                Number("生命权重", "与其它权重共同组成总分。", () => parameters.ScoreProfile.HealthWeight, value => parameters.ScoreProfile.HealthWeight = value),
-                Number("攻击权重", "与其它权重共同组成总分。", () => parameters.ScoreProfile.DamageWeight, value => parameters.ScoreProfile.DamageWeight = value),
-                Number("指挥权重", "与其它权重共同组成总分。", () => parameters.ScoreProfile.WarfareWeight, value => parameters.ScoreProfile.WarfareWeight = value),
-                Number("等级阈值", "等级项折算上限。", () => parameters.ScoreProfile.LevelThreshold, value => parameters.ScoreProfile.LevelThreshold = Math.Max(1, ToInt(value)), wholeNumbers: true),
-                Number("击杀阈值", "击杀项折算上限。", () => parameters.ScoreProfile.KillThreshold, value => parameters.ScoreProfile.KillThreshold = Math.Max(1, ToInt(value)), wholeNumbers: true),
-                Number("生命阈值", "生命项折算上限。", () => parameters.ScoreProfile.HealthThreshold, value => parameters.ScoreProfile.HealthThreshold = Math.Max(1, ToInt(value)), wholeNumbers: true),
-                Number("攻击阈值", "攻击项折算上限。", () => parameters.ScoreProfile.DamageThreshold, value => parameters.ScoreProfile.DamageThreshold = Math.Max(1, ToInt(value)), wholeNumbers: true),
-                Number("指挥阈值", "指挥项折算上限。", () => parameters.ScoreProfile.WarfareThreshold, value => parameters.ScoreProfile.WarfareThreshold = Math.Max(1, ToInt(value)), wholeNumbers: true),
-                Number("从评分前 N 名随机", "N 越大，随机性越强。", () => parameters.RandomTopCandidateCount, value => parameters.RandomTopCandidateCount = Math.Max(1, ToInt(value)), wholeNumbers: true)
+                Number("等级权重", "与其它权重共同组成总分。", () => Heroes.ScoreProfile.LevelWeight, value => UpdateCurrent(parameters => parameters.Heroes.ScoreProfile.LevelWeight = value)),
+                Number("击杀权重", "与其它权重共同组成总分。", () => Heroes.ScoreProfile.KillWeight, value => UpdateCurrent(parameters => parameters.Heroes.ScoreProfile.KillWeight = value)),
+                Number("生命权重", "与其它权重共同组成总分。", () => Heroes.ScoreProfile.HealthWeight, value => UpdateCurrent(parameters => parameters.Heroes.ScoreProfile.HealthWeight = value)),
+                Number("攻击权重", "与其它权重共同组成总分。", () => Heroes.ScoreProfile.DamageWeight, value => UpdateCurrent(parameters => parameters.Heroes.ScoreProfile.DamageWeight = value)),
+                Number("指挥权重", "与其它权重共同组成总分。", () => Heroes.ScoreProfile.WarfareWeight, value => UpdateCurrent(parameters => parameters.Heroes.ScoreProfile.WarfareWeight = value)),
+                Number("等级阈值", "等级项折算上限。", () => Heroes.ScoreProfile.LevelThreshold, value => UpdateCurrent(parameters => parameters.Heroes.ScoreProfile.LevelThreshold = Math.Max(1, ToInt(value))), wholeNumbers: true),
+                Number("击杀阈值", "击杀项折算上限。", () => Heroes.ScoreProfile.KillThreshold, value => UpdateCurrent(parameters => parameters.Heroes.ScoreProfile.KillThreshold = Math.Max(1, ToInt(value))), wholeNumbers: true),
+                Number("生命阈值", "生命项折算上限。", () => Heroes.ScoreProfile.HealthThreshold, value => UpdateCurrent(parameters => parameters.Heroes.ScoreProfile.HealthThreshold = Math.Max(1, ToInt(value))), wholeNumbers: true),
+                Number("攻击阈值", "攻击项折算上限。", () => Heroes.ScoreProfile.DamageThreshold, value => UpdateCurrent(parameters => parameters.Heroes.ScoreProfile.DamageThreshold = Math.Max(1, ToInt(value))), wholeNumbers: true),
+                Number("指挥阈值", "指挥项折算上限。", () => Heroes.ScoreProfile.WarfareThreshold, value => UpdateCurrent(parameters => parameters.Heroes.ScoreProfile.WarfareThreshold = Math.Max(1, ToInt(value))), wholeNumbers: true),
+                Number("从评分前 N 名随机", "N 越大，随机性越强。", () => Heroes.RandomTopCandidateCount, value => UpdateCurrent(parameters => parameters.Heroes.RandomTopCandidateCount = Math.Max(1, ToInt(value))), wholeNumbers: true)
             ),
             Group(
                 "幸存强化与家族继承",
                 "跨轮幸存强化和血脉觉醒都在这里调。",
-                Toggle("幸存强化开关", "只对命定英雄生效。", () => parameters.SurvivorBonusEnabled, value => parameters.SurvivorBonusEnabled = value),
-                Number("每轮强化比例", "每轮最多发一次。", () => parameters.SurvivorBonusPercentPerCycle, value => parameters.SurvivorBonusPercentPerCycle = value, suffix: "%"),
-                Number("强化上限", "达到上限后不再继续叠加。", () => parameters.SurvivorBonusCapPercent, value => parameters.SurvivorBonusCapPercent = value, suffix: "%"),
-                Number("触发概率", "新生儿追溯到英雄祖先后判定。", () => parameters.BloodlineInheritanceChancePercent, value => parameters.BloodlineInheritanceChancePercent = value, suffix: "%"),
-                Number("继承属性比例", "只对成功觉醒者生效。", () => parameters.BloodlineInheritanceValuePercent, value => parameters.BloodlineInheritanceValuePercent = value, suffix: "%"),
-                Number("可继承代数", "向上追溯深度。", () => parameters.BloodlineGenerationLimit, value => parameters.BloodlineGenerationLimit = Math.Max(1, ToInt(value)), wholeNumbers: true),
-                Number("觉醒评分加成", "不直接增加继承属性值。", () => parameters.AwakenedScoreBonusPercent, value => parameters.AwakenedScoreBonusPercent = value, suffix: "%")
+                Toggle("幸存强化开关", "只对命定英雄生效。", () => Heroes.SurvivorBonusEnabled, value => UpdateCurrent(parameters => parameters.Heroes.SurvivorBonusEnabled = value)),
+                Number("每轮强化比例", "每轮最多发一次。", () => Heroes.SurvivorBonusPercentPerCycle, value => UpdateCurrent(parameters => parameters.Heroes.SurvivorBonusPercentPerCycle = value), suffix: "%"),
+                Number("强化上限", "达到上限后不再继续叠加。", () => Heroes.SurvivorBonusCapPercent, value => UpdateCurrent(parameters => parameters.Heroes.SurvivorBonusCapPercent = value), suffix: "%"),
+                Number("触发概率", "新生儿追溯到英雄祖先后判定。", () => Heroes.BloodlineInheritanceChancePercent, value => UpdateCurrent(parameters => parameters.Heroes.BloodlineInheritanceChancePercent = value), suffix: "%"),
+                Number("继承属性比例", "只对成功觉醒者生效。", () => Heroes.BloodlineInheritanceValuePercent, value => UpdateCurrent(parameters => parameters.Heroes.BloodlineInheritanceValuePercent = value), suffix: "%"),
+                Number("可继承代数", "向上追溯深度。", () => Heroes.BloodlineGenerationLimit, value => UpdateCurrent(parameters => parameters.Heroes.BloodlineGenerationLimit = Math.Max(1, ToInt(value))), wholeNumbers: true),
+                Number("觉醒评分加成", "不直接增加继承属性值。", () => Heroes.AwakenedScoreBonusPercent, value => UpdateCurrent(parameters => parameters.Heroes.AwakenedScoreBonusPercent = value), suffix: "%")
             ),
         };
     }
 
     private static IReadOnlyList<EraParameterGroupBinding> BuildGrowthBindings()
     {
-        EraGrowthParameters parameters = EraConfig.Parameters.Growth;
         return new[]
         {
-            Group("数值成长：魔王生成基础范围", "同一轮回固定。", BuildRangeBindings(parameters.DemonBaseRanges).ToArray()),
-            Group("数值成长：将领生成基础范围", "同一轮回固定。", BuildRangeBindings(parameters.GeneralBaseRanges).ToArray()),
-            Group("数值成长：英雄晋升基础范围", "这是在原单位基础上叠加。", BuildRangeBindings(parameters.HeroPromotionRanges).ToArray()),
-            Group("数值成长：军团出波基础范围", "同一波共享该波结果。", BuildRangeBindings(parameters.LegionBaseRanges).ToArray()),
+            Group("数值成长：魔王生成基础范围", "同一轮回固定。", BuildRangeBindings(parameters => parameters.Growth.DemonBaseRanges).ToArray()),
+            Group("数值成长：将领生成基础范围", "同一轮回固定。", BuildRangeBindings(parameters => parameters.Growth.GeneralBaseRanges).ToArray()),
+            Group("数值成长：英雄晋升基础范围", "这是在原单位基础上叠加。", BuildRangeBindings(parameters => parameters.Growth.HeroPromotionRanges).ToArray()),
+            Group("数值成长：军团出波基础范围", "同一波共享该波结果。", BuildRangeBindings(parameters => parameters.Growth.LegionBaseRanges).ToArray()),
         };
     }
 
-    private static IEnumerable<EraParameterBindingBase> BuildRangeBindings(IReadOnlyDictionary<string, EraFloatRange> ranges, string suffix = "")
+    private static IEnumerable<EraParameterBindingBase> BuildRangeBindings(
+        Func<EraRuntimeParameters, IReadOnlyDictionary<string, EraFloatRange>> rangesSelector,
+        string suffix = "")
     {
-        foreach (KeyValuePair<string, EraFloatRange> entry in ranges.OrderBy(item => item.Key, StringComparer.Ordinal))
+        foreach (string attributeId in rangesSelector(Current).Keys.OrderBy(item => item, StringComparer.Ordinal))
         {
-            string attributeId = entry.Key;
-            EraFloatRange range = entry.Value;
             yield return Range(
                 $"{GetAttributeLabel(attributeId)}（`{attributeId}`）",
                 "修改后会直接影响这一类随机范围。",
-                () => range,
+                () => GetRangeValue(rangesSelector(Current), attributeId),
                 (min, max) =>
                 {
-                    range.Min = min;
-                    range.Max = max;
+                    UpdateCurrent(parameters => SetRangeValue(rangesSelector(parameters), attributeId, min, max));
                 },
                 suffix: suffix
             );
         }
     }
 
-    private static IEnumerable<EraParameterBindingBase> BuildNumberBindings(IReadOnlyDictionary<string, float> values)
+    private static IEnumerable<EraParameterBindingBase> BuildNumberBindings(
+        Func<EraRuntimeParameters, IReadOnlyDictionary<string, float>> valuesSelector)
     {
-        foreach (string attributeId in values.Keys.OrderBy(item => item, StringComparer.Ordinal))
+        foreach (string attributeId in valuesSelector(Current).Keys.OrderBy(item => item, StringComparer.Ordinal))
         {
             yield return Number(
                 $"{GetAttributeLabel(attributeId)}（`{attributeId}`）",
                 "每次命中该属性时就直接叠加这个固定值。",
-                () => values[attributeId],
-                value => SetDictionaryValue(values, attributeId, value)
+                () => GetDictionaryValue(valuesSelector(Current), attributeId),
+                value => UpdateCurrent(parameters => SetDictionaryValue(valuesSelector(parameters), attributeId, value))
             );
         }
     }
 
     private static IReadOnlyList<EraMultiSelectOptionBinding> BuildAttributeOptions(
-        IReadOnlyList<string> selectedValues,
+        Func<IReadOnlyList<string>> selectedValues,
         Func<string, bool> getter,
         Action<string, bool> setter
     )
     {
-        List<string> allValues = selectedValues
+        List<string> allValues = selectedValues()
             .Concat(AttributeLabels.Keys)
             .Distinct(StringComparer.Ordinal)
             .OrderBy(GetAttributeLabel, StringComparer.Ordinal)
@@ -662,6 +663,56 @@ public static class EraParameterUiBindings
     private static int ToInt(float value)
     {
         return (int)Math.Round(value, MidpointRounding.AwayFromZero);
+    }
+
+    private static void UpdateCurrent(Action<EraRuntimeParameters> mutation)
+    {
+        EraConfig.ParameterRegistry.UpdateCurrent(mutation);
+    }
+
+    private static EraKingdomRenownBand GetRenownBand(int index)
+    {
+        return index >= 0 && index < Kingdoms.RenownBands.Count
+            ? Kingdoms.RenownBands[index]
+            : new EraKingdomRenownBand();
+    }
+
+    private static void UpdateRenownBand(int index, Action<EraKingdomRenownBand> mutation)
+    {
+        UpdateCurrent(parameters =>
+        {
+            if (index >= 0 && index < parameters.Kingdoms.RenownBands.Count)
+            {
+                mutation(parameters.Kingdoms.RenownBands[index]);
+            }
+        });
+    }
+
+    private static EraFloatRange GetRangeValue(IReadOnlyDictionary<string, EraFloatRange> ranges, string key)
+    {
+        return ranges.TryGetValue(key, out EraFloatRange? range)
+            ? range
+            : new EraFloatRange();
+    }
+
+    private static void SetRangeValue(IReadOnlyDictionary<string, EraFloatRange> ranges, string key, float min, float max)
+    {
+        if (ranges is Dictionary<string, EraFloatRange> mutable)
+        {
+            if (!mutable.TryGetValue(key, out EraFloatRange? range))
+            {
+                range = new EraFloatRange();
+                mutable[key] = range;
+            }
+
+            range.Min = min;
+            range.Max = max;
+        }
+    }
+
+    private static float GetDictionaryValue(IReadOnlyDictionary<string, float> values, string key)
+    {
+        return values.TryGetValue(key, out float value) ? value : 0f;
     }
 
     private static IReadOnlyList<TEnum> ToggleEnumValue<TEnum>(IReadOnlyList<TEnum> source, TEnum value, bool enabled)

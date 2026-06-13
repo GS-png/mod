@@ -7,7 +7,6 @@ using EraWheel.Core;
 using EraWheel.Core.Constants;
 using EraWheel.Core.Logging;
 using EraWheel.Data.Definitions;
-using EraWheel.HotReload;
 using EraWheel.Localization;
 using EraWheel.Reflection;
 using NeoModLoader.General;
@@ -46,7 +45,7 @@ public static class EraActorRegistrationService
     private const string ActorTextureRoot = "actors/species/other";
     private static string _modRootPath = string.Empty;
 
-    public static EraActorRegistrationReport Register(EraContentCatalog contentCatalog, EraSpriteCatalog spriteCatalog, bool reloadMode = false)
+    public static EraActorRegistrationReport Register(EraContentCatalog contentCatalog, EraSpriteCatalog spriteCatalog)
     {
         _modRootPath = EraWheelMod.I.GetDeclaration().FolderPath;
         int demons = 0;
@@ -56,7 +55,7 @@ public static class EraActorRegistrationService
 
         foreach (EraDemonManifest demon in contentCatalog.Demons)
         {
-            if (RegisterDemon(demon, spriteCatalog, reloadMode))
+            if (RegisterDemon(demon, spriteCatalog))
             {
                 demons++;
             }
@@ -68,7 +67,7 @@ public static class EraActorRegistrationService
 
         foreach (EraGeneralManifest general in contentCatalog.Generals)
         {
-            if (RegisterGeneral(general, contentCatalog, spriteCatalog, reloadMode))
+            if (RegisterGeneral(general, contentCatalog, spriteCatalog))
             {
                 generals++;
             }
@@ -80,7 +79,7 @@ public static class EraActorRegistrationService
 
         foreach (EraLegionManifest legion in contentCatalog.Legions)
         {
-            if (RegisterLegion(legion, contentCatalog, spriteCatalog, reloadMode))
+            if (RegisterLegion(legion, contentCatalog, spriteCatalog))
             {
                 legions++;
             }
@@ -98,7 +97,7 @@ public static class EraActorRegistrationService
         return new EraActorRegistrationReport(demons, generals, legions, skipped);
     }
 
-    private static bool RegisterDemon(EraDemonManifest manifest, EraSpriteCatalog spriteCatalog, bool reloadMode)
+    private static bool RegisterDemon(EraDemonManifest manifest, EraSpriteCatalog spriteCatalog)
     {
         return RegisterActor(
             manifest.InternalId,
@@ -108,16 +107,14 @@ public static class EraActorRegistrationService
             ResolveDemonWalkFrames(manifest, spriteCatalog),
             "魔王",
             EraDemonFactionIds.GetKingdomId(manifest.InternalId),
-            canBeFavorited: true,
-            reloadMode
+            canBeFavorited: true
         );
     }
 
     private static bool RegisterGeneral(
         EraGeneralManifest manifest,
         EraContentCatalog contentCatalog,
-        EraSpriteCatalog spriteCatalog,
-        bool reloadMode
+        EraSpriteCatalog spriteCatalog
     )
     {
         string demonName = contentCatalog.DemonsById.TryGetValue(manifest.DemonInternalId, out EraDemonManifest? demon)
@@ -131,16 +128,14 @@ public static class EraActorRegistrationService
             ResolveGeneralWalkFrames(manifest, spriteCatalog),
             "将领",
             EraDemonFactionIds.GetKingdomId(manifest.DemonInternalId),
-            canBeFavorited: true,
-            reloadMode
+            canBeFavorited: true
         );
     }
 
     private static bool RegisterLegion(
         EraLegionManifest manifest,
         EraContentCatalog contentCatalog,
-        EraSpriteCatalog spriteCatalog,
-        bool reloadMode
+        EraSpriteCatalog spriteCatalog
     )
     {
         string demonName = contentCatalog.DemonsById.TryGetValue(manifest.DemonInternalId, out EraDemonManifest? demon)
@@ -154,8 +149,7 @@ public static class EraActorRegistrationService
             ResolveLegionWalkFrames(manifest, spriteCatalog),
             "军团",
             EraDemonFactionIds.GetKingdomId(manifest.DemonInternalId),
-            canBeFavorited: false,
-            reloadMode
+            canBeFavorited: false
         );
     }
 
@@ -167,11 +161,10 @@ public static class EraActorRegistrationService
         IReadOnlyList<EraSpriteResource> walkFrames,
         string actorKindLabel,
         string wildKingdomId,
-        bool canBeFavorited,
-        bool reloadMode
+        bool canBeFavorited
     )
     {
-        if (!reloadMode && AssetManager.actor_library.has(actorId))
+        if (AssetManager.actor_library.has(actorId))
         {
             EraLog.Warning(EraLogCategory.Data, $"单位模板已存在，跳过重复注册：{actorId}");
             return false;
@@ -371,7 +364,7 @@ public static class EraActorRegistrationService
                 continue;
             }
 
-            int? order = EraSpriteHotReloadService.TryParseFrameOrder(Path.GetFileNameWithoutExtension(frame.SourcePath));
+            int? order = EraSpriteCacheService.TryParseFrameOrder(Path.GetFileNameWithoutExtension(frame.SourcePath));
             if (!order.HasValue)
             {
                 continue;
@@ -409,7 +402,7 @@ public static class EraActorRegistrationService
             .OrderBy(item => item.Order)
             .ToList();
 
-        if (!EraSpriteHotReloadService.UpsertSpriteList(mainTexturePath, orderedFrames))
+        if (!EraSpriteCacheService.UpsertSpriteList(mainTexturePath, orderedFrames))
         {
             failureReason = $"无法桥接原版主贴图列表缓存：{mainTexturePath}";
             return false;
@@ -418,7 +411,7 @@ public static class EraActorRegistrationService
         Sprite[]? spriteList = SpriteTextureLoader.getSpriteList(mainTexturePath, pSkipIfEmpty: true);
         if (spriteList == null || spriteList.Length == 0)
         {
-            EraSpriteHotReloadService.ClearSpriteListCache(mainTexturePath);
+            EraSpriteCacheService.ClearSpriteListCache(mainTexturePath);
             failureReason = $"桥接后主贴图列表仍为空：{mainTexturePath}";
             return false;
         }

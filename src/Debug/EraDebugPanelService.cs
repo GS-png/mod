@@ -45,17 +45,6 @@ public static class EraDebugPanelService
         EraDebugWindow.Instance?.RefreshView();
     }
 
-    public static void ResetForReload()
-    {
-        if (_debugButton != null)
-        {
-            Object.Destroy(_debugButton.gameObject);
-            _debugButton = null;
-        }
-
-        _initialized = false;
-    }
-
     private static void EnsureDebugButton()
     {
         if (_debugButton != null)

@@ -11,7 +11,6 @@ using EraWheel.Core;
 using EraWheel.Core.Constants;
 using EraWheel.Core.Logging;
 using EraWheel.Core.Time;
-using EraWheel.HotReload;
 using EraWheel.Localization;
 using EraWheel.Reflection;
 using NeoModLoader.General;
@@ -1209,7 +1208,7 @@ public sealed partial class EraDemonSkillRuntimeService
                     continue;
                 }
 
-                int? order = EraSpriteHotReloadService.TryParseFrameOrder(Path.GetFileNameWithoutExtension(frame.SourcePath));
+                int? order = EraSpriteCacheService.TryParseFrameOrder(Path.GetFileNameWithoutExtension(frame.SourcePath));
                 if (!order.HasValue)
                 {
                     continue;
@@ -1253,7 +1252,7 @@ public sealed partial class EraDemonSkillRuntimeService
             .OrderBy(item => item.Order)
             .ToList();
 
-        if (!EraSpriteHotReloadService.UpsertSpriteList(mainTexturePath, orderedFrames))
+        if (!EraSpriteCacheService.UpsertSpriteList(mainTexturePath, orderedFrames))
         {
             failureReason = $"无法写入原版主贴图缓存：{mainTexturePath}";
             return false;
@@ -1262,7 +1261,7 @@ public sealed partial class EraDemonSkillRuntimeService
         Sprite[]? sprites = SpriteTextureLoader.getSpriteList(mainTexturePath, pSkipIfEmpty: true);
         if (sprites == null || sprites.Length == 0)
         {
-            EraSpriteHotReloadService.ClearSpriteListCache(mainTexturePath);
+            EraSpriteCacheService.ClearSpriteListCache(mainTexturePath);
             failureReason = $"桥接后主贴图列表仍为空：{mainTexturePath}";
             return false;
         }

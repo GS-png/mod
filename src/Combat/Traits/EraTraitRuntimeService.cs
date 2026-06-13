@@ -75,6 +75,14 @@ public sealed partial class EraTraitRuntimeService
         new[] { typeof(int) }
     );
 
+    private static readonly AttackAction OnHitExperienceAction = GrantOnHitExperience;
+    private static readonly WorldAction FastLevelingSpecialEffectAction = GrantFastLevelingExperience;
+    private static readonly WorldAction FlightSpecialEffectAction = ApplyFlightSpecialEffect;
+    private static readonly WorldActionTrait FlightAddedAction = ApplyFlightTrait;
+    private static readonly WorldActionTrait FlightLoadedAction = ApplyFlightTrait;
+    private static readonly GetHitAction UnbrokenWillGetHitAction = TriggerUnbrokenWillGetHit;
+    private static readonly GetHitAction SharedFateGetHitAction = TriggerSharedFateGetHit;
+
     private static readonly FieldInfo? AttackedByField = AccessTools.Field(typeof(Actor), "attackedBy");
 
     private static readonly string[] GoldenTouchDropIds =
@@ -346,6 +354,12 @@ public sealed partial class EraTraitRuntimeService
 
     private void RegisterPublicTraitTriggers()
     {
+        RegisterOnHitExperienceAction();
+        RegisterFastLevelingSpecialEffect();
+        RegisterFlightActions();
+        RegisterGetHitAction(UnbrokenWillTraitId, UnbrokenWillGetHitAction, "不屈意志");
+        RegisterGetHitAction(SharedFateTraitId, SharedFateGetHitAction, "命运共同体");
+
         _triggers.RegisterTraitTrigger(
             "trait_common_lifesteal#on_hit",
             LifestealTraitId,
@@ -356,105 +370,6 @@ public sealed partial class EraTraitRuntimeService
             {
                 int healing = Math.Max(1, (int)MathF.Round(Math.Max(0f, context.Damage) * 0.1f));
                 actor.restoreHealth(healing);
-            }
-        );
-
-        _triggers.RegisterTraitTrigger(
-            "trait_common_onhit_exp_10#on_hit",
-            OnHitExpTraitId,
-            EraTriggerType.OnHit,
-            EraTriggerSubject.Source,
-            OnHitExpTraitId,
-            (_, actor) => AddExperience(actor, 10),
-            condition: context => context.AttackType == AttackType.Weapon
-        );
-
-        _triggers.RegisterTraitTrigger(
-            "trait_common_fast_leveling#tick",
-            FastLevelingTraitId,
-            EraTriggerType.OnTick,
-            EraTriggerSubject.Source,
-            FastLevelingTraitId,
-            (context, actor) =>
-            {
-                float nextGrant = GetCustomFloat(actor, EraEntityCustomDataKeys.TraitFastLevelingNextGrantWorldTime);
-                if (nextGrant <= 0f)
-                {
-                    nextGrant = context.WorldTime + EraWorldTime.YearsToWorldTime(1f);
-                    SetCustomFloat(actor, EraEntityCustomDataKeys.TraitFastLevelingNextGrantWorldTime, nextGrant);
-                    return;
-                }
-
-                if (context.WorldTime < nextGrant)
-                {
-                    return;
-                }
-
-                AddExperience(actor, 10);
-                SetCustomFloat(
-                    actor,
-                    EraEntityCustomDataKeys.TraitFastLevelingNextGrantWorldTime,
-                    context.WorldTime + EraWorldTime.YearsToWorldTime(1f)
-                );
-            }
-        );
-
-        _triggers.RegisterTraitTrigger(
-            "trait_common_unbroken_will#get_hit",
-            UnbrokenWillTraitId,
-            EraTriggerType.OnGetHit,
-            EraTriggerSubject.Target,
-            UnbrokenWillTraitId,
-            (_, actor) =>
-            {
-                if (GetCustomBool(actor, EraEntityCustomDataKeys.TraitUnbrokenWillUsed))
-                {
-                    return;
-                }
-
-                if (actor.getMaxHealth() <= 0 || actor.getHealth() <= 0)
-                {
-                    return;
-                }
-
-                if (actor.getHealth() > actor.getMaxHealthPercent(0.2f))
-                {
-                    return;
-                }
-
-                SetCustomBool(actor, EraEntityCustomDataKeys.TraitUnbrokenWillUsed, true);
-                actor.restoreHealth(Math.Max(1, actor.getHealth() / 2));
-            }
-        );
-
-        _triggers.RegisterTraitTrigger(
-            "trait_common_shared_fate#get_hit",
-            SharedFateTraitId,
-            EraTriggerType.OnGetHit,
-            EraTriggerSubject.Target,
-            SharedFateTraitId,
-            (context, actor) =>
-            {
-                if (context.SourceActor == null)
-                {
-                    return;
-                }
-
-                foreach (Actor ally in EnumerateActors())
-                {
-                    if (ally == null || !ally.isAlive() || !ally.hasTrait(SharedFateTraitId))
-                    {
-                        continue;
-                    }
-
-                    if (!ally.hasKingdom() || !actor.hasKingdom() || !ally.isSameKingdom(actor))
-                    {
-                        continue;
-                    }
-
-                    ally.addAggro(context.SourceActor);
-                    ally.startFightingWith(context.SourceActor);
-                }
             }
         );
 
@@ -474,12 +389,122 @@ public sealed partial class EraTraitRuntimeService
                     RefreshPublicTraitAuras(context, actor);
                     RefreshTerrainAdaptations(context, actor);
                     RefreshPermanentGrowth(context, actor);
-                    RefreshMovementTraits(context, actor);
                     CheckRockArmorBreak(context, actor);
                 },
                 chancePercent: 100f
             )
         );
+    }
+
+    private static void RegisterOnHitExperienceAction()
+    {
+        ActorTrait? trait = AssetManager.traits.get(OnHitExpTraitId);
+        if (trait == null)
+        {
+            EraLog.Warning(
+                EraLogCategory.Combat,
+                $"战斗悟性原版命中回调未注册：未找到特质 ID={OnHitExpTraitId}。"
+            );
+            return;
+        }
+
+        AttackAction? withoutExisting = (AttackAction?)Delegate.Remove(
+            trait.action_attack_target,
+            OnHitExperienceAction
+        );
+        trait.action_attack_target = (AttackAction)Delegate.Combine(withoutExisting, OnHitExperienceAction);
+        MarkActorsWithTraitStatsDirty(OnHitExpTraitId);
+    }
+
+    private static void RegisterFastLevelingSpecialEffect()
+    {
+        ActorTrait? trait = AssetManager.traits.get(FastLevelingTraitId);
+        if (trait == null)
+        {
+            EraLog.Warning(
+                EraLogCategory.Combat,
+                $"快速升级原版周期回调未注册：未找到特质 ID={FastLevelingTraitId}。"
+            );
+            return;
+        }
+
+        WorldAction? withoutExisting = (WorldAction?)Delegate.Remove(
+            trait.action_special_effect,
+            FastLevelingSpecialEffectAction
+        );
+        trait.action_special_effect = (WorldAction)Delegate.Combine(withoutExisting, FastLevelingSpecialEffectAction);
+        trait.special_effect_interval = EraWorldTime.YearsToWorldTime(1f);
+        MarkActorsWithTraitStatsDirty(FastLevelingTraitId);
+    }
+
+    private static void RegisterFlightActions()
+    {
+        ActorTrait? trait = AssetManager.traits.get(FlightTraitId);
+        if (trait == null)
+        {
+            EraLog.Warning(
+                EraLogCategory.Combat,
+                $"飞翔原版飞行回调未注册：未找到特质 ID={FlightTraitId}。"
+            );
+            return;
+        }
+
+        WorldAction? withoutSpecialEffect = (WorldAction?)Delegate.Remove(
+            trait.action_special_effect,
+            FlightSpecialEffectAction
+        );
+        WorldActionTrait? withoutAdded = (WorldActionTrait?)Delegate.Remove(
+            trait.action_on_augmentation_add,
+            FlightAddedAction
+        );
+        WorldActionTrait? withoutLoaded = (WorldActionTrait?)Delegate.Remove(
+            trait.action_on_augmentation_load,
+            FlightLoadedAction
+        );
+
+        trait.action_special_effect = (WorldAction)Delegate.Combine(withoutSpecialEffect, FlightSpecialEffectAction);
+        trait.action_on_augmentation_add = (WorldActionTrait)Delegate.Combine(withoutAdded, FlightAddedAction);
+        trait.action_on_augmentation_load = (WorldActionTrait)Delegate.Combine(withoutLoaded, FlightLoadedAction);
+        trait.special_effect_interval = 1f;
+
+        MarkActorsWithTraitStatsDirty(FlightTraitId);
+        ApplyFlightToExistingActors();
+    }
+
+    private static void RegisterGetHitAction(string traitId, GetHitAction action, string displayName)
+    {
+        ActorTrait? trait = AssetManager.traits.get(traitId);
+        if (trait == null)
+        {
+            EraLog.Warning(
+                EraLogCategory.Combat,
+                $"{displayName}原版受击回调未注册：未找到特质 ID={traitId}。"
+            );
+            return;
+        }
+
+        GetHitAction? withoutExisting = (GetHitAction?)Delegate.Remove(
+            trait.action_get_hit,
+            action
+        );
+        trait.action_get_hit = (GetHitAction)Delegate.Combine(withoutExisting, action);
+        MarkActorsWithTraitStatsDirty(traitId);
+    }
+
+    private static void MarkActorsWithTraitStatsDirty(string traitId)
+    {
+        if (World.world?.units == null)
+        {
+            return;
+        }
+
+        foreach (Actor actor in World.world.units)
+        {
+            if (actor != null && actor.hasTrait(traitId))
+            {
+                actor.setStatsDirty();
+            }
+        }
     }
 
     private void RegisterHeritageTraitTriggers()
@@ -885,14 +910,6 @@ public sealed partial class EraTraitRuntimeService
         if (stacks > 0)
         {
             ApplySoulReaperGrowth(actor, stacks);
-        }
-    }
-
-    private void RefreshMovementTraits(EraTriggerContext _, Actor actor)
-    {
-        if (actor.hasTrait(FlightTraitId))
-        {
-            actor.setFlying(true);
         }
     }
 
@@ -1303,6 +1320,125 @@ public sealed partial class EraTraitRuntimeService
         }
 
         AddExperienceMethod.Invoke(actor, new object[] { amount });
+    }
+
+    private static bool GrantOnHitExperience(BaseSimObject self, BaseSimObject target, WorldTile tile)
+    {
+        if (self is Actor actor)
+        {
+            AddExperience(actor, 10);
+        }
+
+        return false;
+    }
+
+    private static bool GrantFastLevelingExperience(BaseSimObject self, WorldTile tile)
+    {
+        if (self is Actor actor)
+        {
+            AddExperience(actor, 10);
+        }
+
+        return false;
+    }
+
+    private static bool ApplyFlightSpecialEffect(BaseSimObject self, WorldTile tile)
+    {
+        if (self is Actor actor)
+        {
+            ApplyFlight(actor);
+        }
+
+        return false;
+    }
+
+    private static bool ApplyFlightTrait(NanoObject target, BaseAugmentationAsset trait)
+    {
+        if (target is Actor actor)
+        {
+            ApplyFlight(actor);
+        }
+
+        return false;
+    }
+
+    private static void ApplyFlight(Actor actor)
+    {
+        actor.setFlying(true);
+    }
+
+    private static void ApplyFlightToExistingActors()
+    {
+        if (World.world?.units == null)
+        {
+            return;
+        }
+
+        foreach (Actor actor in World.world.units)
+        {
+            if (actor != null && actor.hasTrait(FlightTraitId))
+            {
+                ApplyFlight(actor);
+            }
+        }
+    }
+
+    private static bool TriggerUnbrokenWillGetHit(BaseSimObject self, BaseSimObject attackedBy, WorldTile tile)
+    {
+        if (self is not Actor actor)
+        {
+            return false;
+        }
+
+        if (GetCustomBool(actor, EraEntityCustomDataKeys.TraitUnbrokenWillUsed))
+        {
+            return false;
+        }
+
+        if (actor.getMaxHealth() <= 0 || actor.getHealth() <= 0)
+        {
+            return false;
+        }
+
+        if (actor.getHealth() > actor.getMaxHealthPercent(0.2f))
+        {
+            return false;
+        }
+
+        SetCustomBool(actor, EraEntityCustomDataKeys.TraitUnbrokenWillUsed, true);
+        actor.restoreHealth(Math.Max(1, actor.getHealth() / 2));
+        return false;
+    }
+
+    private static bool TriggerSharedFateGetHit(BaseSimObject self, BaseSimObject attackedBy, WorldTile tile)
+    {
+        if (self is not Actor actor)
+        {
+            return false;
+        }
+
+        if (attackedBy is not Actor attacker)
+        {
+            return false;
+        }
+
+        foreach (Actor ally in EnumerateActors())
+        {
+            if (ally == null || !ally.isAlive() || !ally.hasTrait(SharedFateTraitId))
+            {
+                continue;
+            }
+
+            if (!ally.hasKingdom() || !actor.hasKingdom() || !ally.isSameKingdom(actor))
+            {
+                continue;
+            }
+
+            ally.addAggro(attacker);
+            ally.startFightingWith(attacker);
+        }
+
+        return false;
     }
 
     private static void RestoreManaPercent(Actor actor, float percent)

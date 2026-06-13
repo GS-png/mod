@@ -36,7 +36,7 @@ public sealed class EraTraitRegistrationReport
 
 public static class EraTraitRegistrationService
 {
-    public static EraTraitRegistrationReport Register(EraContentCatalog contentCatalog, EraSpriteCatalog spriteCatalog, bool reloadMode = false)
+    public static EraTraitRegistrationReport Register(EraContentCatalog contentCatalog, EraSpriteCatalog spriteCatalog)
     {
         int publicRegisteredCount = 0;
         int publicSkippedCount = 0;
@@ -45,7 +45,7 @@ public static class EraTraitRegistrationService
 
         foreach (EraPublicTraitManifest trait in contentCatalog.PublicTraits)
         {
-            if (RegisterPublicTrait(trait, spriteCatalog, reloadMode))
+            if (RegisterPublicTrait(trait, spriteCatalog))
             {
                 publicRegisteredCount++;
             }
@@ -57,7 +57,7 @@ public static class EraTraitRegistrationService
 
         foreach (EraHeritageTraitManifest trait in contentCatalog.HeritageTraits)
         {
-            if (RegisterHeritageTrait(trait, spriteCatalog, reloadMode))
+            if (RegisterHeritageTrait(trait, spriteCatalog))
             {
                 heritageRegisteredCount++;
             }
@@ -75,9 +75,9 @@ public static class EraTraitRegistrationService
         );
     }
 
-    private static bool RegisterPublicTrait(EraPublicTraitManifest trait, EraSpriteCatalog spriteCatalog, bool reloadMode)
+    private static bool RegisterPublicTrait(EraPublicTraitManifest trait, EraSpriteCatalog spriteCatalog)
     {
-        if (!reloadMode && AssetManager.traits.has(trait.TraitId))
+        if (AssetManager.traits.has(trait.TraitId))
         {
             EraLog.Warning(EraLogCategory.Data, $"公共特质已存在，跳过重复注册：{trait.TraitId}");
             return false;
@@ -111,9 +111,9 @@ public static class EraTraitRegistrationService
         return true;
     }
 
-    private static bool RegisterHeritageTrait(EraHeritageTraitManifest trait, EraSpriteCatalog spriteCatalog, bool reloadMode)
+    private static bool RegisterHeritageTrait(EraHeritageTraitManifest trait, EraSpriteCatalog spriteCatalog)
     {
-        if (!reloadMode && AssetManager.traits.has(trait.TraitId))
+        if (AssetManager.traits.has(trait.TraitId))
         {
             EraLog.Warning(EraLogCategory.Data, $"轮回特质已存在，跳过重复注册：{trait.TraitId}");
             return false;

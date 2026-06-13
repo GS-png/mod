@@ -439,11 +439,26 @@ public sealed class EraProgressionRuntimeService
                 break;
             }
 
-            if (random.isAvailable())
+            if (CanAddMutationBoxReplacementTrait(random))
             {
                 container.addTrait(random, pRemoveOpposites: true);
             }
         }
+    }
+
+    private bool CanAddMutationBoxReplacementTrait(ActorTrait? trait)
+    {
+        if (trait == null)
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(trait.id) && _heritageTraitsById.ContainsKey(trait.id))
+        {
+            return CanReceiveRandomHeritageTrait(trait, null);
+        }
+
+        return trait.isAvailable();
     }
 
     public EraTraitInstanceAttributeState? GetTraitInstanceState(Actor actor, string traitId)

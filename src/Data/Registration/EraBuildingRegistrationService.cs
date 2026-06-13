@@ -25,14 +25,14 @@ public sealed class EraBuildingRegistrationReport
 
 public static class EraBuildingRegistrationService
 {
-    public static EraBuildingRegistrationReport Register(EraContentCatalog contentCatalog, EraSpriteCatalog spriteCatalog, bool reloadMode = false)
+    public static EraBuildingRegistrationReport Register(EraContentCatalog contentCatalog, EraSpriteCatalog spriteCatalog)
     {
         int registered = 0;
         int skipped = 0;
 
         foreach (EraStrongholdManifest stronghold in contentCatalog.Strongholds)
         {
-            if (RegisterStronghold(stronghold, contentCatalog, spriteCatalog, reloadMode))
+            if (RegisterStronghold(stronghold, contentCatalog, spriteCatalog))
             {
                 registered++;
             }
@@ -48,11 +48,10 @@ public static class EraBuildingRegistrationService
     private static bool RegisterStronghold(
         EraStrongholdManifest manifest,
         EraContentCatalog contentCatalog,
-        EraSpriteCatalog spriteCatalog,
-        bool reloadMode
+        EraSpriteCatalog spriteCatalog
     )
     {
-        if (!reloadMode && AssetManager.buildings.has(manifest.BuildingId))
+        if (AssetManager.buildings.has(manifest.BuildingId))
         {
             EraLog.Warning(EraLogCategory.Data, $"据点模板已存在，跳过重复注册：{manifest.BuildingId}");
             return false;

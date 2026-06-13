@@ -2,23 +2,15 @@ using EraWheel.Config;
 using EraWheel.Core;
 using EraWheel.Core.Logging;
 using EraWheel.Debug;
-using EraWheel.HotReload;
-using EraWheel.Localization;
 using EraWheel.Reflection;
 using EraWheel.UI;
 using NeoModLoader.api;
-using NeoModLoader.api.attributes;
 using NeoModLoader.General;
 
 namespace EraWheel;
 
-public sealed class EraWheelMod : BasicMod<EraWheelMod>, IReloadable
+public sealed class EraWheelMod : BasicMod<EraWheelMod>
 {
-    private static bool _reloading;
-
-    public static string LastReloadStatus { get; private set; } = "尚未执行热加载。";
-    public static EraReloadResult? LastReloadResult { get; private set; }
-
     protected override void OnModLoad()
     {
         ModDeclare declaration = GetDeclaration();
@@ -57,38 +49,39 @@ public sealed class EraWheelMod : BasicMod<EraWheelMod>, IReloadable
 
     private void Update()
     {
-        EraRuntimeBootstrap.UpdateRuntime();
-        EraUiBootstrap.PumpTopTabRegistration();
-        EraHudOverlay.Update();
+        EraRuntimeStepGuard.RunRuntimeStep(
+            EraLogCategory.Startup,
+            "main_loop_step",
+            "runtime.update",
+            CurrentCycle(),
+            CurrentWorldTime(),
+            EraRuntimeBootstrap.UpdateRuntime
+        );
+        EraRuntimeStepGuard.RunRuntimeStep(
+            EraLogCategory.Debug,
+            "main_loop_step",
+            "ui.top_tab_registration",
+            CurrentCycle(),
+            CurrentWorldTime(),
+            EraUiBootstrap.PumpTopTabRegistration
+        );
+        EraRuntimeStepGuard.RunRuntimeStep(
+            EraLogCategory.Debug,
+            "main_loop_step",
+            "ui.hud_overlay",
+            CurrentCycle(),
+            CurrentWorldTime(),
+            EraHudOverlay.Update
+        );
     }
 
-    [Hotfixable]
-    public void Reload()
+    private static int CurrentCycle()
     {
-        if (_reloading)
-        {
-            EraLog.Warning(EraLogCategory.Debug, "整模组热加载已在执行中，本次请求已忽略。");
-            return;
-        }
+        return EraRuntimeBootstrap.RuntimeSave?.CurrentState.CompletedCycles ?? 0;
+    }
 
-        _reloading = true;
-        try
-        {
-            ModDeclare declaration = GetDeclaration();
-            EraLog.Info(EraLogCategory.Startup, $"开始执行 EraWheel 整模组热加载：{declaration.Version}");
-            LastReloadResult = EraHotReloadCoordinator.Execute(this);
-            LastReloadStatus = LastReloadResult.RestartRequired
-                ? LM.Get(EraLocaleKeys.DebugReloadHintRestartRequired)
-                : LastReloadResult.Success
-                    ? LM.Get(EraLocaleKeys.DebugReloadHintSuccess)
-                    : LM.Get(EraLocaleKeys.DebugReloadHintFailed);
-            EraLog.Info(EraLogCategory.Startup, $"热加载摘要：{LastReloadResult.Summary}");
-            EraLog.Info(EraLogCategory.Startup, EraUiBootstrap.CreateEntryButtonIconModeReport());
-            EraLog.Info(EraLogCategory.Startup, EraUiBootstrap.CreateTopTabStatusReport());
-        }
-        finally
-        {
-            _reloading = false;
-        }
+    private static float CurrentWorldTime()
+    {
+        return EraRuntimeBootstrap.RuntimeSave?.CurrentState.LastObservedWorldTime ?? 0f;
     }
 }

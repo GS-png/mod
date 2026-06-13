@@ -2,7 +2,6 @@ using System.Text;
 using EraWheel.Config;
 using EraWheel.Core;
 using EraWheel.Core.Logging;
-using EraWheel.HotReload;
 using EraWheel.Localization;
 using EraWheel.Reflection;
 using NeoModLoader.General;
@@ -53,12 +52,6 @@ public sealed class EraDebugWindow : AbstractWindow<EraDebugWindow>
             EraLocaleKeys.DebugButtonRefresh,
             "ui/icons/iconOn",
             RefreshAndLogState
-        );
-        CreateActionButton(
-            "ReloadModButton",
-            EraLocaleKeys.DebugButtonReloadMod,
-            "ui/icons/iconSaveCloud",
-            ReloadWholeMod
         );
         CreateActionButton(
             "ReflectionButton",
@@ -149,87 +142,7 @@ public sealed class EraDebugWindow : AbstractWindow<EraDebugWindow>
             builder.AppendLine($"{LM.Get(EraLocaleKeys.DebugStatusWorldTime)}: {mapStats.world_time:F2}");
         }
 
-        builder.AppendLine($"{LM.Get(EraLocaleKeys.DebugStatusLastReload)}: {EraWheelMod.LastReloadStatus}");
-        builder.AppendLine($"{LM.Get(EraLocaleKeys.DebugStatusLastReloadReport)}: {BuildReloadReportSummary()}");
-
         return builder.ToString().TrimEnd();
-    }
-
-    [Hotfixable]
-    private string BuildReloadReportSummary()
-    {
-        if (EraWheelMod.LastReloadResult == null)
-        {
-            return LM.Get(EraLocaleKeys.DebugReloadReportEmpty);
-        }
-
-        EraReloadResult report = EraWheelMod.LastReloadResult;
-        string status = report.RestartRequired
-            ? LM.Get(EraLocaleKeys.DebugReloadHintRestartRequired)
-            : report.Success
-                ? LM.Get(EraLocaleKeys.DebugReloadReportSuccess)
-                : LM.Get(EraLocaleKeys.DebugReloadReportFailed);
-        string rollback = report.RollbackAttempted
-            ? (report.RollbackSucceeded
-                ? LM.Get(EraLocaleKeys.DebugReloadReportRollbackSuccess)
-                : LM.Get(EraLocaleKeys.DebugReloadReportRollbackFailed))
-            : LM.Get(EraLocaleKeys.DebugReloadReportRollbackSkipped);
-
-        return
-            $"{status}；{LM.Get(EraLocaleKeys.DebugReloadReportLastStage)}={report.LastStage}；" +
-            $"错误码={(int)report.ErrorCode}；耗时={report.TotalDurationMs}ms；回滚={rollback}；" +
-            $"兼容问题={report.Stats.CompatibilityIssues}；" +
-            $"补丁={report.Stats.MethodsPatched}/{report.Stats.MethodsSkipped}/{report.Stats.MethodsFailed}；" +
-            $"资源={report.Stats.ResourcesUpdated}/{report.Stats.ResourcesRemoved}；资产移除={report.Stats.AssetsRemoved}；" +
-            $"文本={report.Stats.LocaleFilesReloaded}；" +
-            $"重绑={report.Stats.WorldActorsRebound}/{report.Stats.WorldBuildingsRebound}/{report.Stats.WorldItemsRebound}；" +
-            $"{LM.Get(EraLocaleKeys.DebugReloadReportIssueCount)}={report.Issues.Count}；" +
-            $"阶段={BuildStageDigest(report)}；" +
-            $"失败点={BuildFailureDigest(report)}";
-    }
-
-    private static string BuildStageDigest(EraReloadResult report)
-    {
-        if (report.StageReports.Count == 0)
-        {
-            return "无";
-        }
-
-        StringBuilder builder = new StringBuilder();
-        for (int index = 0; index < report.StageReports.Count; index++)
-        {
-            EraReloadStageReport stage = report.StageReports[index];
-            if (index > 0)
-            {
-                builder.Append(" | ");
-            }
-
-            builder.Append(stage.Stage);
-            builder.Append(':');
-            builder.Append(stage.DurationMs);
-            builder.Append("ms");
-            builder.Append(stage.Success ? "(OK)" : "(FAIL)");
-        }
-
-        return builder.ToString();
-    }
-
-    private static string BuildFailureDigest(EraReloadResult report)
-    {
-        if (report.Issues.Count == 0)
-        {
-            return "无";
-        }
-
-        EraReloadIssue issue = report.Issues[0];
-        return $"[{issue.Kind}] {issue.Stage} -> {issue.Message}";
-    }
-
-    [Hotfixable]
-    private void ReloadWholeMod()
-    {
-        EraWheelMod.I.Reload();
-        RefreshView();
     }
 
     private void OpenConfigWindow()

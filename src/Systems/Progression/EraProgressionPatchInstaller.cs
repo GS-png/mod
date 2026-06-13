@@ -24,6 +24,7 @@ public static class EraProgressionPatchInstaller
         harmony.CreateClassProcessor(typeof(EraProgressionGrowUpTraitPatch)).Patch();
         harmony.CreateClassProcessor(typeof(EraProgressionInheritanceTraitPatch)).Patch();
         harmony.CreateClassProcessor(typeof(EraProgressionMutationBoxTraitPatch)).Patch();
+        harmony.CreateClassProcessor(typeof(EraProgressionCraftItemPatch)).Patch();
         harmony.CreateClassProcessor(typeof(EraProgressionEquipmentSlotPatch)).Patch();
         harmony.CreateClassProcessor(typeof(EraProgressionCityStoragePatch)).Patch();
         _patched = true;

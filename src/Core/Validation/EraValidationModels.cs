@@ -45,6 +45,21 @@ public sealed class EraValidationReport
         return $"错误={ErrorCount}；警告={WarningCount}。";
     }
 
+    public EraValidationReport Merge(EraValidationReport other)
+    {
+        if (other.Issues.Count == 0)
+        {
+            return this;
+        }
+
+        if (Issues.Count == 0)
+        {
+            return other;
+        }
+
+        return new EraValidationReport(Issues.Concat(other.Issues).ToArray());
+    }
+
     public IReadOnlyList<string> CreateChecklistLines()
     {
         return new[]

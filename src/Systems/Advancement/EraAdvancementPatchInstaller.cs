@@ -16,7 +16,6 @@ public static class EraAdvancementPatchInstaller
 
         Harmony harmony = new Harmony("EraWheel.AdvancementRuntime");
         harmony.CreateClassProcessor(typeof(EraWorldboxAdvancementCraftCandidatePatch)).Patch();
-        harmony.CreateClassProcessor(typeof(EraWorldboxHeritageAvailabilityPatch)).Patch();
         _patched = true;
         EraLog.Info(EraLogCategory.Events, "轮回进阶 Harmony 补丁已安装。");
     }

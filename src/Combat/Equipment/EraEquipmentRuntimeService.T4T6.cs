@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using EraWheel.Combat;
 using EraWheel.Combat.Effects;
 using EraWheel.Combat.Statuses;
+using EraWheel.Combat.Triggers;
 using EraWheel.Core.Constants;
+using EraWheel.Core.Logging;
 using EraWheel.Core.Time;
 
 namespace EraWheel.Combat.Equipment;
@@ -20,6 +23,16 @@ public sealed partial class EraEquipmentRuntimeService
     private const string BoneCrownId = "eq_herit_t6_bone_crown";
     private const string RefluxRingId = "eq_herit_t6_reflux_ring";
     private const string SkeletonAssetId = "skeleton";
+
+    private static readonly AttackAction MeteorHammerNativeOnHitAction = TriggerMeteorHammerNativeOnHit;
+
+    partial void BindTier4To6NativeEquipmentActions()
+    {
+        if (BindNativeAttackAction(MeteorHammerId, MeteorHammerNativeOnHitAction))
+        {
+            MarkActorsWithEquipmentStatsDirty(MeteorHammerId);
+        }
+    }
 
     partial void RegisterTier4To6EquipmentTriggers()
     {
@@ -105,30 +118,6 @@ public sealed partial class EraEquipmentRuntimeService
             },
             cooldownWorldTime: DefaultActiveCooldown,
             targetSearchRadius: 18f
-        );
-
-        RegisterOnHitEquipmentSkill(
-            MeteorHammerId,
-            (context, actor) =>
-            {
-                Actor? target = context.TargetActor;
-                if (target?.current_tile == null)
-                {
-                    return;
-                }
-
-                WorldTile center = target.current_tile;
-                float damageMultiplier = RollBetween(actor, target, "meteor_hammer_damage", 0.60f, 0.80f);
-                ActionLibrary.unluckyMeteorite(actor, center);
-                _effects.ApplyAreaDamage(
-                    context.ToEffectContext(),
-                    center,
-                    6f,
-                    damageMultiplier: damageMultiplier,
-                    targetRule: EraEffectTargetRule.Foes
-                );
-                _effects.ApplyAreaKnockback(context.ToEffectContext(), center, 6f, forceMultiplier: 2f);
-            }
         );
 
         RegisterOnGetHitEquipmentSkill(
@@ -239,5 +228,63 @@ public sealed partial class EraEquipmentRuntimeService
             },
             cooldownWorldTime: DefaultActiveCooldown
         );
+    }
+
+    private static bool TriggerMeteorHammerNativeOnHit(BaseSimObject self, BaseSimObject target, WorldTile tile)
+    {
+        try
+        {
+            EraCombatRuntimeBridge.Current?.Equipment?.ApplyMeteorHammerNativeOnHit(self, target);
+        }
+        catch (Exception exception)
+        {
+            EraLog.Exception(
+                EraLogCategory.Combat,
+                $"陨星锤原版命中回调执行失败：{MeteorHammerId}。",
+                exception
+            );
+        }
+
+        return false;
+    }
+
+    private void ApplyMeteorHammerNativeOnHit(BaseSimObject self, BaseSimObject target)
+    {
+        if (self is not Actor actor)
+        {
+            return;
+        }
+
+        float worldTime = ReadWorldTime();
+        string triggerId = $"{MeteorHammerId}#on_hit";
+        if (!TryBeginNativeOnHitEquipmentProc(actor, target, MeteorHammerId, triggerId, worldTime))
+        {
+            return;
+        }
+
+        if (target is not Actor targetActor || targetActor.current_tile == null)
+        {
+            return;
+        }
+
+        WorldTile center = targetActor.current_tile;
+        float damageMultiplier = RollBetween(actor, targetActor, "meteor_hammer_damage", 0.60f, 0.80f);
+        EraEffectContext context = new EraEffectContext(
+            actor,
+            targetActor,
+            worldTime,
+            "MapBox.applyAttack",
+            EraTriggerType.OnHit
+        );
+
+        ActionLibrary.unluckyMeteorite(actor, center);
+        _effects.ApplyAreaDamage(
+            context,
+            center,
+            6f,
+            damageMultiplier: damageMultiplier,
+            targetRule: EraEffectTargetRule.Foes
+        );
+        _effects.ApplyAreaKnockback(context, center, 6f, forceMultiplier: 2f);
     }
 }

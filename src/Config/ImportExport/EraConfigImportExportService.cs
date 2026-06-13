@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using EraWheel.Config.Migration;
+using EraWheel.Config.Registry;
 using EraWheel.Config.Schema;
+using EraWheel.Core.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
@@ -29,6 +32,8 @@ public sealed class EraConfigImportExportService
 {
     private readonly EraConfigMigrator _migrator;
     private readonly EraConfigBackupPolicy _backupPolicy;
+    private readonly EraParameterRegistry _registry;
+    private static readonly UTF8Encoding JsonEncoding = new UTF8Encoding(false);
 
     public string BaseDirectory { get; }
     public string ExportDirectory { get; }
@@ -41,10 +46,14 @@ public sealed class EraConfigImportExportService
     public bool LoadedActiveDocument { get; private set; }
     public EraConfigImportPreview? PendingPreview { get; private set; }
 
-    private EraConfigImportExportService(EraConfigMigrator migrator, EraConfigBackupPolicy backupPolicy)
+    private EraConfigImportExportService(
+        EraConfigMigrator migrator,
+        EraConfigBackupPolicy backupPolicy,
+        EraParameterRegistry registry)
     {
         _migrator = migrator;
         _backupPolicy = backupPolicy;
+        _registry = registry;
         BaseDirectory = Path.Combine(Application.persistentDataPath, "EraWheel", "Config");
         ExportDirectory = Path.Combine(BaseDirectory, "Exports");
         BackupDirectory = Path.Combine(BaseDirectory, "Backups");
@@ -54,14 +63,14 @@ public sealed class EraConfigImportExportService
     public static EraConfigImportExportService Create(
         EraConfigMigrator migrator,
         EraConfigBackupPolicy backupPolicy,
-        EraRuntimeParameters currentParameters)
+        EraParameterRegistry registry)
     {
-        EraConfigImportExportService service = new(migrator, backupPolicy);
-        service.Initialize(currentParameters);
+        EraConfigImportExportService service = new(migrator, backupPolicy, registry);
+        service.Initialize();
         return service;
     }
 
-    public bool ExportCurrentParameters(EraRuntimeParameters currentParameters, out string path)
+    public bool ExportCurrentParameters(out string path)
     {
         path = string.Empty;
 
@@ -69,7 +78,7 @@ public sealed class EraConfigImportExportService
         {
             EnsureDirectories();
             path = Path.Combine(ExportDirectory, $"erawheel_parameters_{DateTime.UtcNow:yyyyMMdd_HHmmss}.json");
-            EraConfigDocument document = _migrator.Snapshot(currentParameters).Document;
+            EraConfigDocument document = _migrator.Snapshot(_registry.CloneCurrent()).Document;
             WriteDocument(path, document);
             LastExportPath = path;
             if (string.IsNullOrWhiteSpace(DraftImportPath))
@@ -78,22 +87,39 @@ public sealed class EraConfigImportExportService
             }
 
             LastStatusMessage = $"已导出当前玩法参数：{DescribePath(path)}";
+            LogConfigAction(
+                "export_parameters",
+                "success",
+                document.ConfigVersion,
+                migrationApplied: false,
+                backupCreated: false,
+                rollbackMemory: false,
+                path);
             return true;
         }
         catch (Exception exception)
         {
-            LastStatusMessage = $"导出失败：{exception.Message}";
+            LastStatusMessage = $"导出失败：{DescribeException(exception)}";
+            LogConfigAction(
+                "export_parameters",
+                "failed",
+                EraConfigVersioning.CurrentVersion,
+                migrationApplied: false,
+                backupCreated: false,
+                rollbackMemory: false,
+                path);
             return false;
         }
     }
 
-    public bool TryPreviewImport(EraRuntimeParameters currentParameters, out EraConfigImportPreview? preview)
+    public bool TryPreviewImport(out EraConfigImportPreview? preview)
     {
         preview = null;
+        string path = string.Empty;
 
         try
         {
-            string path = NormalizePath(DraftImportPath);
+            path = NormalizePath(DraftImportPath);
             if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
             {
                 LastStatusMessage = "预览失败：导入文件不存在，请先填写有效路径。";
@@ -107,57 +133,105 @@ public sealed class EraConfigImportExportService
             {
                 SourcePath = path,
                 Migration = migration,
-                Differences = BuildDifferences(currentParameters, migration.Document.Parameters),
+                Differences = BuildDifferences(_registry.CloneCurrent(), migration.Document.Parameters),
             };
             PendingPreview = preview;
             DraftImportPath = path;
             LastStatusMessage = $"已生成导入预览：{preview.Differences.Count} 处差异。";
+            LogConfigAction(
+                "preview_import",
+                "success",
+                migration.Document.ConfigVersion,
+                migration.MigrationApplied,
+                backupCreated: false,
+                rollbackMemory: false,
+                path);
             return true;
         }
         catch (Exception exception)
         {
-            LastStatusMessage = $"预览失败：{exception.Message}";
+            LastStatusMessage = $"预览失败：{DescribeException(exception, path)}";
             PendingPreview = null;
+            LogConfigAction(
+                "preview_import",
+                "failed",
+                EraConfigVersioning.CurrentVersion,
+                migrationApplied: false,
+                backupCreated: false,
+                rollbackMemory: false,
+                path);
             return false;
         }
     }
 
-    public bool ApplyPendingImport(EraRuntimeParameters currentParameters)
+    public bool ApplyPendingImport()
     {
         if (PendingPreview == null)
         {
             LastStatusMessage = "还没有可应用的导入预览。";
+            LogConfigAction(
+                "apply_import",
+                "skipped_no_preview",
+                EraConfigVersioning.CurrentVersion,
+                migrationApplied: false,
+                backupCreated: false,
+                rollbackMemory: false,
+                string.Empty);
             return false;
         }
 
-        EraRuntimeParameters snapshotBeforeApply = CloneParameters(currentParameters);
+        EraConfigImportPreview preview = PendingPreview;
+        EraRuntimeParameters baseline = _registry.CloneCurrent();
+        bool loadedBeforeApply = LoadedActiveDocument;
+        bool backupCreated = false;
 
         try
         {
             EnsureDirectories();
             if (_backupPolicy.BackupBeforeImport)
             {
-                LastBackupPath = WriteBackup("apply_import", currentParameters);
+                LastBackupPath = WriteBackup("apply_import", baseline);
+                backupCreated = true;
                 PruneBackups();
             }
 
-            ApplyParameters(currentParameters, PendingPreview.Migration.Document.Parameters);
-            WriteDocument(ActiveConfigPath, PendingPreview.Migration.Document);
+            _registry.ReplaceCurrent(preview.Migration.Document.Parameters);
+            WriteDocument(ActiveConfigPath, preview.Migration.Document);
             LoadedActiveDocument = true;
-            LastStatusMessage = $"导入应用成功：{DescribePath(PendingPreview.SourcePath)}";
+            LastStatusMessage = $"导入应用成功：{DescribePath(preview.SourcePath)}";
             PendingPreview = null;
+            LogConfigAction(
+                "apply_import",
+                "success",
+                preview.Migration.Document.ConfigVersion,
+                preview.Migration.MigrationApplied,
+                backupCreated,
+                rollbackMemory: false,
+                preview.SourcePath);
             return true;
         }
         catch (Exception exception)
         {
-            ApplyParameters(currentParameters, snapshotBeforeApply);
-            LastStatusMessage = $"导入应用失败，已回滚内存参数：{exception.Message}";
+            _registry.ReplaceCurrent(baseline);
+            LoadedActiveDocument = loadedBeforeApply;
+            LastStatusMessage = $"导入应用失败，已回滚内存参数：{DescribeException(exception)}";
+            LogConfigAction(
+                "apply_import",
+                "failed",
+                preview.Migration.Document.ConfigVersion,
+                preview.Migration.MigrationApplied,
+                backupCreated,
+                rollbackMemory: true,
+                preview.SourcePath);
             return false;
         }
     }
 
-    public bool RollbackLastImport(EraRuntimeParameters currentParameters)
+    public bool RollbackLastImport()
     {
+        EraRuntimeParameters baseline = _registry.CloneCurrent();
+        bool loadedBeforeRollback = LoadedActiveDocument;
+
         try
         {
             string? path = !string.IsNullOrWhiteSpace(LastBackupPath) && File.Exists(LastBackupPath)
@@ -166,38 +240,81 @@ public sealed class EraConfigImportExportService
             if (string.IsNullOrWhiteSpace(path))
             {
                 LastStatusMessage = "当前没有可回滚的导入备份。";
+                LogConfigAction(
+                    "rollback_import",
+                    "skipped_no_backup",
+                    EraConfigVersioning.CurrentVersion,
+                    migrationApplied: false,
+                    backupCreated: false,
+                    rollbackMemory: false,
+                    string.Empty);
                 return false;
             }
 
             EraConfigBackupRecord backup = ReadBackup(path);
-            ApplyParameters(currentParameters, backup.Document.Parameters);
+            _registry.ReplaceCurrent(backup.Document.Parameters);
             WriteDocument(ActiveConfigPath, backup.Document);
             LastBackupPath = path;
             LoadedActiveDocument = true;
             PendingPreview = null;
             LastStatusMessage = $"已回滚到备份：{backup.BackupId}";
+            LogConfigAction(
+                "rollback_import",
+                "success",
+                backup.Document.ConfigVersion,
+                migrationApplied: false,
+                backupCreated: false,
+                rollbackMemory: false,
+                path);
             return true;
         }
         catch (Exception exception)
         {
-            LastStatusMessage = $"回滚失败：{exception.Message}";
+            _registry.ReplaceCurrent(baseline);
+            LoadedActiveDocument = loadedBeforeRollback;
+            LastStatusMessage = $"回滚失败，已恢复操作前内存参数：{DescribeException(exception)}";
+            LogConfigAction(
+                "rollback_import",
+                "failed",
+                EraConfigVersioning.CurrentVersion,
+                migrationApplied: false,
+                backupCreated: false,
+                rollbackMemory: true,
+                LastBackupPath);
             return false;
         }
     }
 
-    public bool SaveCurrentAsActive(EraRuntimeParameters currentParameters, string reason)
+    public bool SaveCurrentAsActive(string reason)
     {
         try
         {
             EnsureDirectories();
-            WriteDocument(ActiveConfigPath, _migrator.Snapshot(currentParameters).Document);
+            EraConfigDocument document = _migrator.Snapshot(_registry.CloneCurrent()).Document;
+            WriteDocument(ActiveConfigPath, document);
             LoadedActiveDocument = true;
             LastStatusMessage = $"已保存当前玩法参数：{reason}";
+            LogConfigAction(
+                "save_active",
+                "success",
+                document.ConfigVersion,
+                migrationApplied: false,
+                backupCreated: false,
+                rollbackMemory: false,
+                ActiveConfigPath);
             return true;
         }
         catch (Exception exception)
         {
-            LastStatusMessage = $"保存当前玩法参数失败：{exception.Message}";
+            LastStatusMessage = $"保存当前玩法参数失败：{DescribeException(exception)}";
+            LogConfigAction(
+                "save_active",
+                "failed",
+                EraConfigVersioning.CurrentVersion,
+                migrationApplied: false,
+                backupCreated: false,
+                rollbackMemory: false,
+                ActiveConfigPath);
             return false;
         }
     }
@@ -240,8 +357,11 @@ public sealed class EraConfigImportExportService
         return string.Join(Environment.NewLine, lines);
     }
 
-    private void Initialize(EraRuntimeParameters currentParameters)
+    private void Initialize()
     {
+        EraRuntimeParameters baseline = _registry.CloneCurrent();
+        bool loadedBeforeInitialize = LoadedActiveDocument;
+
         try
         {
             EnsureDirectories();
@@ -249,23 +369,48 @@ public sealed class EraConfigImportExportService
             {
                 LoadedActiveDocument = false;
                 LastStatusMessage = "当前没有激活参数文档，启动时继续使用内置默认值。";
+                LogConfigAction(
+                    "initialize_active",
+                    "seed_defaults",
+                    EraConfigVersioning.CurrentVersion,
+                    migrationApplied: false,
+                    backupCreated: false,
+                    rollbackMemory: false,
+                    ActiveConfigPath);
                 return;
             }
 
             EraConfigDocument document = ReadDocument(ActiveConfigPath);
             EraConfigMigrationResult migration = _migrator.Migrate(document);
-            ApplyParameters(currentParameters, migration.Document.Parameters);
+            _registry.ReplaceCurrent(migration.Document.Parameters);
             LoadedActiveDocument = true;
             LastStatusMessage = "启动时已读取激活参数文档。";
             if (migration.MigrationApplied)
             {
                 WriteDocument(ActiveConfigPath, migration.Document);
             }
+            LogConfigAction(
+                "initialize_active",
+                "success",
+                migration.Document.ConfigVersion,
+                migration.MigrationApplied,
+                backupCreated: false,
+                rollbackMemory: false,
+                ActiveConfigPath);
         }
         catch (Exception exception)
         {
-            LoadedActiveDocument = false;
-            LastStatusMessage = $"读取激活参数文档失败，已退回默认参数：{exception.Message}";
+            _registry.ReplaceCurrent(baseline);
+            LoadedActiveDocument = loadedBeforeInitialize;
+            LastStatusMessage = $"读取激活参数文档失败，已保留启动前参数：{DescribeException(exception)}";
+            LogConfigAction(
+                "initialize_active",
+                "failed",
+                EraConfigVersioning.CurrentVersion,
+                migrationApplied: false,
+                backupCreated: false,
+                rollbackMemory: true,
+                ActiveConfigPath);
         }
     }
 
@@ -276,12 +421,12 @@ public sealed class EraConfigImportExportService
         Directory.CreateDirectory(BackupDirectory);
     }
 
-    private string WriteBackup(string reason, EraRuntimeParameters currentParameters)
+    private string WriteBackup(string reason, EraRuntimeParameters sourceParameters)
     {
-        EraConfigBackupRecord record = _backupPolicy.CreateBackup(reason, currentParameters);
+        EraConfigBackupRecord record = _backupPolicy.CreateBackup(reason, sourceParameters);
         string path = Path.Combine(BackupDirectory, $"{record.BackupId}.json");
         string json = JsonConvert.SerializeObject(record, Formatting.Indented);
-        File.WriteAllText(path, json);
+        WriteJsonAtomically(path, json);
         return path;
     }
 
@@ -319,7 +464,7 @@ public sealed class EraConfigImportExportService
         EraConfigDocument? document = JsonConvert.DeserializeObject<EraConfigDocument>(json);
         if (document == null)
         {
-            throw new InvalidOperationException($"无法解析配置文档：{path}");
+            throw new InvalidOperationException($"无法解析配置文档：{Path.GetFileName(path)}");
         }
 
         return document;
@@ -331,16 +476,69 @@ public sealed class EraConfigImportExportService
         EraConfigBackupRecord? record = JsonConvert.DeserializeObject<EraConfigBackupRecord>(json);
         if (record == null)
         {
-            throw new InvalidOperationException($"无法解析配置备份：{path}");
+            throw new InvalidOperationException($"无法解析配置备份：{Path.GetFileName(path)}");
         }
 
         return record;
     }
 
-    private static void WriteDocument(string path, EraConfigDocument document)
+    private void WriteDocument(string path, EraConfigDocument document)
     {
         string json = JsonConvert.SerializeObject(document, Formatting.Indented);
-        File.WriteAllText(path, json);
+        WriteJsonAtomically(path, json);
+    }
+
+    private static void WriteJsonAtomically(string path, string json)
+    {
+        string targetPath = Path.GetFullPath(path);
+        string? directory = Path.GetDirectoryName(targetPath);
+        if (!string.IsNullOrWhiteSpace(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        string tempPath = Path.Combine(
+            directory ?? string.Empty,
+            $".{Path.GetFileName(targetPath)}.{Guid.NewGuid():N}.tmp");
+
+        try
+        {
+            using (FileStream stream = new FileStream(tempPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            using (StreamWriter writer = new StreamWriter(stream, JsonEncoding))
+            {
+                writer.Write(json);
+                writer.Flush();
+                stream.Flush(true);
+            }
+
+            if (File.Exists(targetPath))
+            {
+                File.Replace(tempPath, targetPath, null);
+            }
+            else
+            {
+                File.Move(tempPath, targetPath);
+            }
+        }
+        catch
+        {
+            TryDeleteTempFile(tempPath);
+            throw;
+        }
+    }
+
+    private static void TryDeleteTempFile(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        catch
+        {
+        }
     }
 
     private static string NormalizePath(string? rawPath)
@@ -351,25 +549,6 @@ public sealed class EraConfigImportExportService
         }
 
         return Path.GetFullPath(rawPath.Trim());
-    }
-
-    private static EraRuntimeParameters CloneParameters(EraRuntimeParameters parameters)
-    {
-        string json = JsonConvert.SerializeObject(parameters ?? new EraRuntimeParameters());
-        return JsonConvert.DeserializeObject<EraRuntimeParameters>(json) ?? new EraRuntimeParameters();
-    }
-
-    private static void ApplyParameters(EraRuntimeParameters target, EraRuntimeParameters source)
-    {
-        EraRuntimeParameters clone = CloneParameters(source);
-        target.Reincarnation = clone.Reincarnation;
-        target.Demons = clone.Demons;
-        target.Legions = clone.Legions;
-        target.Advancement = clone.Advancement;
-        target.Levels = clone.Levels;
-        target.Kingdoms = clone.Kingdoms;
-        target.Heroes = clone.Heroes;
-        target.Growth = clone.Growth;
     }
 
     private static List<EraConfigDiffEntry> BuildDifferences(EraRuntimeParameters current, EraRuntimeParameters incoming)
@@ -443,6 +622,79 @@ public sealed class EraConfigImportExportService
         }
     }
 
+    private void LogConfigAction(
+        string action,
+        string result,
+        int configVersion,
+        bool migrationApplied,
+        bool backupCreated,
+        bool rollbackMemory,
+        string path)
+    {
+        string message = string.Join(
+            " ",
+            $"action={action}",
+            $"result={result}",
+            $"config_version={configVersion}",
+            $"migration_applied={FormatBool(migrationApplied)}",
+            $"backup_created={FormatBool(backupCreated)}",
+            $"rollback_memory={FormatBool(rollbackMemory)}",
+            $"file={DescribePath(path)}");
+
+        if (string.Equals(result, "success", StringComparison.Ordinal)
+            || string.Equals(result, "seed_defaults", StringComparison.Ordinal)
+            || result.StartsWith("skipped_", StringComparison.Ordinal))
+        {
+            EraLog.Info(EraLogCategory.Config, message);
+            return;
+        }
+
+        EraLog.Warning(EraLogCategory.Config, message);
+    }
+
+    private string DescribeException(Exception exception, params string[] additionalPaths)
+    {
+        string message = SanitizePathText(exception.Message, additionalPaths);
+        return string.IsNullOrWhiteSpace(message)
+            ? exception.GetType().Name
+            : $"{exception.GetType().Name}: {message}";
+    }
+
+    private string SanitizePathText(string message, params string[] additionalPaths)
+    {
+        string sanitized = message ?? string.Empty;
+        sanitized = ReplaceKnownPath(sanitized, BaseDirectory);
+        sanitized = ReplaceKnownPath(sanitized, ExportDirectory);
+        sanitized = ReplaceKnownPath(sanitized, BackupDirectory);
+        sanitized = ReplaceKnownPath(sanitized, ActiveConfigPath);
+        sanitized = ReplaceKnownPath(sanitized, DraftImportPath);
+        sanitized = ReplaceKnownPath(sanitized, LastExportPath);
+        sanitized = ReplaceKnownPath(sanitized, LastBackupPath);
+        foreach (string path in additionalPaths)
+        {
+            sanitized = ReplaceKnownPath(sanitized, path);
+        }
+
+        return string.IsNullOrWhiteSpace(Application.persistentDataPath)
+            ? sanitized
+            : sanitized.Replace(Application.persistentDataPath, "persistentDataPath");
+    }
+
+    private string ReplaceKnownPath(string message, string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return message;
+        }
+
+        return message.Replace(path, DescribePath(path));
+    }
+
+    private static string FormatBool(bool value)
+    {
+        return value ? "true" : "false";
+    }
+
     private string DescribePath(string path)
     {
         if (string.IsNullOrWhiteSpace(path))
@@ -450,13 +702,20 @@ public sealed class EraConfigImportExportService
             return "未生成";
         }
 
-        string fullPath = Path.GetFullPath(path);
-        string fullBase = Path.GetFullPath(BaseDirectory);
-        if (fullPath.StartsWith(fullBase, StringComparison.OrdinalIgnoreCase))
+        try
         {
-            return fullPath.Substring(fullBase.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-        }
+            string fullPath = Path.GetFullPath(path);
+            string fullBase = Path.GetFullPath(BaseDirectory);
+            if (fullPath.StartsWith(fullBase, StringComparison.OrdinalIgnoreCase))
+            {
+                return fullPath.Substring(fullBase.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            }
 
-        return Path.GetFileName(fullPath);
+            return Path.GetFileName(fullPath);
+        }
+        catch
+        {
+            return Path.GetFileName(path);
+        }
     }
 }

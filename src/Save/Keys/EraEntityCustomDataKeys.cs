@@ -96,7 +96,7 @@ public static class EraEntityCustomDataKeys
     public static readonly EraEntityCustomDataKey TraitFastLevelingNextGrantWorldTime = new(
         "ew_actor_trait_fast_leveling_next_grant_world_time",
         EraCustomDataValueKind.Float,
-        "记录“快速升级”下一次发放年度经验的 world_time。"
+        "历史兼容字段；旧版本记录“快速升级”下一次发放经验时间，当前原版 special_effect_interval 不再读取。"
     );
 
     public static readonly IReadOnlyList<EraEntityCustomDataKey> All = new[]

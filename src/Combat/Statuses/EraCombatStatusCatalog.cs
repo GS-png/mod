@@ -23,7 +23,7 @@ public static class EraCombatStatusCatalog
         new EraStatusDefinition(EraStatusKind.TimedDebuff, DebuffStatusId, "减益", "临时属性降低。", supportsDynamicModifiers: true),
     };
 
-    public static int RegisterCustomStatuses(bool reloadMode = false)
+    public static int RegisterCustomStatuses()
     {
         int registered = 0;
         foreach (EraStatusDefinition definition in Definitions)
@@ -33,7 +33,7 @@ public static class EraCombatStatusCatalog
                 continue;
             }
 
-            if (!reloadMode && AssetManager.status.has(definition.StatusId))
+            if (AssetManager.status.has(definition.StatusId))
             {
                 continue;
             }

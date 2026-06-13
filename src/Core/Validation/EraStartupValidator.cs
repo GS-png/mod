@@ -49,6 +49,14 @@ public static class EraStartupValidator
         return new EraValidationReport(issues);
     }
 
+    public static EraValidationReport ValidateRuntimeState(EraContentCatalog catalog)
+    {
+        List<EraValidationIssue> issues = new List<EraValidationIssue>();
+        ValidateRegisteredHeritageEquipmentAssets(catalog.HeritageEquipment, issues);
+        ValidateAdvancementDisplayableBaseStats(issues);
+        return new EraValidationReport(issues);
+    }
+
     private static void ValidateConfigRegistry(EraParameterRegistry registry, List<EraValidationIssue> issues)
     {
         if (registry.Current.Advancement.MaxTier < 1)
@@ -268,7 +276,6 @@ public static class EraStartupValidator
             registry.Current.Advancement.RandomAttributes.EquipmentAttributesPerItem > 0 ||
             registry.Current.Advancement.RandomAttributes.TraitAttributesPerItem > 0,
             issues);
-        ValidateAdvancementDisplayableBaseStats(issues);
         if (registry.Current.Advancement.RandomAttributes.EquipmentAttributesPerItem < 0)
         {
             issues.Add(new EraValidationIssue(EraValidationSeverity.Error, "Config", "每件装备随机属性数不能为负数。"));
@@ -652,8 +659,6 @@ public static class EraStartupValidator
             ValidateIconPath("HeritageEquipment", equipment.EquipmentId, modRootPath, equipment.IconSourcePath, issues);
         }
 
-        ValidateRegisteredHeritageEquipmentAssets(catalog.HeritageEquipment, issues);
-
         foreach (EraHeritageTraitManifest trait in catalog.HeritageTraits)
         {
             ValidateRequiredText("HeritageTrait", trait.TraitId, trait.DisplayName, issues);
@@ -749,180 +754,6 @@ public static class EraStartupValidator
                         EraValidationSeverity.Error,
                         "HeritageEquipmentSpec",
                         $"槽位 {slotKind} 绑定的外观引用无效：{spec.VisualReferenceAssetId}。"
-                    )
-                );
-            }
-        }
-    }
-
-    private static void ValidateRegisteredHeritageEquipmentAssets(
-        IEnumerable<EraHeritageEquipmentManifest> equipmentList,
-        List<EraValidationIssue> issues
-    )
-    {
-        foreach (EraHeritageEquipmentManifest equipment in equipmentList)
-        {
-            if (!EraHeritageEquipmentSlotSpecs.TryGet(equipment.SlotKind, out EraHeritageEquipmentSlotSpec spec))
-            {
-                continue;
-            }
-
-            EquipmentAsset? asset = AssetManager.items.get(equipment.EquipmentId);
-            if (asset == null)
-            {
-                issues.Add(
-                    new EraValidationIssue(
-                        EraValidationSeverity.Error,
-                        "HeritageEquipmentRegistration",
-                        $"轮回装备未完成注册：{equipment.EquipmentId}。"
-                    )
-                );
-                continue;
-            }
-
-            if (asset.equipment_type != spec.EquipmentType)
-            {
-                issues.Add(
-                    new EraValidationIssue(
-                        EraValidationSeverity.Error,
-                        "HeritageEquipmentRegistration",
-                        $"轮回装备 {equipment.EquipmentId} 的 equipment_type={asset.equipment_type}，预期={spec.EquipmentType}。"
-                    )
-                );
-            }
-
-            if (!string.Equals(asset.equipment_subtype, spec.EquipmentSubtype, StringComparison.Ordinal))
-            {
-                issues.Add(
-                    new EraValidationIssue(
-                        EraValidationSeverity.Error,
-                        "HeritageEquipmentRegistration",
-                        $"轮回装备 {equipment.EquipmentId} 的 equipment_subtype={asset.equipment_subtype}，预期={spec.EquipmentSubtype}。"
-                    )
-                );
-            }
-
-            if (!string.Equals(asset.group_id, spec.GroupId, StringComparison.Ordinal))
-            {
-                issues.Add(
-                    new EraValidationIssue(
-                        EraValidationSeverity.Error,
-                        "HeritageEquipmentRegistration",
-                        $"轮回装备 {equipment.EquipmentId} 的 group_id={asset.group_id}，预期={spec.GroupId}。"
-                    )
-                );
-            }
-
-            if (asset.is_pool_weapon != spec.IsPoolWeapon)
-            {
-                issues.Add(
-                    new EraValidationIssue(
-                        EraValidationSeverity.Error,
-                        "HeritageEquipmentRegistration",
-                        $"轮回装备 {equipment.EquipmentId} 的 is_pool_weapon={asset.is_pool_weapon}，预期={spec.IsPoolWeapon}。"
-                    )
-                );
-            }
-
-            if (spec.AttackType.HasValue && asset.attack_type != spec.AttackType.Value)
-            {
-                issues.Add(
-                    new EraValidationIssue(
-                        EraValidationSeverity.Error,
-                        "HeritageEquipmentRegistration",
-                        $"轮回装备 {equipment.EquipmentId} 的 attack_type={asset.attack_type}，预期={spec.AttackType.Value}。"
-                    )
-                );
-            }
-
-            if (!string.Equals(asset.path_slash_animation, spec.PathSlashAnimation, StringComparison.Ordinal))
-            {
-                issues.Add(
-                    new EraValidationIssue(
-                        EraValidationSeverity.Error,
-                        "HeritageEquipmentRegistration",
-                        $"轮回装备 {equipment.EquipmentId} 的 path_slash_animation={asset.path_slash_animation}，预期={spec.PathSlashAnimation}。"
-                    )
-                );
-            }
-
-            if (!string.Equals(asset.projectile ?? string.Empty, spec.Projectile ?? string.Empty, StringComparison.Ordinal))
-            {
-                issues.Add(
-                    new EraValidationIssue(
-                        EraValidationSeverity.Error,
-                        "HeritageEquipmentRegistration",
-                        $"轮回装备 {equipment.EquipmentId} 的 projectile={asset.projectile}，预期={spec.Projectile}。"
-                    )
-                );
-            }
-
-            if (spec.RigidityRating.HasValue && asset.rigidity_rating != spec.RigidityRating.Value)
-            {
-                issues.Add(
-                    new EraValidationIssue(
-                        EraValidationSeverity.Error,
-                        "HeritageEquipmentRegistration",
-                        $"轮回装备 {equipment.EquipmentId} 的 rigidity_rating={asset.rigidity_rating}，预期={spec.RigidityRating.Value}。"
-                    )
-                );
-            }
-
-            foreach (KeyValuePair<string, float> entry in spec.BaseStatOverrides)
-            {
-                float actualValue = asset.base_stats?[entry.Key] ?? 0f;
-                if (Math.Abs(actualValue - entry.Value) > 0.0001f)
-                {
-                    issues.Add(
-                        new EraValidationIssue(
-                            EraValidationSeverity.Error,
-                            "HeritageEquipmentRegistration",
-                            $"轮回装备 {equipment.EquipmentId} 的 base_stats[{entry.Key}]={actualValue:0.###}，预期={entry.Value:0.###}。"
-                        )
-                    );
-                }
-            }
-
-            if (asset.item_modifier_ids != null && asset.item_modifier_ids.Length > 0)
-            {
-                issues.Add(
-                    new EraValidationIssue(
-                        EraValidationSeverity.Error,
-                        "HeritageEquipmentRegistration",
-                        $"轮回装备 {equipment.EquipmentId} 残留了继承词条：{string.Join(",", asset.item_modifier_ids)}。"
-                    )
-                );
-            }
-
-            if (asset.item_modifiers != null && asset.item_modifiers.Length > 0)
-            {
-                issues.Add(
-                    new EraValidationIssue(
-                        EraValidationSeverity.Error,
-                        "HeritageEquipmentRegistration",
-                        $"轮回装备 {equipment.EquipmentId} 残留了已链接词条实例。"
-                    )
-                );
-            }
-
-            if (asset.spells_ids != null && asset.spells_ids.Count > 0)
-            {
-                issues.Add(
-                    new EraValidationIssue(
-                        EraValidationSeverity.Error,
-                        "HeritageEquipmentRegistration",
-                        $"轮回装备 {equipment.EquipmentId} 残留了继承法术：{string.Join(",", asset.spells_ids)}。"
-                    )
-                );
-            }
-
-            if (asset.spells != null && asset.spells.Count > 0)
-            {
-                issues.Add(
-                    new EraValidationIssue(
-                        EraValidationSeverity.Error,
-                        "HeritageEquipmentRegistration",
-                        $"轮回装备 {equipment.EquipmentId} 残留了已链接法术实例。"
                     )
                 );
             }
@@ -1249,6 +1080,180 @@ public static class EraStartupValidator
         if (candidateIds.Distinct().Count() != candidateIds.Count)
         {
             issues.Add(new EraValidationIssue(EraValidationSeverity.Error, "Config", $"{label}里出现了重复属性。"));
+        }
+    }
+
+    private static void ValidateRegisteredHeritageEquipmentAssets(
+        IEnumerable<EraHeritageEquipmentManifest> equipmentList,
+        List<EraValidationIssue> issues
+    )
+    {
+        foreach (EraHeritageEquipmentManifest equipment in equipmentList)
+        {
+            if (!EraHeritageEquipmentSlotSpecs.TryGet(equipment.SlotKind, out EraHeritageEquipmentSlotSpec spec))
+            {
+                continue;
+            }
+
+            EquipmentAsset? asset = AssetManager.items.get(equipment.EquipmentId);
+            if (asset == null)
+            {
+                issues.Add(
+                    new EraValidationIssue(
+                        EraValidationSeverity.Error,
+                        "HeritageEquipmentRegistration",
+                        $"轮回装备未完成注册：{equipment.EquipmentId}。"
+                    )
+                );
+                continue;
+            }
+
+            if (asset.equipment_type != spec.EquipmentType)
+            {
+                issues.Add(
+                    new EraValidationIssue(
+                        EraValidationSeverity.Error,
+                        "HeritageEquipmentRegistration",
+                        $"轮回装备 {equipment.EquipmentId} 的 equipment_type={asset.equipment_type}，预期={spec.EquipmentType}。"
+                    )
+                );
+            }
+
+            if (!string.Equals(asset.equipment_subtype, spec.EquipmentSubtype, StringComparison.Ordinal))
+            {
+                issues.Add(
+                    new EraValidationIssue(
+                        EraValidationSeverity.Error,
+                        "HeritageEquipmentRegistration",
+                        $"轮回装备 {equipment.EquipmentId} 的 equipment_subtype={asset.equipment_subtype}，预期={spec.EquipmentSubtype}。"
+                    )
+                );
+            }
+
+            if (!string.Equals(asset.group_id, spec.GroupId, StringComparison.Ordinal))
+            {
+                issues.Add(
+                    new EraValidationIssue(
+                        EraValidationSeverity.Error,
+                        "HeritageEquipmentRegistration",
+                        $"轮回装备 {equipment.EquipmentId} 的 group_id={asset.group_id}，预期={spec.GroupId}。"
+                    )
+                );
+            }
+
+            if (asset.is_pool_weapon != spec.IsPoolWeapon)
+            {
+                issues.Add(
+                    new EraValidationIssue(
+                        EraValidationSeverity.Error,
+                        "HeritageEquipmentRegistration",
+                        $"轮回装备 {equipment.EquipmentId} 的 is_pool_weapon={asset.is_pool_weapon}，预期={spec.IsPoolWeapon}。"
+                    )
+                );
+            }
+
+            if (spec.AttackType.HasValue && asset.attack_type != spec.AttackType.Value)
+            {
+                issues.Add(
+                    new EraValidationIssue(
+                        EraValidationSeverity.Error,
+                        "HeritageEquipmentRegistration",
+                        $"轮回装备 {equipment.EquipmentId} 的 attack_type={asset.attack_type}，预期={spec.AttackType.Value}。"
+                    )
+                );
+            }
+
+            if (!string.Equals(asset.path_slash_animation, spec.PathSlashAnimation, StringComparison.Ordinal))
+            {
+                issues.Add(
+                    new EraValidationIssue(
+                        EraValidationSeverity.Error,
+                        "HeritageEquipmentRegistration",
+                        $"轮回装备 {equipment.EquipmentId} 的 path_slash_animation={asset.path_slash_animation}，预期={spec.PathSlashAnimation}。"
+                    )
+                );
+            }
+
+            if (!string.Equals(asset.projectile ?? string.Empty, spec.Projectile ?? string.Empty, StringComparison.Ordinal))
+            {
+                issues.Add(
+                    new EraValidationIssue(
+                        EraValidationSeverity.Error,
+                        "HeritageEquipmentRegistration",
+                        $"轮回装备 {equipment.EquipmentId} 的 projectile={asset.projectile}，预期={spec.Projectile}。"
+                    )
+                );
+            }
+
+            if (spec.RigidityRating.HasValue && asset.rigidity_rating != spec.RigidityRating.Value)
+            {
+                issues.Add(
+                    new EraValidationIssue(
+                        EraValidationSeverity.Error,
+                        "HeritageEquipmentRegistration",
+                        $"轮回装备 {equipment.EquipmentId} 的 rigidity_rating={asset.rigidity_rating}，预期={spec.RigidityRating.Value}。"
+                    )
+                );
+            }
+
+            foreach (KeyValuePair<string, float> entry in spec.BaseStatOverrides)
+            {
+                float actualValue = asset.base_stats?[entry.Key] ?? 0f;
+                if (Math.Abs(actualValue - entry.Value) > 0.0001f)
+                {
+                    issues.Add(
+                        new EraValidationIssue(
+                            EraValidationSeverity.Error,
+                            "HeritageEquipmentRegistration",
+                            $"轮回装备 {equipment.EquipmentId} 的 base_stats[{entry.Key}]={actualValue:0.###}，预期={entry.Value:0.###}。"
+                        )
+                    );
+                }
+            }
+
+            if (asset.item_modifier_ids != null && asset.item_modifier_ids.Length > 0)
+            {
+                issues.Add(
+                    new EraValidationIssue(
+                        EraValidationSeverity.Error,
+                        "HeritageEquipmentRegistration",
+                        $"轮回装备 {equipment.EquipmentId} 残留了继承词条：{string.Join(",", asset.item_modifier_ids)}。"
+                    )
+                );
+            }
+
+            if (asset.item_modifiers != null && asset.item_modifiers.Length > 0)
+            {
+                issues.Add(
+                    new EraValidationIssue(
+                        EraValidationSeverity.Error,
+                        "HeritageEquipmentRegistration",
+                        $"轮回装备 {equipment.EquipmentId} 残留了已链接词条实例。"
+                    )
+                );
+            }
+
+            if (asset.spells_ids != null && asset.spells_ids.Count > 0)
+            {
+                issues.Add(
+                    new EraValidationIssue(
+                        EraValidationSeverity.Error,
+                        "HeritageEquipmentRegistration",
+                        $"轮回装备 {equipment.EquipmentId} 残留了继承法术：{string.Join(",", asset.spells_ids)}。"
+                    )
+                );
+            }
+
+            if (asset.spells != null && asset.spells.Count > 0)
+            {
+                issues.Add(
+                    new EraValidationIssue(
+                        EraValidationSeverity.Error,
+                        "HeritageEquipmentRegistration",
+                        $"轮回装备 {equipment.EquipmentId} 残留了已链接法术实例。"
+                    )
+                );
+            }
         }
     }
 

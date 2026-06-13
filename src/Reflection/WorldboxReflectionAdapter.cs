@@ -151,39 +151,6 @@ public static class WorldboxReflectionAdapter
         _actorManaSignature = _actorDataManaProperty?.ToString() ?? "未找到";
     }
 
-    public static void ResetForReload()
-    {
-        _initialized = false;
-        _addBuildingMethod = null;
-        _mapStatsField = null;
-        _moveCameraProperty = null;
-        _focusOnMethod = null;
-        _startDestroyBuildingMethod = null;
-        _newWildKingdomMethod = null;
-        _loadActorTexturesMethod = null;
-        _loadActorShadowMethod = null;
-        _addStatusEffectMethod = null;
-        _setCurrentTileMethod = null;
-        _setCurrentTilePositionMethod = null;
-        _startFireMethod = null;
-        _kingdomAssetEnemyCacheField = null;
-        _actorAggressionTargetsField = null;
-        _actorAttackTargetField = null;
-        _actorDataField = null;
-        _actorDataManaProperty = null;
-        _addBuildingSignature = "未确认";
-        _mapStatsSignature = "未确认";
-        _focusOnSignature = "未确认";
-        _startDestroyBuildingSignature = "未确认";
-        _newWildKingdomSignature = "未确认";
-        _loadActorTexturesSignature = "未确认";
-        _loadActorShadowSignature = "未确认";
-        _addStatusEffectSignature = "未确认";
-        _teleportSignature = "未确认";
-        _startFireSignature = "未确认";
-        _actorManaSignature = "未确认";
-    }
-
     public static string CreateStatusReport()
     {
         Initialize();

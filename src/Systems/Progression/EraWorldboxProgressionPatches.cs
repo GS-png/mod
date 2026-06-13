@@ -1,3 +1,4 @@
+using System;
 using HarmonyLib;
 
 namespace EraWheel.Systems.Progression;
@@ -99,6 +100,48 @@ public static class EraProgressionMutationBoxTraitPatch
     }
 }
 
+[HarmonyPatch(typeof(ItemCrafting), nameof(ItemCrafting.craftItem))]
+public static class EraProgressionCraftItemPatch
+{
+    internal const string KingdomCraftSource = "kingdom_craft";
+
+    internal static string? CurrentSource => CraftingContext.CurrentSource;
+
+    [HarmonyPrefix]
+    private static void BeforeCraftItem()
+    {
+        CraftingContext.Enter();
+    }
+
+    [HarmonyFinalizer]
+    private static Exception? AfterCraftItem(Exception? __exception)
+    {
+        CraftingContext.Exit();
+        return __exception;
+    }
+
+    private static class CraftingContext
+    {
+        [System.ThreadStatic]
+        private static int _depth;
+
+        internal static string? CurrentSource => _depth > 0 ? KingdomCraftSource : null;
+
+        internal static void Enter()
+        {
+            _depth++;
+        }
+
+        internal static void Exit()
+        {
+            if (_depth > 0)
+            {
+                _depth--;
+            }
+        }
+    }
+}
+
 [HarmonyPatch(typeof(ActorEquipmentSlot), "setItem")]
 public static class EraProgressionEquipmentSlotPatch
 {
@@ -107,7 +150,8 @@ public static class EraProgressionEquipmentSlotPatch
     {
         if (pItem != null)
         {
-            EraProgressionRuntimeBridge.Current?.EnsureEquipmentStored(pItem, pActor, "direct_equip_on_spawn_or_refresh");
+            string source = EraProgressionCraftItemPatch.CurrentSource ?? "direct_equip_on_spawn_or_refresh";
+            EraProgressionRuntimeBridge.Current?.EnsureEquipmentStored(pItem, pActor, source);
         }
     }
 }

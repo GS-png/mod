@@ -1,3 +1,4 @@
+using System;
 using EraWheel.Combat.Effects;
 using EraWheel.Combat.Equipment;
 using EraWheel.Combat.Demons;
@@ -5,6 +6,7 @@ using EraWheel.Combat.Statuses;
 using EraWheel.Combat.Terrain;
 using EraWheel.Combat.Traits;
 using EraWheel.Combat.Triggers;
+using EraWheel.Core;
 using EraWheel.Core.Logging;
 using EraWheel.Core.Random;
 using EraWheel.Reflection;
@@ -43,11 +45,12 @@ public sealed class EraCombatRuntimeService
             return;
         }
 
-        Triggers.DrainQueued();
-        Statuses.Update((float)mapStats.world_time);
-        TerrainAreas.Update((float)mapStats.world_time);
-        Traits.Update((float)mapStats.world_time);
-        Equipment.Update((float)mapStats.world_time);
+        float currentWorldTime = (float)mapStats.world_time;
+        RunCombatUpdateStep("drain_queued", currentWorldTime, Triggers.DrainQueued);
+        RunCombatUpdateStep("statuses", currentWorldTime, () => Statuses.Update(currentWorldTime));
+        RunCombatUpdateStep("terrain_areas", currentWorldTime, () => TerrainAreas.Update(currentWorldTime));
+        RunCombatUpdateStep("traits", currentWorldTime, () => Traits.Update(currentWorldTime));
+        RunCombatUpdateStep("equipment", currentWorldTime, () => Equipment.Update(currentWorldTime));
     }
 
     public string CreateStatusReport()
@@ -59,5 +62,17 @@ public sealed class EraCombatRuntimeService
     {
         EraCombatRuntimeBridge.Bind(this);
         EraLog.Info(EraLogCategory.Combat, $"战斗原语运行时已初始化：{CreateStatusReport()}");
+    }
+
+    private static void RunCombatUpdateStep(string stage, float worldTime, Action action)
+    {
+        EraRuntimeStepGuard.RunRuntimeStep(
+            EraLogCategory.Combat,
+            "combat_update_step",
+            stage,
+            EraRuntimeBootstrap.RuntimeSave?.CurrentState.CompletedCycles ?? 0,
+            worldTime,
+            action
+        );
     }
 }

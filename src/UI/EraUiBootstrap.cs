@@ -85,13 +85,6 @@ public static class EraUiBootstrap
     }
 
     [Hotfixable]
-    public static void Reload()
-    {
-        ResetForReload();
-        Initialize();
-    }
-
-    [Hotfixable]
     public static void ShowModule(EraModuleId moduleId)
     {
         if (!SpecsByModule.TryGetValue(moduleId, out EraUiWindowSpec? spec))
@@ -135,61 +128,6 @@ public static class EraUiBootstrap
     public static string CreateTopTabStatusReport()
     {
         return $"顶层页签状态={GetTopTabStateLabel(_topTabState)}；尝试次数={_topTabAttemptCount}；下次重试帧={_topTabNextRetryFrame}；详情={_topTabLastStatusDetail}";
-    }
-
-    public static void ResetForReload()
-    {
-        HashSet<string> eraWindowIds = SpecsByModule.Values.Select(item => item.WindowId).ToHashSet(StringComparer.Ordinal);
-
-        foreach (PowerButton button in ModuleButtons.Values)
-        {
-            if (button != null)
-            {
-                Object.Destroy(button.gameObject);
-            }
-        }
-
-        ModuleButtons.Clear();
-
-        foreach (EraModuleWindowView view in WindowsByModule.Values)
-        {
-            if (view != null)
-            {
-                Object.Destroy(view.gameObject);
-            }
-        }
-
-        WindowsByModule.Clear();
-
-        if (AllWindowsField?.GetValue(null) is Dictionary<string, ScrollWindow> allWindows)
-        {
-            foreach (string windowId in eraWindowIds.ToList())
-            {
-                allWindows.Remove(windowId);
-            }
-        }
-
-        if (_topTab != null)
-        {
-            List<Transform> staleChildren = _topTab.transform.Cast<Transform>()
-                .Where(IsEraManagedTopTabChild)
-                .ToList();
-            foreach (Transform child in staleChildren)
-            {
-                Object.Destroy(child.gameObject);
-            }
-        }
-
-        SpecsByModule.Clear();
-        _topTab = null;
-        _initialized = false;
-        _topTabState = EraTopTabRegistrationState.NotStarted;
-        _topTabAttemptCount = 0;
-        _topTabNextRetryFrame = 0;
-        _topTabLastStatusDetail = "尚未开始注册。";
-        _topTabLastLoggedReport = string.Empty;
-        _topTabLastLoggedState = EraTopTabRegistrationState.NotStarted;
-        _topTabNextVerboseLogFrame = 0;
     }
 
     [Hotfixable]
@@ -1015,7 +953,7 @@ internal sealed class EraModuleWindowView : MonoBehaviour
             new Vector2(GetFullButtonWidth(), ActionButtonHeight),
             () =>
             {
-                EraConfig.ImportExport?.ExportCurrentParameters(EraConfig.Parameters, out _);
+                EraConfig.ImportExport?.ExportCurrentParameters(out _);
                 EraUiBootstrap.RefreshOpenWindows();
             }
         );
@@ -1027,7 +965,7 @@ internal sealed class EraModuleWindowView : MonoBehaviour
             new Vector2(GetFullButtonWidth(), ActionButtonHeight),
             () =>
             {
-                EraConfig.ImportExport?.TryPreviewImport(EraConfig.Parameters, out _);
+                EraConfig.ImportExport?.TryPreviewImport(out _);
                 EraUiBootstrap.RefreshOpenWindows();
             }
         );
@@ -1039,7 +977,7 @@ internal sealed class EraModuleWindowView : MonoBehaviour
             new Vector2(GetFullButtonWidth(), ActionButtonHeight),
             () =>
             {
-                if (EraConfig.ImportExport?.ApplyPendingImport(EraConfig.Parameters) == true)
+                if (EraConfig.ImportExport?.ApplyPendingImport() == true)
                 {
                     EraRuntimeBootstrap.RefreshWorldBinding();
                 }
@@ -1055,7 +993,7 @@ internal sealed class EraModuleWindowView : MonoBehaviour
             new Vector2(GetFullButtonWidth(), ActionButtonHeight),
             () =>
             {
-                if (EraConfig.ImportExport?.RollbackLastImport(EraConfig.Parameters) == true)
+                if (EraConfig.ImportExport?.RollbackLastImport() == true)
                 {
                     EraRuntimeBootstrap.RefreshWorldBinding();
                 }
@@ -1424,8 +1362,7 @@ internal sealed class EraModuleWindowView : MonoBehaviour
 
         void Refresh()
         {
-            EraFloatRange range = binding.Getter();
-            minInput.Setup(FormatNumber(() => range.Min, binding.WholeNumbers), value =>
+            minInput.Setup(FormatNumber(() => binding.Getter().Min, binding.WholeNumbers), value =>
             {
                 if (!TryParseNumber(value, binding.WholeNumbers, out float minValue))
                 {
@@ -1438,7 +1375,7 @@ internal sealed class EraModuleWindowView : MonoBehaviour
                 minInput.input.text = FormatNumber(() => binding.Getter().Min, binding.WholeNumbers);
                 maxInput.input.text = FormatNumber(() => binding.Getter().Max, binding.WholeNumbers);
             });
-            maxInput.Setup(FormatNumber(() => range.Max, binding.WholeNumbers), value =>
+            maxInput.Setup(FormatNumber(() => binding.Getter().Max, binding.WholeNumbers), value =>
             {
                 if (!TryParseNumber(value, binding.WholeNumbers, out float maxValue))
                 {
@@ -1650,7 +1587,7 @@ internal sealed class EraModuleWindowView : MonoBehaviour
 
     private static void PersistGameplayParameters(string reason)
     {
-        EraConfig.ImportExport?.SaveCurrentAsActive(EraConfig.Parameters, reason);
+        EraConfig.ImportExport?.SaveCurrentAsActive(reason);
     }
 }
 

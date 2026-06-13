@@ -176,49 +176,6 @@ public static class EraHudOverlay
         SetVisible(!_visible);
     }
 
-    public static void ResetForReload()
-    {
-        if (_root != null)
-        {
-            UnityEngine.Object.Destroy(_root);
-        }
-
-        foreach (Sprite sprite in GeneratedSprites.Values)
-        {
-            if (sprite.texture != null)
-            {
-                UnityEngine.Object.Destroy(sprite.texture);
-            }
-
-            UnityEngine.Object.Destroy(sprite);
-        }
-
-        GeneratedSprites.Clear();
-
-        if (_flatSprite != null)
-        {
-            UnityEngine.Object.Destroy(_flatSprite);
-        }
-
-        _root = null;
-        _rect = null;
-        _parentCanvas = null;
-        _font = null;
-        _flatSprite = null;
-        _crestImage = null;
-        _titleText = null;
-        _subtitleText = null;
-        _worldTierText = null;
-        Array.Clear(StageLinks, 0, StageLinks.Length);
-        Array.Clear(StageNodes, 0, StageNodes.Length);
-        Array.Clear(SealRows, 0, SealRows.Length);
-        Array.Clear(Cards, 0, Cards.Length);
-        _initialized = false;
-        _dragging = false;
-        _nextRefreshTime = 0f;
-        _nextInitializeAttemptTime = 0f;
-    }
-
     private static void EnsureSharedResources()
     {
         _font ??= Resources.GetBuiltinResource<Font>("Arial.ttf");

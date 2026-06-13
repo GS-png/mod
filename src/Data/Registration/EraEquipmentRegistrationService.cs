@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using EraWheel.Assets;
 using EraWheel.Core.Logging;
 using EraWheel.Data.Definitions;
-using EraWheel.HotReload;
 using EraWheel.Localization;
 using NeoModLoader.General;
 
@@ -29,21 +27,14 @@ public sealed class EraEquipmentRegistrationReport
 
 public static class EraEquipmentRegistrationService
 {
-    public static EraEquipmentRegistrationReport Register(EraContentCatalog contentCatalog, EraSpriteCatalog spriteCatalog, bool reloadMode = false)
+    public static EraEquipmentRegistrationReport Register(EraContentCatalog contentCatalog, EraSpriteCatalog spriteCatalog)
     {
         int registeredCount = 0;
         int skippedCount = 0;
 
-        if (reloadMode)
-        {
-            EraAssetReconciliationService.RemoveEquipmentFromPools(
-                contentCatalog.HeritageEquipment.Select(item => item.EquipmentId)
-            );
-        }
-
         foreach (EraHeritageEquipmentManifest equipment in contentCatalog.HeritageEquipment)
         {
-            if (RegisterEquipment(equipment, spriteCatalog, reloadMode))
+            if (RegisterEquipment(equipment, spriteCatalog))
             {
                 registeredCount++;
             }
@@ -62,9 +53,9 @@ public static class EraEquipmentRegistrationService
         return new EraEquipmentRegistrationReport(registeredCount, skippedCount);
     }
 
-    private static bool RegisterEquipment(EraHeritageEquipmentManifest equipment, EraSpriteCatalog spriteCatalog, bool reloadMode)
+    private static bool RegisterEquipment(EraHeritageEquipmentManifest equipment, EraSpriteCatalog spriteCatalog)
     {
-        if (!reloadMode && AssetManager.items.has(equipment.EquipmentId))
+        if (AssetManager.items.has(equipment.EquipmentId))
         {
             EraLog.Warning(EraLogCategory.Data, $"轮回装备已存在，跳过重复注册：{equipment.EquipmentId}");
             return false;

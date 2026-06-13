@@ -223,35 +223,10 @@ public sealed class EraAdvancementRuntimeService
         int unlockedHeritageTraits = _runtimeSave.CurrentState.UnlockedHeritageTraits.Count;
         int unlockedHeritageEquipment = _runtimeSave.CurrentState.UnlockedHeritageEquipment.Count;
         return
-            $"编辑器手动可用：公共特质={_publicTraitIds.Count}/{_publicTraitIds.Count}，" +
-            $"轮回特质={_heritageTraitsById.Count}/{_heritageTraitsById.Count}，" +
-            $"轮回装备={_heritageById.Count}/{_heritageById.Count}；" +
+            $"原版可用性不改写；已登记内容：公共特质={_publicTraitIds.Count}，" +
+            $"轮回特质={_heritageTraitsById.Count}，轮回装备={_heritageById.Count}；" +
             $"玩法已解锁：轮回特质={unlockedHeritageTraits}/{_heritageTraitsById.Count}，" +
             $"轮回装备={unlockedHeritageEquipment}/{_heritageById.Count}";
-    }
-
-    public bool TryGetEditorManualAvailability(string assetId, out bool available)
-    {
-        if (_publicTraitIds.Contains(assetId))
-        {
-            available = true;
-            return true;
-        }
-
-        if (_heritageById.ContainsKey(assetId))
-        {
-            available = true;
-            return true;
-        }
-
-        if (_heritageTraitsById.ContainsKey(assetId))
-        {
-            available = true;
-            return true;
-        }
-
-        available = false;
-        return false;
     }
 
     public bool TryGetHeritageAvailability(string assetId, out bool available)
@@ -298,20 +273,19 @@ public sealed class EraAdvancementRuntimeService
             return original;
         }
 
-        List<EquipmentAsset> candidates = BuildMergedCraftCandidates(source, original);
-        if (candidates.Count == 0)
+        if (original != null && !ShouldSkipCraftAsset(actor, original))
         {
             return original;
         }
 
-        if (shuffle)
+        if (source == null || source.Count == 0)
         {
-            ShuffleInPlace(candidates);
+            return null;
         }
 
-        EquipmentAsset? best = null;
-        foreach (EquipmentAsset asset in candidates)
+        for (int index = source.Count - 1; index >= 0; index--)
         {
+            EquipmentAsset? asset = source[index];
             if (asset == null ||
                 asset.equipment_value <= currentValue ||
                 !HasEnoughResourcesToCraft(actor, asset, city) ||
@@ -320,16 +294,10 @@ public sealed class EraAdvancementRuntimeService
                 continue;
             }
 
-            if (best == null ||
-                asset.equipment_value > best.equipment_value ||
-                (asset.equipment_value == best.equipment_value &&
-                 string.Compare(asset.id, best.id, StringComparison.Ordinal) < 0))
-            {
-                best = asset;
-            }
+            return asset;
         }
 
-        return best;
+        return null;
     }
 
     private int RefreshKingdomControl(float currentWorldTime, bool force)
@@ -664,83 +632,6 @@ public sealed class EraAdvancementRuntimeService
         return IsHeritageEquipment(asset) && !CanKingdomCraftEquipment(actor.kingdom, asset);
     }
 
-    private List<EquipmentAsset> BuildMergedCraftCandidates(List<EquipmentAsset>? source, EquipmentAsset? original)
-    {
-        List<EquipmentAsset> candidates = new List<EquipmentAsset>();
-        HashSet<string> seen = new HashSet<string>(StringComparer.Ordinal);
-        AppendCraftCandidates(candidates, seen, source);
-        AppendCraftCandidate(candidates, seen, original);
-
-        if (TryResolveCraftEquipmentType(source, original, out EquipmentType equipmentType) &&
-            _heritageAssetsBySlot.TryGetValue(equipmentType, out List<EquipmentAsset>? heritageAssets))
-        {
-            AppendCraftCandidates(candidates, seen, heritageAssets);
-        }
-
-        return candidates;
-    }
-
-    private static void AppendCraftCandidates(
-        ICollection<EquipmentAsset> target,
-        ISet<string> seen,
-        IEnumerable<EquipmentAsset>? source
-    )
-    {
-        if (source == null)
-        {
-            return;
-        }
-
-        foreach (EquipmentAsset? asset in source)
-        {
-            AppendCraftCandidate(target, seen, asset);
-        }
-    }
-
-    private static void AppendCraftCandidate(
-        ICollection<EquipmentAsset> target,
-        ISet<string> seen,
-        EquipmentAsset? asset
-    )
-    {
-        if (asset == null || string.IsNullOrWhiteSpace(asset.id) || !seen.Add(asset.id))
-        {
-            return;
-        }
-
-        target.Add(asset);
-    }
-
-    private static bool TryResolveCraftEquipmentType(
-        IEnumerable<EquipmentAsset>? source,
-        EquipmentAsset? original,
-        out EquipmentType equipmentType
-    )
-    {
-        if (original != null)
-        {
-            equipmentType = original.equipment_type;
-            return true;
-        }
-
-        if (source != null)
-        {
-            foreach (EquipmentAsset? asset in source)
-            {
-                if (asset == null)
-                {
-                    continue;
-                }
-
-                equipmentType = asset.equipment_type;
-                return true;
-            }
-        }
-
-        equipmentType = default;
-        return false;
-    }
-
     private static Actor? ResolveTrackedActor(long actorId, string actorAssetId)
     {
         if (World.world == null || actorId <= 0L)
@@ -824,12 +715,4 @@ public sealed class EraAdvancementRuntimeService
                kingdom.asset.id.StartsWith("ew_demon_kingdom_", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static void ShuffleInPlace<TItem>(IList<TItem> items)
-    {
-        for (int index = items.Count - 1; index > 0; index--)
-        {
-            int swapIndex = Randy.randomInt(0, index + 1);
-            (items[index], items[swapIndex]) = (items[swapIndex], items[index]);
-        }
-    }
 }

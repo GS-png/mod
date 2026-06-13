@@ -8,6 +8,7 @@ using EraWheel.Combat.Statuses;
 using EraWheel.Combat.Terrain;
 using EraWheel.Combat.Triggers;
 using EraWheel.Core.Constants;
+using EraWheel.Core.Logging;
 using EraWheel.Core.Random;
 using EraWheel.Core.Time;
 using EraWheel.Reflection;
@@ -67,6 +68,11 @@ public sealed partial class EraEquipmentRuntimeService
         RegisterIncomingDamageAmpRuntime();
     }
 
+    public void BindNativeEquipmentActions()
+    {
+        BindTier4To6NativeEquipmentActions();
+    }
+
     public void Update(float currentWorldTime)
     {
         CleanupExpiredCooldowns(currentWorldTime);
@@ -85,6 +91,8 @@ public sealed partial class EraEquipmentRuntimeService
     partial void RegisterTier7To8EquipmentTriggers();
 
     partial void RegisterTier9To10EquipmentTriggers();
+
+    partial void BindTier4To6NativeEquipmentActions();
 
     private void RegisterOnHitEquipmentSkill(
         string equipmentId,
@@ -247,6 +255,56 @@ public sealed partial class EraEquipmentRuntimeService
                || (WorldboxReflectionAdapter.TryGetActorMana(actor, out int mana) && mana >= manaCost);
     }
 
+    private bool TryBeginNativeOnHitEquipmentProc(
+        Actor actor,
+        BaseSimObject? target,
+        string equipmentId,
+        string triggerId,
+        float worldTime,
+        float chancePercent = DefaultProcChance,
+        int manaCost = DefaultManaCost
+    )
+    {
+        if (!HasEquipment(actor, equipmentId) ||
+            !CanTriggerProc(actor, equipmentId, worldTime, cooldownWorldTime: 0f, manaCost: manaCost) ||
+            !PassNativeProcChance(actor, target, triggerId, worldTime, EraTriggerType.OnHit, chancePercent))
+        {
+            return false;
+        }
+
+        if (manaCost > 0)
+        {
+            WorldboxReflectionAdapter.TryConsumeActorMana(actor, manaCost);
+        }
+
+        return true;
+    }
+
+    private bool PassNativeProcChance(
+        Actor actor,
+        BaseSimObject? target,
+        string triggerId,
+        float worldTime,
+        EraTriggerType triggerType,
+        float chancePercent
+    )
+    {
+        if (chancePercent >= 100f)
+        {
+            return true;
+        }
+
+        if (chancePercent <= 0f)
+        {
+            return false;
+        }
+
+        long sourceId = actor.getID();
+        long targetId = target?.getID() ?? 0L;
+        string scope = $"{triggerId}:{sourceId}:{targetId}:{(int)worldTime}:{triggerType}";
+        return _stableRandom.NextFloat("combat_trigger", scope, 0f, 100f) <= chancePercent;
+    }
+
     private void SetCooldown(Actor actor, string equipmentId, float worldTime, float cooldownWorldTime)
     {
         if (cooldownWorldTime <= 0f)
@@ -255,6 +313,90 @@ public sealed partial class EraEquipmentRuntimeService
         }
 
         _cooldowns[BuildCooldownKey(actor, equipmentId)] = worldTime + cooldownWorldTime;
+    }
+
+    private static bool BindNativeAttackAction(string equipmentId, AttackAction action)
+    {
+        EquipmentAsset? asset = AssetManager.items.get(equipmentId);
+        if (asset == null)
+        {
+            EraLog.Warning(
+                EraLogCategory.Combat,
+                $"装备原版命中回调未注册：未找到装备 ID={equipmentId}。"
+            );
+            return false;
+        }
+
+        AttackAction? withoutExisting = (AttackAction?)Delegate.Remove(asset.action_attack_target, action);
+        asset.action_attack_target = (AttackAction)Delegate.Combine(withoutExisting, action);
+        return true;
+    }
+
+    private static void MarkActorsWithEquipmentStatsDirty(string equipmentId)
+    {
+        if (World.world?.units == null)
+        {
+            return;
+        }
+
+        foreach (Actor actor in World.world.units)
+        {
+            if (actor != null && RefreshEquipmentItemActions(actor, equipmentId))
+            {
+                actor.setStatsDirty();
+            }
+        }
+    }
+
+    private static bool RefreshEquipmentItemActions(Actor actor, string equipmentId)
+    {
+        if (actor?.equipment == null)
+        {
+            return false;
+        }
+
+        bool refreshed = false;
+        foreach (ActorEquipmentSlot slot in actor.equipment)
+        {
+            if (slot == null || slot.isEmpty())
+            {
+                continue;
+            }
+
+            Item? item = slot.getItem();
+            if (item?.getAsset()?.id != equipmentId)
+            {
+                continue;
+            }
+
+            ItemTools.mergeStatsWithItem(new BaseStats(), item, pCalcGlobalValue: false);
+            refreshed = true;
+        }
+
+        return refreshed;
+    }
+
+    private static bool HasEquipment(Actor actor, string equipmentId)
+    {
+        if (actor?.equipment == null)
+        {
+            return false;
+        }
+
+        foreach (ActorEquipmentSlot slot in actor.equipment)
+        {
+            if (slot == null || slot.isEmpty())
+            {
+                continue;
+            }
+
+            if (slot.getItem()?.getAsset()?.id == equipmentId)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static string BuildCooldownKey(Actor actor, string equipmentId)

@@ -27,7 +27,7 @@ public sealed class EraKingdomRegistrationReport
 
 public static class EraKingdomRegistrationService
 {
-    public static EraKingdomRegistrationReport Register(EraContentCatalog contentCatalog, EraSpriteCatalog spriteCatalog, bool reloadMode = false)
+    public static EraKingdomRegistrationReport Register(EraContentCatalog contentCatalog, EraSpriteCatalog spriteCatalog)
     {
         int registered = 0;
         int skipped = 0;
@@ -35,7 +35,7 @@ public static class EraKingdomRegistrationService
 
         foreach (EraDemonManifest demon in contentCatalog.Demons)
         {
-            if (RegisterKingdomAsset(demon, spriteCatalog, reloadMode))
+            if (RegisterKingdomAsset(demon, spriteCatalog))
             {
                 registered++;
             }
@@ -53,10 +53,10 @@ public static class EraKingdomRegistrationService
         return new EraKingdomRegistrationReport(registered, skipped, runtimeCreated);
     }
 
-    private static bool RegisterKingdomAsset(EraDemonManifest manifest, EraSpriteCatalog spriteCatalog, bool reloadMode)
+    private static bool RegisterKingdomAsset(EraDemonManifest manifest, EraSpriteCatalog spriteCatalog)
     {
         string kingdomId = EraDemonFactionIds.GetKingdomId(manifest.InternalId);
-        if (!reloadMode && AssetManager.kingdoms.has(kingdomId))
+        if (AssetManager.kingdoms.has(kingdomId))
         {
             return false;
         }
